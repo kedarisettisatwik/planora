@@ -1,26 +1,23 @@
 
 import { useNavigate } from 'react-router-dom';
+import './Log.css';
+import login_image from '../assests/login.png';
+import signup_image from '../assests/signup.png';
+import reset_image from '../assests/reset_password.png';
 
 function Log() {
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    // Example validation logic
-    const isValid = true; // Replace with your actual validation
-
-    if (isValid) {
-      // Redirect to Home
-      navigate('/home');
-    } else {
-      alert('Invalid login');
-    }
-  };
-
   return (
-    <div>
-      <h1>Login Page</h1>
-      <button onClick={handleLogin}>Login</button>
-    </div>
+    <section className='log section'>
+      <main className='main'>
+        <h1>planora</h1>
+        <p>Your productivity hub starts here — sign in to take control of your day</p>
+        <img src={login_image} className='login_image img'></img>
+        {/* <img src={signup_image} className='singup_image img'></img>
+        <img src={reset_image} className='reset_image img'></img> */}
+      </main>
+    </section>
   );
 }
 
