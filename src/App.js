@@ -6,9 +6,9 @@ import Log from './pages/Log';
 function App() {
   return (
     <Routes>
-      <Route path="/planora" element={<Home />} />
-      <Route path="/planora/home" element={<Home />} />
-      <Route path="/planora/login" element={<Log />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/login" element={<Log />} />
     </Routes>
   );
 }
