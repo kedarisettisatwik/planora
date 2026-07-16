@@ -1,8 +1,16 @@
-
+import { useNavigate } from "react-router-dom";
 
 function Home() {
+  const navigate = useNavigate();
+  const goToLogin = () => {
+    navigate('/log');  // use the correct route
+  };
+
   return (
-    <h1>Home</h1>
+    <div>
+      <h1>Home</h1>
+      <button onClick={goToLogin}>Login</button>
+    </div>
   );
 }
 

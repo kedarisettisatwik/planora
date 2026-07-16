@@ -6,9 +6,9 @@ import Log from './pages/Log';
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Log />} />
+      <Route path="/log" element={<Log />} />
       <Route path="/home" element={<Home />} />
-      <Route path="/login" element={<Log />} />
     </Routes>
   );
 }
