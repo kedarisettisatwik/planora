@@ -16,10 +16,99 @@
     max-width: 950px;
     max-height: calc(100% - 20px);
     border-radius: 10px;
-    padding: 20px 15px;
+    padding: 20px 25px;
     overflow-x: hidden;
     overflow-y: auto;
 }
+.log h1{
+    font-family: "Slackey";
+    font-weight: 300;
+    letter-spacing: 2px;
+    color:var(--base_color);
+    margin: 10px 0;
+    font-size: 3em;
+}
+.log .description{
+    font-size: 14px;
+    opacity: 0.6;
+}
+.log .logs{
+    margin:20px 0 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    flex-direction: row;
+}
+
+.log .logs form{
+    margin-bottom: 20px;
+}
+.log .logs form h3{
+    margin:10px 0 20px 0;
+}
+.log .logs form .input_box{
+    margin: 25px 0;
+    position: relative;
+    border: 1px solid rgb(0, 0, 0, 0.40);
+    border-radius: 10px;
+    padding: 10px 10px 0 10px;
+    transition: 0.3s ease;
+}
+.log .logs form .input_box:focus-within {
+  border: 1px solid rgb(4, 55, 165);
+}
+.log .logs form .input_box:focus-within label {
+  color: rgb(4, 55, 165);
+}
+.log .logs form .input_box label {
+    display: block;
+    position: absolute;
+    background-color: white;
+    top: 0;
+    left: 10px;
+    font-size: 13px;
+    transform: translateY(-50%);
+    padding: 0px 10px 0px 5px;
+    transition: color 0.3s ease;
+}
+.log .logs form .input_box input{
+    outline: none;
+    border: none;
+    padding: 5px 10px 10px 5px;
+    width: 250px;
+}
+.log .logs form .input_box input:focus{
+    caret-color: var(--base_color);
+}
+.log .logs form .submit{
+    border: none;
+    outline: none;
+    background: none;
+    padding: 10px;
+    cursor: pointer;
+    background-color: var(--base_color);
+    border-radius: 10px;
+    font-size: 14px;
+    color: white;
+}
+.log .logs form p{
+    margin-top: 30px;
+    font-size: 14px;
+}
+.log .logs form p span{
+    color: var(--base_color);
+    cursor: pointer;
+}
 .log .img{
-    max-width: 350px;
+    width: 350px;
+    max-width: calc(100vw - 60px);
+    border-left: 1px dashed rgb(0,0,0,0.1);
+}
+@media (max-width:710px) {
+    .log .logs{
+        flex-direction: column;
+    }
+    .log .img{
+        border: none;
+    }
 }
