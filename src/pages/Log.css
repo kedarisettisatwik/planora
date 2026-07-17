@@ -8,6 +8,18 @@
     overflow: hidden;
     padding: 20px 10px;
 }
+.page_content {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  pointer-events: none;
+}
+
+.page_content.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
 .log .main{
     position: relative;
     background-color: white;
@@ -20,6 +32,17 @@
     overflow-x: hidden;
     overflow-y: auto;
 }
+.log .main::-webkit-scrollbar{
+    width: 5px;
+}
+.log .main::-webkit-scrollbar-track {
+  background: white; 
+  border-radius: 6px;
+}
+.log .main::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #6a5acd, #00bfff);
+  border-radius: 6px;
+}
 .log h1{
     font-family: "Slackey";
     font-weight: 300;
@@ -27,6 +50,9 @@
     color:var(--base_color);
     margin: 10px 0;
     font-size: 3em;
+}
+.log h1 span{
+    font-family: "Slackey";
 }
 .log .description{
     font-size: 14px;
