@@ -13,6 +13,7 @@ import loading_circle from '../assests/loading_circle.png';
 import { SignUpLog } from "../authentication/SignUpLog";
 import {LogInLog} from "../authentication/LogInLog";
 import { ResetPasswordLog } from '../authentication/ResetPasswordLog';
+import {GoogleLog} from '../authentication/GoogleLog';
 
 function Log() {
   // const navigate = useNavigate();
@@ -91,6 +92,30 @@ function Log() {
 
   // Reset form state
   const [resetEmail, setResetEmail] = useState('');
+
+  const SignInGoogle = async (event) => {
+    setLoadingForm(true);
+    try {
+      const user = await GoogleLog();
+      console.log("Welcome", user.displayName);
+      toast('Logged In Succesfully !! ', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '✅',
+        style: {"backgroundColor":"var(--toast_success)","color":"white"}
+      });
+      setLoadingForm(false);
+
+    } catch (err) {
+      toast(err.message, {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+      setLoadingForm(false);
+    }
+  }
 
   const LoginSubmitForm = async (event) => {
     event.preventDefault();
@@ -254,7 +279,10 @@ function Log() {
                     <img src={eye_hide} className='eye_hide' onClick={() => setShow_password('hide')}></img>
                     <img src={eye_show} className='eye_show' onClick={() => setShow_password('show')}></img>
                   </div>
-                  <input type='submit' value='Log In' className='submit'></input>
+                  <div className='btns'>
+                    <input type='submit' value='Log In' className='submit'></input>
+                    <button type='button' onClick={(e) => SignInGoogle(e)} value='Sign In with Google'> Sign In with Google</button>
+                  </div>
                   <p>New to Planora ? - <span onClick={() => setActiveForm('signup')}>Signup</span></p>
                   <p>Forgot Password ? - <span onClick={() => setActiveForm('reset')}>Reset Password</span></p>
               </form>

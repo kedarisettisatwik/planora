@@ -146,6 +146,19 @@
     color: var(--base_color);
     cursor: pointer;
 }
+.log .logs form .btns button{
+    margin: 0 10px;
+    border: none;
+    outline: none;
+    background: none;
+    padding: 10px;
+    cursor: pointer;
+    color: var(--base_color);
+    border-radius: 10px;
+    font-size: 14px;
+    background-color: white;
+    border:1px solid var(--base_color);
+}
 .log .img{
     width: 350px;
     max-width: calc(100vw - 60px);
