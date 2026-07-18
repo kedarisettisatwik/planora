@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "/planora/static/css/main.8a7e4a6e.css",
+    "main.css": "/planora/static/css/main.1be91b94.css",
     "main.js": "/planora/static/js/main.27be2a61.js",
     "static/js/453.23351945.chunk.js": "/planora/static/js/453.23351945.chunk.js",
     "static/media/reset_password.png": "/planora/static/media/reset_password.7052e9f4207258cb8b60.png",
@@ -10,12 +10,12 @@
     "static/media/eye_show.png": "/planora/static/media/eye_show.63ce6c8f56c8bb86429f.png",
     "static/media/loading_circle.png": "/planora/static/media/loading_circle.2ff7f24af0085c9f5cef.png",
     "index.html": "/planora/index.html",
-    "main.8a7e4a6e.css.map": "/planora/static/css/main.8a7e4a6e.css.map",
+    "main.1be91b94.css.map": "/planora/static/css/main.1be91b94.css.map",
     "main.27be2a61.js.map": "/planora/static/js/main.27be2a61.js.map",
     "453.23351945.chunk.js.map": "/planora/static/js/453.23351945.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.8a7e4a6e.css",
+    "static/css/main.1be91b94.css",
     "static/js/main.27be2a61.js"
   ]
 }
