@@ -106,6 +106,27 @@
 .log .logs form .input_box input:focus{
     caret-color: var(--base_color);
 }
+.log .logs form .input_box img{
+    width: 25px;
+    cursor: pointer;
+    padding: 5px;
+    position: absolute;
+    display: none;
+    bottom: 5px;
+    right: 5px;
+}
+.log .logs form .input_box.show img.eye_hide{
+    display: block;
+}
+.log .logs form .input_box.show img.eye_show{
+    display: none;
+}
+.log .logs form .input_box.hide img.eye_hide{
+    display: none;
+}
+.log .logs form .input_box.hide img.eye_show{
+    display: block;
+}
 .log .logs form .submit{
     border: none;
     outline: none;
