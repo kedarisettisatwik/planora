@@ -8,11 +8,17 @@ import signup_image from '../assests/signup.png';
 import reset_image from '../assests/reset_password.png';
 import eye_hide from '../assests/eye_hide.png';
 import eye_show from '../assests/eye_show.png';
+import loading_circle from '../assests/loading_circle.png';
+
+import { SignUpLog } from "../authentication/SignUpLog";
+import {LogInLog} from "../authentication/LogInLog";
+import { ResetPasswordLog } from '../authentication/ResetPasswordLog';
 
 function Log() {
   // const navigate = useNavigate();
   const [activeForm, setActiveForm] = useState('login');
   const [contentVisible, setContentVisible] = useState(false);
+  const [loadingForm, setLoadingForm] = useState(false);
 
   const [show_password,setShow_password] = useState('hide');
 
@@ -86,7 +92,7 @@ function Log() {
   // Reset form state
   const [resetEmail, setResetEmail] = useState('');
 
-  const LoginSubmitForm = (event) => {
+  const LoginSubmitForm = async (event) => {
     event.preventDefault();
 
     if (loginEmail.length == 0 || loginPassword.length == 0){
@@ -98,17 +104,36 @@ function Log() {
       });
       return ;
     }
+    
+    setLoadingForm(true);
 
-    toast('Submitted Succesfully !! ', {
+    const result = await LogInLog(loginEmail, loginPassword);
+
+    if (result.success) {
+
+      console.log("Logged In:", result.user);
+      toast('Logged In Succesfully !! ', {
         duration: 2000,
         position: 'top-center',
         icon: '✅',
         style: {"backgroundColor":"var(--toast_success)","color":"white"}
       });
+      setLoadingForm(false);
+
+    } else {
+      console.log(result.error);
+      toast(result.error, {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+      setLoadingForm(false);
+    }
 
   }
 
-  const signUpSubmitForm = (event) => {
+  const signUpSubmitForm = async (event) => {
     event.preventDefault();
 
     if (signupName.length == 0 || signupEmail.length == 0 || signupPassword.length == 0 || signupConfirmPassword.length == 0){
@@ -129,15 +154,45 @@ function Log() {
       });
       return ;
     }
-    toast('Submitted Succesfully !! ', {
+    if (signupPassword.length <= 5){
+      toast('Password should have more than 5 characters', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+      return ;
+    }
+
+    setLoadingForm(true);
+
+    const result = await SignUpLog(signupEmail,signupPassword,signupName);
+
+    if (result.success) {
+
+      console.log("Signed up:", result.user);
+      toast('Account created Succesfully !! ', {
         duration: 2000,
         position: 'top-center',
         icon: '✅',
         style: {"backgroundColor":"var(--toast_success)","color":"white"}
       });
+      setLoadingForm(false);
+
+    } else {
+      console.log(result.error);
+      toast(result.error, {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+      setLoadingForm(false);
+    }
+    
   }
 
-  const resetSubmitForm = (event) => {
+  const resetSubmitForm = async (event) => {
     event.preventDefault();
 
     if (resetEmail.length == 0){
@@ -149,17 +204,37 @@ function Log() {
       });
       return ;
     }
-    toast('Submitted Succesfully !! ', {
-      duration: 2000,
-      position: 'top-center',
-      icon: '✅',
-      style: {"backgroundColor":"var(--toast_success)","color":"white"}
-    });
+    setLoadingForm(true);
+
+    const result = await ResetPasswordLog(resetEmail);
+
+    if (result.success) {
+
+      console.log("Signed up:", result);
+      toast('Reset Email sent Succesfully !! ', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '✅',
+        style: {"backgroundColor":"var(--toast_success)","color":"white"}
+      });
+      setLoadingForm(false);
+
+    } else {
+      console.log(result.error);
+      toast(result.error, {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+      setLoadingForm(false);
+    }
+
   }
 
   return (
     <section className='log section'>
-      <main className='main'>
+      <main className={`main ${loadingForm ? 'loading' : ''}`}>
         <h1 id='heading_animation' ref={headingRef}>planora</h1>
         <div className={`page_content ${contentVisible ? 'visible' : ''}`}>
             <p className='description'>Your productivity hub starts here — sign in to take control of your day</p>
@@ -180,8 +255,8 @@ function Log() {
                     <img src={eye_show} className='eye_show' onClick={() => setShow_password('show')}></img>
                   </div>
                   <input type='submit' value='Log In' className='submit'></input>
-                  <p>New to Planora ? Click here - <span onClick={() => setActiveForm('signup')}>Signup</span></p>
-                  <p>Forgot Password ? Click here - <span onClick={() => setActiveForm('reset')}>Reset Password</span></p>
+                  <p>New to Planora ? - <span onClick={() => setActiveForm('signup')}>Signup</span></p>
+                  <p>Forgot Password ? - <span onClick={() => setActiveForm('reset')}>Reset Password</span></p>
               </form>
               <img src={login_image} className='login_image img'></img>
             </div>
@@ -211,7 +286,7 @@ function Log() {
                       onChange={(e) => setSignupConfirmPassword(e.target.value)}></input>
                   </div>
                   <input type='submit' value='Sign Up' className='submit'></input>
-                  <p>Already have account ? Click here - <span onClick={() => setActiveForm('login')}>Log In</span></p>
+                  <p>Already have account ? - <span onClick={() => setActiveForm('login')}>Log In</span></p>
               </form>
               <img src={signup_image} className='signup_image img'></img>
             </div>
@@ -225,12 +300,13 @@ function Log() {
                     <input type='email' placeholder='example@gmail.com' autoComplete="off" value={resetEmail}  onChange={(e) => setResetEmail(e.target.value)}></input>
                   </div>
                   <input type='submit' value='Reset Password' className='submit'></input>
-                  <p>Back to Login Page ? Click here - <span onClick={() => setActiveForm('login')}>LogIn</span></p>
+                  <p>Back to Login Page ? - <span onClick={() => setActiveForm('login')}>LogIn</span></p>
               </form>
               <img src={reset_image} className='reset_image img'></img>
             </div>
             )}
-      </div>
+        </div>
+        <div className='loading'><div className='btn'>Loading <img src={loading_circle} height='10px'></img> </div></div>
       </main>
     </section>
   );
