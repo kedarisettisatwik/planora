@@ -34,7 +34,7 @@ function Log() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate('/home');
+        navigate('/home', { replace: true });
       }
       setLoadingForm(false);
     });
@@ -141,7 +141,7 @@ function Log() {
       });
       setLoadingForm(false);
 
-      navigate('/home');
+      navigate('/home', { replace: true });
 
     } catch (err) {
       toast(err.message, {
@@ -183,7 +183,7 @@ function Log() {
       });
       setLoadingForm(false);
 
-      navigate('/home');
+      navigate('/home', { replace: true });
 
     } else {
       console.log(result.error);
