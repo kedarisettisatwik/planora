@@ -1,5 +1,5 @@
 
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import './Log.css';
@@ -15,8 +15,22 @@ import {LogInLog} from "../authentication/LogInLog";
 import { ResetPasswordLog } from '../authentication/ResetPasswordLog';
 import {GoogleLog} from '../authentication/GoogleLog';
 
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase";
+
 function Log() {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigate('/home');
+      }
+    });
+
+    return () => unsubscribe(); // cleanup listener on unmount
+  }, [navigate]);
+  
   const [activeForm, setActiveForm] = useState('login');
   const [contentVisible, setContentVisible] = useState(false);
   const [loadingForm, setLoadingForm] = useState(false);
@@ -106,6 +120,8 @@ function Log() {
       });
       setLoadingForm(false);
 
+      navigate('/home');
+
     } catch (err) {
       toast(err.message, {
         duration: 2000,
@@ -144,6 +160,8 @@ function Log() {
         style: {"backgroundColor":"var(--toast_success)","color":"white"}
       });
       setLoadingForm(false);
+
+      navigate('/home');
 
     } else {
       console.log(result.error);
