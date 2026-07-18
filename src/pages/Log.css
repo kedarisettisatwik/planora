@@ -1,11 +1,10 @@
 .log{
     position: relative;
     width: 100vw;
-    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
     padding: 20px 10px;
 }
 .page_content {
@@ -26,22 +25,10 @@
     box-shadow: 0 0 20px rgb(0,0,0,0.1);
     width:calc(100vw - 20px);
     max-width: 950px;
-    max-height: calc(100% - 20px);
     border-radius: 10px;
     padding: 20px 25px;
     overflow-x: hidden;
     overflow-y: auto;
-}
-.log .main::-webkit-scrollbar{
-    width: 5px;
-}
-.log .main::-webkit-scrollbar-track {
-  background: white; 
-  border-radius: 6px;
-}
-.log .main::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, #6a5acd, #00bfff);
-  border-radius: 6px;
 }
 .log h1{
     font-family: "Slackey";
