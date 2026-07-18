@@ -18,8 +18,10 @@ import {LogInLog} from "../authentication/LogInLog";
 import { ResetPasswordLog } from '../authentication/ResetPasswordLog';
 import {GoogleLog} from '../authentication/GoogleLog';
 
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
+import { db } from "../firebase";
 
 function Log() {
   const navigate = useNavigate();
@@ -117,6 +119,21 @@ function Log() {
     try {
       const user = await GoogleLog();
       console.log("Welcome", user.displayName);
+
+      const userCollectionRef = doc(db, user.email, "generalDetails");
+      const userSnap = await getDoc(userCollectionRef);
+
+      if (!userSnap.exists()) {
+        // First-time login — create the collection (named after email) and its generalDetails doc
+        await setDoc(userCollectionRef, {
+          displayName: user.displayName,
+          widgetsCount:0
+        });
+        console.log("New user collection created in Firestore");
+      } else {
+        console.log("Existing user, skipping Firestore write");
+      }
+
       toast('Logged In Succesfully !! ', {
         duration: 2000,
         position: 'top-center',
@@ -158,6 +175,7 @@ function Log() {
     if (result.success) {
 
       console.log("Logged In:", result.user);
+      
       toast('Logged In Succesfully !! ', {
         duration: 2000,
         position: 'top-center',
@@ -219,6 +237,21 @@ function Log() {
     if (result.success) {
 
       console.log("Signed up:", result.user);
+
+      const userDocRef = doc(db, result.user.email, "generalDetails");
+      const userSnap = await getDoc(userDocRef);
+
+      if (!userSnap.exists()) {
+        // First-time login — create the collection and generalDetails doc
+        await setDoc(userDocRef, {
+          displayName: result.user.displayName,
+          widgetsCount:0
+        });
+        console.log("New user collection created in Firestore");
+      } else {
+        console.log("Existing user, skipping Firestore write");
+      }
+
       toast('Account created Succesfully !! ', {
         duration: 2000,
         position: 'top-center',
@@ -303,8 +336,8 @@ function Log() {
                     <img src={eye_show} className='eye_show' onClick={() => setShow_password('show')}></img>
                   </div>
                   <div className='btns'>
-                    <input type='submit' value='Log In' className='submit'></input>
-                    <button type='button' onClick={(e) => SignInGoogle(e)} value='Sign In with Google'> Sign In with Google</button>
+                    <input type='submit' value='Log In With Planora' className='submit'></input>
+                    <button type='button' onClick={(e) => SignInGoogle(e)} value='Use Google Account'> Sign In with Google</button>
                   </div>
                   <p>New to Planora ? - <span onClick={() => setActiveForm('signup')}>Signup</span></p>
                   <p>Forgot Password ? - <span onClick={() => setActiveForm('reset')}>Reset Password</span></p>
@@ -336,7 +369,7 @@ function Log() {
                     <input type='text' placeholder='secret ***' autoComplete="off" value={signupConfirmPassword}
                       onChange={(e) => setSignupConfirmPassword(e.target.value)}></input>
                   </div>
-                  <input type='submit' value='Sign Up' className='submit'></input>
+                  <input type='submit' value='Create Account in Planora' className='submit'></input>
                   <p>Already have account ? - <span onClick={() => setActiveForm('login')}>Log In</span></p>
               </form>
               <img src={signup_image} className='signup_image img'></img>
