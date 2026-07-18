@@ -24,21 +24,23 @@ import { auth } from "../firebase";
 function Log() {
   const navigate = useNavigate();
 
+  const [activeForm, setActiveForm] = useState('login');
+  const [contentVisible, setContentVisible] = useState(false);
+  const [loadingForm, setLoadingForm] = useState(true);
+
+  const [show_password,setShow_password] = useState('hide');
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         navigate('/home');
       }
+      setLoadingForm(false);
     });
 
     return () => unsubscribe(); // cleanup listener on unmount
   }, [navigate]);
   
-  const [activeForm, setActiveForm] = useState('login');
-  const [contentVisible, setContentVisible] = useState(false);
-  const [loadingForm, setLoadingForm] = useState(false);
-
-  const [show_password,setShow_password] = useState('hide');
 
   const headingRef = useRef(null);
 
