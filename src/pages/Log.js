@@ -20,8 +20,7 @@ import {GoogleLog} from '../authentication/GoogleLog';
 
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 
 function Log() {
   const navigate = useNavigate();
