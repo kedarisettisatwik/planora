@@ -178,7 +178,8 @@
 .log .main.loading .loading{
     display: flex;
 }
-.log .main .loading .btn{
+
+.Loading_btn{
     background-color: var(--base_color);
     padding: 10px 20px;
     color: white;
@@ -192,7 +193,7 @@
     justify-content: space-around;
     align-items: center;
 }
-.log .main .loading .btn img{
+.Loading_btn img{
     height: 20px;
     animation: cricle_load 2s linear infinite;
 }
@@ -205,6 +206,14 @@
     }
 }
 
+@keyframes cricle_load {
+    0%{
+        transform: rotateZ(0deg);
+    }
+    100%{
+        transform: rotateZ(360deg);
+    }
+}
 @media (max-width:710px) {
     .log .logs{
         flex-direction: column;

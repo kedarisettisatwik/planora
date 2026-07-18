@@ -2,13 +2,16 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import './Log.css';
+
+import '../Styles/Log.css';
+
 import login_image from '../assests/login.png';
 import signup_image from '../assests/signup.png';
 import reset_image from '../assests/reset_password.png';
 import eye_hide from '../assests/eye_hide.png';
 import eye_show from '../assests/eye_show.png';
-import loading_circle from '../assests/loading_circle.png';
+
+import LoadingBtn from '../components/LoadingBtn';
 
 import { SignUpLog } from "../authentication/SignUpLog";
 import {LogInLog} from "../authentication/LogInLog";
@@ -352,7 +355,7 @@ function Log() {
             </div>
             )}
         </div>
-        <div className='loading'><div className='btn'>Loading <img src={loading_circle} height='10px'></img> </div></div>
+        <div className='loading'><LoadingBtn/></div>
       </main>
     </section>
   );
