@@ -21,7 +21,9 @@ function ProtectedRoute({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setCheckingAuth(false);
+      setTimeout(() => {
+        setCheckingAuth(false);
+      }, 500);
     });
 
     return () => unsubscribe(); // cleanup listener on unmount
