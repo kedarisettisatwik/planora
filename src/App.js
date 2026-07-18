@@ -1,18 +1,16 @@
 import React from 'react';
-import { ToastContainer } from 'react-toastify';
 import { Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Home from './pages/Home';
 import Log from './pages/Log';
 
 function App() {
   return (
     <>
-      <ToastContainer 
-      position="top-center"
-      autoClose={2000}
-      hideProgressBar={true}
-      newestOnTop={false}
-      closeOnClick={true} />
+      <Toaster
+        position="top-center"
+        reverseOrder={true}
+      />
       <Routes>
         <Route path="/" element={<Log />} />
         <Route path="/log" element={<Log />} />

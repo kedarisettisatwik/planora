@@ -1,7 +1,7 @@
 
 // import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
- import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import './Log.css';
 import login_image from '../assests/login.png';
 import signup_image from '../assests/signup.png';
@@ -90,15 +90,21 @@ function Log() {
     event.preventDefault();
 
     if (loginEmail.length == 0 || loginPassword.length == 0){
-      toast("All Fields Required *",{
-        style: { background: 'var(--toast_error)', color: '#fff',letterSpacing:'1px' },
+      toast('All fields Required !!', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
       });
       return ;
     }
 
-    toast("submitted",{
-      style: { background: 'var(--toast_success)', color: '#fff',letterSpacing:'1px' },
-    });
+    toast('Submitted Succesfully !! ', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '✅',
+        style: {"backgroundColor":"var(--toast_success)","color":"white"}
+      });
 
   }
 
