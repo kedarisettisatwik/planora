@@ -108,6 +108,55 @@ function Log() {
 
   }
 
+  const signUpSubmitForm = (event) => {
+    event.preventDefault();
+
+    if (signupName.length == 0 || signupEmail.length == 0 || signupPassword.length == 0 || signupConfirmPassword.length == 0){
+      toast('All fields Required !!', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+      return ;
+    }
+    if (signupConfirmPassword != signupPassword){
+      toast('Password confirmation failed', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+      return ;
+    }
+    toast('Submitted Succesfully !! ', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '✅',
+        style: {"backgroundColor":"var(--toast_success)","color":"white"}
+      });
+  }
+
+  const resetSubmitForm = (event) => {
+    event.preventDefault();
+
+    if (resetEmail.length == 0){
+      toast('All fields Required !!', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+      return ;
+    }
+    toast('Submitted Succesfully !! ', {
+      duration: 2000,
+      position: 'top-center',
+      icon: '✅',
+      style: {"backgroundColor":"var(--toast_success)","color":"white"}
+    });
+  }
+
   return (
     <section className='log section'>
       <main className='main'>
@@ -139,7 +188,7 @@ function Log() {
           )}
 
             {activeForm === 'signup' && (<div className='logs singUpForm'>
-              <form>
+              <form onSubmit={signUpSubmitForm}>
                   <h3>Let’s Get You Started</h3>
                   <div className='input_box'>
                     <label>Name</label>
@@ -169,14 +218,13 @@ function Log() {
             )}
 
             {activeForm === 'reset' && (<div className='logs resetForm'>
-              <form>
+              <form onSubmit={resetSubmitForm}>
                   <h3>Forgot Password ? Don't worry</h3>
                   <div className='input_box'>
                     <label>Email</label>
-                    <input type='email' placeholder='example@gmail.com' autoComplete="off"></input>
+                    <input type='email' placeholder='example@gmail.com' autoComplete="off" value={resetEmail}  onChange={(e) => setResetEmail(e.target.value)}></input>
                   </div>
-                  <input type='submit' value='Reset Password' className='submit' value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}></input>
+                  <input type='submit' value='Reset Password' className='submit'></input>
                   <p>Back to Login Page ? Click here - <span onClick={() => setActiveForm('login')}>LogIn</span></p>
               </form>
               <img src={reset_image} className='reset_image img'></img>
