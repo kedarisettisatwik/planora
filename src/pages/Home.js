@@ -78,8 +78,8 @@ function Home() {
         :
         (
           isMobile 
-            ? <MobileHome />
-            : <DesktopHome/>
+            ? <MobileHome/>
+            : <DesktopHome setLoading={setLoading} email={email}/>
         )
       }
       <div style={style1} className="loadingModal"><LoadingBtn /></div>
