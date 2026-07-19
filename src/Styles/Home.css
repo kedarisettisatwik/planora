@@ -8,6 +8,16 @@
     overflow-x: hidden;
     overflow-y: auto;
 }
+.Home .loadingModal{
+    position: absolute;
+    top:0;
+    left: 0;
+    backdrop-filter: blur(7px);
+    display: none;
+}
+.Home.loading .loadingModal{
+    display: flex;
+}
 .Home::-webkit-scrollbar{
     width: 5px;
 }

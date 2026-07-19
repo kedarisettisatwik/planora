@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { isMobile } from "react-device-detect";
 
 import '../Styles/Home.css';
 
@@ -59,7 +60,6 @@ function Home() {
   };
 
   const style1 = {
-    display: "flex",
     justifyContent: "space-around",
     alignItems: "center",
     width: "100vw",
@@ -68,28 +68,17 @@ function Home() {
   };
 
   return (
-    <section className="Home">
-      {
-        loading ? 
+      <section className={`Home ${loading ? 'loading' : ''}`}>
+      { 
+        widgetsCount == 0 ?
+        (<NoWidgets setWidgetsCount={setWidgetsCount} setDisplayName={setDisplayName} Signout={Signout} email={email} displayName={displayName} setLoading={setLoading}/>)
+        :
+        (<>
         
-        (<div style={style1}><LoadingBtn /></div>) 
-        
-        : 
-        
-        (
-
-          widgetsCount == 0 ?
-
-          (<NoWidgets setWidgetsCount={setWidgetsCount} setDisplayName={setDisplayName} Signout={Signout} email={email} displayName={displayName} setLoading={setLoading}/>)
-
-          :
-
-          (<></>)
-
-        )
-
+        </>)
       }
-    </section>
+      <div style={style1} className="loadingModal"><LoadingBtn /></div>
+      </section>
   );
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import toast from 'react-hot-toast';
 
 import '../Styles/Home.css';
@@ -10,6 +10,10 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
 
   const [name,setName] = useState(displayName);
   const [nameEditMode, setNameEditMode] = useState(false);
+
+  useEffect(() => {
+    setName(displayName);
+  }, [displayName]);
 
   const saveName = async () => {
     setLoading(true);
