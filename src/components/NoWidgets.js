@@ -44,33 +44,36 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
 
   const addFirstWidget = async (widgetType) => {
     setLoading(true);
-    if (widgetType === "DailyGoals"){
       try{
+      await updateDoc(doc(db,email,"generalDetails"),{widgetsCount: 1});
 
-        await updateDoc(doc(db,email,"generalDetails"),{widgetsCount: 1});
+      await setDoc(
+    doc(db, email, "widgets"),
+    {
+      [widgetType]: { x: 0, y: 0 }
+    },
+    { merge: true }
+  );
+    
+      toast(`${widgetType} added succesfully`, {
+        duration: 2000,
+        position: 'top-center',
+        icon: '✅',
+        style: {"backgroundColor":"var(--toast_success)","color":"white"}
+      });
+      
+      setWidgetsCount(1);
 
-        await setDoc(doc(db,email,widgetType),{x:0,y:0,count:0});
-     
-        toast(`${widgetType} added succesfully`, {
-          duration: 2000,
-          position: 'top-center',
-          icon: '✅',
-          style: {"backgroundColor":"var(--toast_success)","color":"white"}
-        });
-        
-        setWidgetsCount(1);
-
-      } catch (err){
-        console.error("Error adding widget", err);
-        toast('Error !! ', {
-          duration: 2000,
-          position: 'top-center',
-          icon: '❌',
-          style: {"backgroundColor":"var(--toast_error)","color":"white"}
-        });
-      } finally{
-        setLoading(false);
-      }
+    } catch (err){
+      console.error("Error adding widget", err);
+      toast('Error !! ', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+    } finally{
+      setLoading(false);
     }
   }
 
