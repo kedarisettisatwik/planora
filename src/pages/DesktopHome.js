@@ -16,8 +16,9 @@ const WIDGET_TYPES = [
   "Teams"
 ];
 
-function DesktopHome({ email, setLoading }) {
+function DesktopHome({ email }) {
   const [widgets, setWidgets] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!email) return;
@@ -28,20 +29,27 @@ function DesktopHome({ email, setLoading }) {
         const results = await Promise.all(
           WIDGET_TYPES.map(async (type) => {
             const snap = await getDoc(doc(db, email, type));
-            return { type, exists: snap.exists(), data: snap.exists() ? snap.data() : null };
+            if (!snap.exists()) return null;
+
+            const data = snap.data();
+            return {
+              type,
+              x: data.x,
+              y: data.y,
+              empty: data.empty
+            };
           })
         );
 
         const widgetsData = {};
-        results.forEach(({ type, exists, data }) => {
-          if (exists) {
-            widgetsData[type] = data;
+        results.forEach((result) => {
+          if (result) {
+            const { type, ...fields } = result;
+            widgetsData[type] = fields;
           }
         });
 
         setWidgets(widgetsData);
-        console.log(widgetsData);
-
       } catch (err) {
         console.error("Error fetching widgets:", err);
       } finally {
@@ -52,9 +60,21 @@ function DesktopHome({ email, setLoading }) {
     fetchWidgets();
   }, [email]);
 
+  if (loading) return <h1>Loading...</h1>;
+
   return (
     <div>
       <h1>Desktop</h1>
+      {Object.keys(widgets).length === 0 ? (
+        <p>No widgets found</p>
+      ) : (
+        Object.entries(widgets).map(([type, { x, y, empty }]) => (
+          <div key={type}>
+            <h3>{type}</h3>
+            <p>x: {x}, y: {y}, empty: {String(empty)}</p>
+          </div>
+        ))
+      )}
     </div>
   );
 }
