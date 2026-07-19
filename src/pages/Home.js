@@ -80,7 +80,7 @@ function Home() {
 
           widgetsCount == 0 ?
 
-          (<NoWidgets setWidgetsCount={setWidgetsCount} Signout={Signout} email={email} displayName={displayName}/>)
+          (<NoWidgets setWidgetsCount={setWidgetsCount} setDisplayName={setDisplayName} Signout={Signout} email={email} displayName={displayName} setLoading={setLoading}/>)
 
           :
 

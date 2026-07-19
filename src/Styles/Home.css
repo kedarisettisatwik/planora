@@ -28,20 +28,29 @@
     width:calc(100vw - 20px);
     max-width: 950px;
     border-radius: 10px;
-    padding: 20px 25px;
+    padding: 5px 20px 5px 25px;
 }
 .Home .addWidget h1{
-    font-family: "Slackey";
     font-weight: 300;
     color:var(--base_color);
     margin: 10px 0;
-    font-size: 2em;
 }
 .Home .addWidget h1 span{
     font-family: "Slackey";
     color: black;
     opacity: 0.5;
     font-size: 1em;
+}
+.Home .addWidget h1 input{
+    font-family: "Slackey";
+    font-size: 1em;
+    font-weight: 300;
+    color:var(--base_color);
+    outline: none;
+    border: none;
+}
+.Home .addWidget h1 input:focus:not([readonly]) {
+  border-bottom: 2px solid var(--base_color);
 }
 .Home .addWidget .description{
     margin: 50px 0 10px 0;
@@ -64,9 +73,26 @@
     border: 2px solid var(--base_color);
     color: var(--base_color);
 }
+.Home .addWidget div{
+    margin: 20px 0 10px 0;
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: row;
+    align-items: center;
+}
+.Home .addWidget div a{
+    margin-right: 20px;
+}
+.Home .addWidget div button{
+    background-color: var(--base_color);
+    padding: 10px;
+    color: white;
+    cursor: pointer;
+    outline: none;
+    border: none;
+    border-radius: 10px;
+}
 .Home .addWidget .exit{
-    float: right;
-    margin-top: 30px;
     padding: 10px;
     outline: none;
     border: 2px solid #ef23238f;
@@ -76,6 +102,9 @@
     cursor: pointer;
     font-weight: bold;
     transition: 0.5s;
+    position: absolute;
+    top:15px;
+    right: 20px;
 }
 .Home .addWidget .exit:hover{
     color: white;
