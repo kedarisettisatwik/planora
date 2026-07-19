@@ -41,25 +41,43 @@
     font-family: "Slackey";
     color: black;
     opacity: 0.5;
+    font-size: 1em;
 }
 .Home .addWidget .description{
-    margin: 50px 0 20px 0;
+    margin: 50px 0 10px 0;
 }
-.Home .addWidget .addBtn{
+.Home .addWidget ul{
+    list-style: none;
+}
+.Home .addWidget ul li{
+    display: inline-block;
+    margin: 10px 10px 10px 0;
+    background: whitesmoke;
     padding: 10px;
-    color: white;
-    background-color: var(--base_color);
-    border: none;
+    border-radius: 10px;
+    border: 2px solid white;
+    cursor: pointer;
+    transition: 0.5s;
+}
+.Home .addWidget ul li:hover{
+    background-color: white;
+    border: 2px solid var(--base_color);
+    color: var(--base_color);
+}
+.Home .addWidget .exit{
+    float: right;
+    margin-top: 30px;
+    padding: 10px;
     outline: none;
-    display: block;
+    border: 2px solid #ef23238f;
+    color: #ef23238f;
+    background: none;
     border-radius: 10px;
     cursor: pointer;
-    transition: 0.3s;
-    font-size: 15px;
-    letter-spacing: 0.5px;
-
-    margin-bottom: 40px;
+    font-weight: bold;
+    transition: 0.5s;
 }
-.Home .addWidget .addBtn:hover{
-    transform: scale(0.9);
+.Home .addWidget .exit:hover{
+    color: white;
+    background: #f10b0b8f;
 }
