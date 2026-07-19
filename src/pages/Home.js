@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-// import LoadingBtn from "../components/LoadingBtn";
+import '../Styles/Home.css';
+
+import LoadingBtn from "../components/LoadingBtn";
+import NoWidgets from "../components/NoWidgets";
 
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -55,17 +58,38 @@ function Home() {
     navigate('/log');
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const style1 = {
+    display: "flex",
+    justifyContent: "space-around",
+    alignItems: "center",
+    width: "100vw",
+    height: "100vh",
+    overflow: "hidden"
+  };
 
   return (
-    <div>
-      <div>Welcome, {displayName}</div>
-      <div>Email: {email}</div>
-      <div>Widgets: {widgetsCount}</div>
-      <button onClick={Signout}>Sign Out</button>
-    </div>
+    <section className="Home">
+      {
+        loading ? 
+        
+        (<div style={style1}><LoadingBtn /></div>) 
+        
+        : 
+        
+        (
+
+          widgetsCount == 0 ?
+
+          (<NoWidgets setWidgetsCount={setWidgetsCount} Signout={Signout} email={email} displayName={displayName}/>)
+
+          :
+
+          (<></>)
+
+        )
+
+      }
+    </section>
   );
 }
 
