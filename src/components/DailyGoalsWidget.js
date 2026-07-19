@@ -1,10 +1,15 @@
 
 import '../Styles/Home.css'
 
-function DailyGoalsWidget ({ key, email, x, y ,setLoading }){
+import DairyWidget from './DairyWidget';
+import NotesWidget from './NotesWidget';
+
+function DailyGoalsWidget ({ key, email, x, y ,setLoading, setPopup, setPopupContent}){
     return (
         <div className='defaultWidgetDiv'>
-            DailyGoalsWidget
+            <button onClick={() => {setPopupContent(DairyWidget);setPopup(true)} }>popup1</button>
+            <button onClick={() => {setPopupContent(NotesWidget);setPopup(true)} }>popup2</button>
+            <button onClick={() => setLoading(true)}>load</button>
         </div>
     )
 }

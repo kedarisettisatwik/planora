@@ -32,11 +32,14 @@ const WIDGET_WIDTH = 260;
 const WIDGET_HEIGHT = 220;
 const BOTTOM_PADDING = 80;
 
-function DesktopHome({ setLoading, email }) {
+function DesktopHome({ setLoading, email, setPopup, setPopupContent }) {
   const [widgets, setWidgets] = useState({}); // { DailyGoals: {x,y}, TTD: {x,y} }
   const [topZ, setTopZ] = useState(1);
   const [boardHeight, setBoardHeight] = useState(
     typeof window !== "undefined" ? window.innerHeight - 120 : 700
+  );
+  const [boardWidth, setBoardWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 300
   );
 
   const boardRef = useRef(null);
@@ -100,12 +103,17 @@ function DesktopHome({ setLoading, email }) {
 
     let x = e.clientX - board.left - offsetX;
     let y = e.clientY - board.top - offsetY + boardRef.current.scrollTop;
-    x = Math.max(-40, Math.min(board.width - WIDGET_WIDTH + 120, x));
+    x = Math.max(0, x);
     y = Math.max(0, y);
 
     setBoardHeight((h) => {
       const needed = y + WIDGET_HEIGHT + BOTTOM_PADDING;
       return needed > h ? needed : h;
+    });
+
+    setBoardWidth((w) => {
+      const needed = x + WIDGET_WIDTH + BOTTOM_PADDING; // reuse padding or add RIGHT_PADDING
+      return needed > w ? needed : w;
     });
 
     setWidgets((ws) => ({
@@ -151,12 +159,11 @@ function DesktopHome({ setLoading, email }) {
         position: "relative",
         width: "100%",
         height: "100vh",
-        overflowY: "auto",
-        overflowX: "hidden",
+        overflow:"auto",
         touchAction: "none"
       }}
     >
-      <div style={{ position: "relative", width: "100%", height: boardHeight }}>
+      <div style={{ position: "relative", height: boardHeight, width:boardWidth}}>
         {Object.entries(widgets).map(([type, pos]) => {
           const WidgetComponent = WIDGET_COMPONENTS[type];
           if (!WidgetComponent) {
@@ -189,7 +196,7 @@ function DesktopHome({ setLoading, email }) {
                   background: "rgba(0,0,0,0.15)"
                 }}
               />
-              <WidgetComponent email={email} x={pos.x} y={pos.y} />
+              <WidgetComponent email={email} x={pos.x} y={pos.y} setLoading={setLoading} setPopup={setPopup} setPopupContent={setPopupContent}/>
             </div>
           );
         })}

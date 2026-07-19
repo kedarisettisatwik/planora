@@ -7,16 +7,31 @@
     overflow-x: hidden;
     overflow-y: auto;
 }
+
 .Home .loadingModal{
     position: fixed;
     top:0;
     left: 0;
     backdrop-filter: blur(7px);
     display: none;
+    z-index: 1000;
 }
 .Home.loading .loadingModal{
     display: flex;
 }
+
+.Home .widgetModal{
+    position: fixed;
+    top:0;
+    left: 0;
+    backdrop-filter: blur(7px);
+    display: none;
+    z-index: 1000;
+}
+.Home.popup .widgetModal{
+    display: flex;
+}
+
 .Home::-webkit-scrollbar{
     width: 5px;
 }

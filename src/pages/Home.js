@@ -25,6 +25,10 @@ function Home() {
 
   const [loading, setLoading] = useState(true);
 
+  const [popup,setPopup] = useState(false);
+
+  const [popupContent, setPopupContent] = useState(null);
+
   useEffect(() => {
     const fetchUserData = async () => {
       const currentUser = auth.currentUser;
@@ -71,7 +75,7 @@ function Home() {
   };
 
   return (
-      <section className={`Home ${loading ? 'loading' : ''}`}>
+      <section className={`Home ${loading ? 'loading' : ''} ${popup ? 'popup' : ''}`}>
       { 
         widgetsCount == 0 ?
         (<NoWidgets setWidgetsCount={setWidgetsCount} setDisplayName={setDisplayName} Signout={Signout} email={email} displayName={displayName} setLoading={setLoading}/>)
@@ -79,10 +83,11 @@ function Home() {
         (
           isMobile 
             ? <MobileHome/>
-            : <DesktopHome setLoading={setLoading} email={email}/>
+            : <DesktopHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent}/>
         )
       }
       <div style={style1} className="loadingModal"><LoadingBtn /></div>
+      <div style={style1} className="widgetModal">{popupContent}</div>
       </section>
   );
 }
