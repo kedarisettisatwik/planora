@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { isMobile } from "react-device-detect";
 
+import DesktopHome from "./DesktopHome";
+import MobileHome from "./MobileHome";
+
 import '../Styles/Home.css';
 
 import LoadingBtn from "../components/LoadingBtn";
@@ -73,9 +76,11 @@ function Home() {
         widgetsCount == 0 ?
         (<NoWidgets setWidgetsCount={setWidgetsCount} setDisplayName={setDisplayName} Signout={Signout} email={email} displayName={displayName} setLoading={setLoading}/>)
         :
-        (<>
-        
-        </>)
+        (
+          isMobile 
+            ? <MobileHome />
+            : <DesktopHome/>
+        )
       }
       <div style={style1} className="loadingModal"><LoadingBtn /></div>
       </section>
