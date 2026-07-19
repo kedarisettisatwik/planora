@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/planora/static/css/main.626cde2f.css",
-    "main.js": "/planora/static/js/main.63e5a0de.js",
+    "main.css": "/planora/static/css/main.07f000b3.css",
+    "main.js": "/planora/static/js/main.80ef8f9a.js",
     "static/js/453.23351945.chunk.js": "/planora/static/js/453.23351945.chunk.js",
     "static/media/reset_password.png": "/planora/static/media/reset_password.7052e9f4207258cb8b60.png",
     "static/media/login.png": "/planora/static/media/login.4c0df477c8396e6e2a4a.png",
@@ -10,12 +10,12 @@
     "static/media/eye_show.png": "/planora/static/media/eye_show.63ce6c8f56c8bb86429f.png",
     "static/media/loading_circle.png": "/planora/static/media/loading_circle.2ff7f24af0085c9f5cef.png",
     "index.html": "/planora/index.html",
-    "main.626cde2f.css.map": "/planora/static/css/main.626cde2f.css.map",
-    "main.63e5a0de.js.map": "/planora/static/js/main.63e5a0de.js.map",
+    "main.07f000b3.css.map": "/planora/static/css/main.07f000b3.css.map",
+    "main.80ef8f9a.js.map": "/planora/static/js/main.80ef8f9a.js.map",
     "453.23351945.chunk.js.map": "/planora/static/js/453.23351945.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.626cde2f.css",
-    "static/js/main.63e5a0de.js"
+    "static/css/main.07f000b3.css",
+    "static/js/main.80ef8f9a.js"
   ]
 }
