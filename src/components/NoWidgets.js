@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import toast from 'react-hot-toast';
 
 import '../Styles/Home.css';
@@ -10,15 +10,6 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
 
   const [name,setName] = useState(displayName);
   const [nameEditMode, setNameEditMode] = useState(false);
-
-  const inputRef = useRef(null);
-
-  const focusName = () => {
-    setNameEditMode(true);
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }
 
   const saveName = async () => {
     setLoading(true);
@@ -80,11 +71,9 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
   }
 
   return (
-    <section className="addWidget">
+    <section className={`addWidget ${nameEditMode ? 'editMode' : ''}`} >
       <h1>
-        <span>Hello,</span> <br />
-        <input ref={inputRef} type="text" value={name} onChange={(e) => setName(e.target.value)} readOnly={!nameEditMode}>
-        </input>
+        <span>Hello,</span> <br /> {name}
       </h1>
 
       <p className="description">
@@ -108,16 +97,22 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
 
       <button onClick={Signout} className="exit">Log Out</button>
 
-      <div>
+      <div className="btns">
         <a href="https://github.com/kedarisettisatwik/planora" target="_blank" rel="noreferrer">
           FAQ ?
         </a>
-        <>
-        {
-          (nameEditMode) ? (<button onClick={() => saveName()}>Save Name</button>) : (<button onClick={() => focusName()}>Edit Name</button>)
-        }
-        </>
+        <button onClick={() => setNameEditMode(true)}>Edit Name</button>
       </div>
+      <section className="editNamesection">
+        <div>
+          <p style={{ fontWeight:"bold",opacity: 0.6,margin:"10px 0"}}>Change Name : </p>
+          <input type="text" placeholder="Enter New Name" value={name} onChange={(e) => setName(e.target.value)} style={{padding:"10px",borderRadius:"10px",border:"2px solid var(--base_color)",outline:"none"}}></input>
+          <p style={{margin:"20px 0"}}> 
+            <button onClick={() => {setName(displayName);setNameEditMode(false);}} style={{display:"inline-block",margin:"0 20px 0 0",backgroundColor:"white", border:"2px solid var(--base_color)",color:"var(--base_color)"}}>Cancel</button> 
+            <button onClick={() => saveName()} style={{border:"2px solid var(--base_color)"}}>Save</button>
+          </p>
+        </div>
+      </section>
     </section>
   );
 }
