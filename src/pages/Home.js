@@ -83,7 +83,7 @@ function Home() {
         (
           isMobile 
             ? <MobileHome/>
-            : <DesktopHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent}/>
+            : <DesktopHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={Signout}/>
         )
       }
       <div style={style1} className="loadingModal"><LoadingBtn /></div>

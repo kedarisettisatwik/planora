@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 
 import '../Styles/Home.css';
 
-import { doc, updateDoc, setDoc } from "firebase/firestore";
+import { doc, updateDoc, setDoc, writeBatch } from "firebase/firestore";
 import { db } from "../firebase";
 
 function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayName,setLoading }) {
@@ -11,11 +11,24 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
   const [name,setName] = useState(displayName);
   const [nameEditMode, setNameEditMode] = useState(false);
 
+  const batch = writeBatch(db);
+
   useEffect(() => {
     setName(displayName);
   }, [displayName]);
 
   const saveName = async () => {
+
+    if (name.length == 0){
+      toast('Name is empty !! ', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+      return ;
+    }
+
     setLoading(true);
     try {
       await updateDoc(doc(db, email, "generalDetails"), { displayName: name });
@@ -44,16 +57,14 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
 
   const addFirstWidget = async (widgetType) => {
     setLoading(true);
-      try{
-      await updateDoc(doc(db,email,"generalDetails"),{widgetsCount: 1});
 
-      await setDoc(
-    doc(db, email, "widgets"),
-    {
-      [widgetType]: { x: 0, y: 0 }
-    },
-    { merge: true }
-  );
+      try{
+
+      batch.update(doc(db, email, "generalDetails"), { widgetsCount: 1 });
+      batch.set(doc(db, email, "widgets"), { [widgetType]: { x: 0, y: 0 } }, { merge: true });
+      batch.set(doc(db, email, widgetType), { empty: true }, { merge: true });
+
+      await batch.commit();
     
       toast(`${widgetType} added succesfully`, {
         duration: 2000,
@@ -110,6 +121,7 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
         </a>
         <button onClick={() => setNameEditMode(true)}>Edit Name</button>
       </div>
+      <i style={{position:"absolute",bottom:"20px",opacity:"0.5"}}>Planora</i>
       <section className="editNamesection">
         <div>
           <p style={{ fontWeight:"bold",opacity: 0.6,margin:"10px 0"}}>Change Name : </p>

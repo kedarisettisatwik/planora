@@ -1,10 +1,10 @@
 
-function BookmarksWidget (){
+function BookWidget (){
     return (
         <div>
-            BookmarksWidget
+            Book Widget
         </div>
     )
 }
 
-export default BookmarksWidget;
+export default BookWidget;

@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import toast from 'react-hot-toast';
+
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
+
+import '../Styles/DesktopNav.css';
 
 import DailyGoalsWidget from "../components/DailyGoalsWidget";
 import TTDWidget from "../components/TTDWidget";
@@ -28,11 +32,32 @@ const WIDGET_COMPONENTS = {
   Teams: TeamsWidget
 };
 
+const WIDGET_DISPLAY_NAMES = {
+  DailyGoals: "Daily Goals",
+  TTD: "Things to do",
+  Dairy: "Diary",
+  Notes: "Notes",
+  Meetings: "Meetings",
+  Events: "Events",
+  Bookmarks: "Bookmarks",
+  TrackExpenses: "Track Expenses",
+  Book: "Books",
+  TrackProject: "Track Project",
+  Teams: "Teams"
+};
+
 const WIDGET_WIDTH = 260;
 const WIDGET_HEIGHT = 220;
 const BOTTOM_PADDING = 80;
 
-function DesktopHome({ setLoading, email, setPopup, setPopupContent }) {
+function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) {
+
+  const [userName, setUserName] = useState("O");
+
+  const [widgetsChanged,setwidgetsChanged] = useState(false); 
+
+  const [navOpen, setNavOpen] = useState(false);
+
   const [widgets, setWidgets] = useState({}); // { DailyGoals: {x,y}, TTD: {x,y} }
   const [topZ, setTopZ] = useState(1);
   const [boardHeight, setBoardHeight] = useState(
@@ -54,6 +79,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent }) {
       try {
         const snap = await getDoc(doc(db, email, "widgets"));
         const data = snap.exists() ? snap.data() : {};
+
         // give each widget a z-index locally
         const withZ = {};
         Object.entries(data).forEach(([type, pos], i) => {
@@ -61,6 +87,13 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent }) {
         });
         setWidgets(withZ);
         setTopZ(Object.keys(withZ).length + 1);
+
+        const getName = await getDoc(doc(db,email,"generalDetails"));
+
+        if (getName.exists()) {
+          setUserName(getName.data().displayName || "O");
+        }
+
       } catch (err) {
         console.error("Error fetching widgets:", err);
       } finally {
@@ -116,10 +149,17 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent }) {
       return needed > w ? needed : w;
     });
 
-    setWidgets((ws) => ({
-      ...ws,
-      [type]: { ...ws[type], x, y }
-    }));
+    setWidgets((ws) => {
+      const current = ws[type];
+      // only flag as changed if position actually moved
+      if (current && (current.x !== x || current.y !== y)) {
+        setwidgetsChanged(true);
+      }
+      return {
+        ...ws,
+        [type]: { ...current, x, y }
+      };
+    });
 
     const el = boardRef.current;
     const pointerYInBoard = e.clientY - board.top;
@@ -131,21 +171,67 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent }) {
     }
   };
 
-  // ---- persist on drop ----
-  const onPointerUp = async () => {
-    if (!dragState.current) return;
-    const { type } = dragState.current;
-    const { x, y } = widgets[type];
-    dragState.current = null;
-
+  const saveWidgets = async () => {
+    setLoading(true);
     try {
+      await setDoc(doc(db, email, "widgets"), widgets, { merge: true });
+      console.log("Widgets saved!");
+      setwidgetsChanged(false);
+    } catch (err) {
+      console.error("Error saving widgets:", err);
+    }finally{
+      setLoading(false);
+    }
+  };
+
+  const onPointerUp = () => {
+    if (!dragState.current) return;
+    dragState.current = null;
+  };
+
+  const handleAddWidget = async (type) => {
+    setLoading(true);
+
+     try {
       await setDoc(
-        doc(db, email, "widgets"),
-        { [type]: { x, y } },
+        doc(db, email, type),
+        { empty: true },
         { merge: true }
       );
+
+      await updateDoc(
+        doc(db,email,"widgets"),
+        {
+          [type]: { x: boardWidth / 2 - WIDGET_WIDTH / 2, y: boardHeight / 2 - WIDGET_HEIGHT / 2 }
+        }
+      )
+
+      toast('Added !! ', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '✅',
+        style: {"backgroundColor":"var(--toast_success)","color":"white"}
+      });
+
+      setWidgets((prev) => ({
+        ...prev,
+        [type]: {
+          x: boardWidth / 2 - WIDGET_WIDTH / 2,
+          y: boardHeight / 2 - WIDGET_HEIGHT / 2
+        }
+      }));
+
     } catch (err) {
-      console.error("Error saving widget position:", err);
+      console.error("Error adding widget:", err);
+      toast('Error !! ', {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -162,6 +248,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent }) {
         overflow:"auto",
         touchAction: "none"
       }}
+      className="boardDesktop"
     >
       <div style={{ position: "relative", height: boardHeight, width:boardWidth}}>
         {Object.entries(widgets).map(([type, pos]) => {
@@ -201,6 +288,35 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent }) {
           );
         })}
       </div>
+      <nav className={`DesktopNav ${navOpen ? 'open' : ''}`}>
+
+          <div className="menuDetails">
+              <h3>Planora</h3>
+              <span style={{ margin: "30px 0 10px 0",fontSize: "17px"}}>Add Widgets </span>
+              
+              <ul>
+                {Object.keys(WIDGET_COMPONENTS)
+                  .filter((type) => !(type in widgets))
+                  .map((type) => (
+                    <li key={type} onClick={() => handleAddWidget(type)}>
+                      {WIDGET_DISPLAY_NAMES[type]}
+                    </li>
+                  ))}
+              </ul>
+
+              <p><a href="https://github.com/kedarisettisatwik/planora" target="_blank">FAQ ?</a></p>
+              <i className="nameChange">change Name</i>
+              <i className="out" onClick={() => {signOut()}}>Log Out</i>
+          </div>
+
+          <div className="nameEmail">
+                <label style={{display:"block"}}>{userName}</label>
+                <label style={{display:"block"}}>{email}</label>
+          </div>
+          <div className="menuIcon" onClick={() => setNavOpen(prev => !prev)}></div>
+          <div className="UserIcon">{userName[0]}</div>
+      </nav>
+      <button className={`savePositions ${widgetsChanged ? 'active' : ''} `} onClick={() => saveWidgets()}>save</button>
     </div>
   );
 }

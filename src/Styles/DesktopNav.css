@@ -1,0 +1,194 @@
+.DesktopNav{
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 55px;
+    background-color: white;
+    box-shadow: 10px 0 10px rgb(0, 0, 0, 0.05);
+    transition: 0.5s;
+    overflow: hidden;
+    z-index: 990;
+}
+
+.DesktopNav.open{
+    width: 250px;
+}
+.boardDesktop::-webkit-scrollbar{
+    width: 5px;
+}
+.boardDesktop::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.boardDesktop::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+.boardDesktop::-webkit-scrollbar:horizontal{
+    height: 5px;
+}
+.boardDesktop::-webkit-scrollbar-track:horizontal {
+    background: white;
+    border-radius: 6px;
+}
+.boardDesktop::-webkit-scrollbar-thumb:horizontal {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+.DesktopNav .menuIcon{
+    width: 25px;
+    height: 25px;
+    border: 1px solid black;
+    border-radius: 3px;
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    opacity: 0.7;
+    overflow: hidden;
+    cursor: pointer;
+}
+.DesktopNav .menuIcon::before{
+    content: '';
+    position: absolute;
+    height: 25px;
+    width: 1px;
+    background: black;
+    opacity: 1;
+    left:6px;
+    transition: 0.3s;
+}
+.DesktopNav .menuIcon:hover::before{
+    width: 6px;
+    left: 0;
+}
+.DesktopNav .UserIcon{
+    position: absolute;
+    bottom: 15px;
+    left: 12px;
+    width:35px;
+    height: 35px;
+    background-color: var(--base_color);
+    border-radius: 50%;
+    color: white;
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 35px;
+}
+.DesktopNav .menuDetails {
+    width: 250px;
+    height: 100%;
+    transform: translateX(-100%);
+    transition:0.5s;
+    opacity: 0.3;
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 0 15px;
+    padding-bottom: 70px;
+    overflow: hidden;
+    overflow-y: auto;
+}
+.DesktopNav .menuDetails::-webkit-scrollbar{
+    width: 5px;
+}
+.DesktopNav .menuDetails::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.DesktopNav .menuDetails::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.5);
+    border-radius: 6px;
+}
+.DesktopNav.open .menuDetails{
+    opacity: 1;
+    transform: translateX(0%);
+}
+.DesktopNav .menuDetails h3{
+    font-family: "Slackey";
+    font-weight: 300;
+    color:var(--base_color);
+    font-size: 25px;
+    margin: 18px 0 0 0px;
+}
+.DesktopNav .nameEmail {
+    position: absolute;
+    bottom:0;
+    left:0;
+    font-size: 15px;
+    height: 60px;
+    width: 100%;
+    color: rgb(0,0,0,0.7);
+    background-color: white;
+    padding: 10px 0 0 60px;
+    border-top: 1px solid rgb(0,0,0,0.2);
+}
+.DesktopNav .menuDetails ul{
+list-style: none;
+padding-bottom: 10px;
+border-bottom: 1px dashed rgb(0,0,0,0.2);
+width: 100%;
+margin-bottom: 20px;
+}
+.DesktopNav .menuDetails ul li{
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    position: relative;
+    color: black;
+    transition: 0.3s;
+}
+.DesktopNav .menuDetails ul li:hover{
+    color: var(--base_color);
+}
+.DesktopNav .menuDetails p{
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px dashed rgb(0, 0, 0, 0.2);
+    width: 100%;
+}
+.DesktopNav .menuDetails i.nameChange{
+    font-style: normal;
+    padding: 10px;
+    cursor: pointer;
+    border: 2px solid var(--base_color);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: var(--base_color);
+    font-size: 13px;
+}
+
+.DesktopNav .menuDetails i.out{
+    font-style: normal;
+    padding: 10px;
+    cursor: pointer;
+    background-color: var(--toast_error);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: white;
+    font-weight: bold;
+    font-size: 13px;
+}
+.boardDesktop .savePositions{
+    padding: 5px;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    position: fixed;
+    top:10px;
+    right: 10px;
+    z-index: 990;
+    border-radius:5px;
+    background-color: var(--base_color);
+    color: white;
+    font-size: 15px;
+    display: none;
+} 
+.boardDesktop .savePositions.active{
+    display: block;
+}
