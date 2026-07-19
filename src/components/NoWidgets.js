@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 
 import '../Styles/Home.css';
 
-import { doc, updateDoc  } from "firebase/firestore";
+import { doc, updateDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayName,setLoading }) {
@@ -23,8 +23,7 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
   const saveName = async () => {
     setLoading(true);
     try {
-      const userDocRef = doc(db, email, "generalDetails");
-      await updateDoc(userDocRef, { displayName: name });
+      await updateDoc(doc(db, email, "generalDetails"), { displayName: name });
       setDisplayName(name); // update parent state
       console.log("Display name updated in Firestore!");
 
@@ -34,7 +33,6 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
         icon: '✅',
         style: {"backgroundColor":"var(--toast_success)","color":"white"}
       });
-      setLoading(false);
     } catch (err) {
       console.error("Error updating display name:", err);
       toast('Error !! ', {
@@ -43,9 +41,42 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
         icon: '❌',
         style: {"backgroundColor":"var(--toast_error)","color":"white"}
       });
+    } finally{
       setLoading(false);
     }
     setNameEditMode(false);
+  }
+
+  const addFirstWidget = async (widgetType) => {
+    setLoading(true);
+    if (widgetType === "DailyGoals"){
+      try{
+
+        await updateDoc(doc(db,email,"generalDetails"),{widgetsCount: 1});
+
+        await setDoc(doc(db,email,widgetType),{x:0,y:0,count:0});
+     
+        toast(`${widgetType} added succesfully`, {
+          duration: 2000,
+          position: 'top-center',
+          icon: '✅',
+          style: {"backgroundColor":"var(--toast_success)","color":"white"}
+        });
+        
+        setWidgetsCount(1);
+
+      } catch (err){
+        console.error("Error adding widget", err);
+        toast('Error !! ', {
+          duration: 2000,
+          position: 'top-center',
+          icon: '❌',
+          style: {"backgroundColor":"var(--toast_error)","color":"white"}
+        });
+      } finally{
+        setLoading(false);
+      }
+    }
   }
 
   return (
@@ -62,17 +93,17 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
       </p>
 
       <ul>
-        <li>Daily Goals</li>
-        <li>Things to Do</li>
-        <li>Dairy</li>
-        <li>Sticky Notes</li>
-        <li>Meetings</li>
-        <li>Events / Reminder</li>
-        <li>Bookmarks</li>
-        <li>Track Expenses</li>
-        <li>Book Library</li>
-        <li>Track Project</li>
-        <li>Teams</li>
+        <li onClick={() => addFirstWidget("DailyGoals")}>Daily Goals</li>
+        <li onClick={() => addFirstWidget("TTD")}>Things to Do</li>
+        <li onClick={() => addFirstWidget("Dairy")}>Dairy</li>
+        <li onClick={() => addFirstWidget("Notes")}>Sticky Notes</li>
+        <li onClick={() => addFirstWidget("Meetings")}>Meetings</li>
+        <li onClick={() => addFirstWidget("Events")}>Events / Reminder</li>
+        <li onClick={() => addFirstWidget("Bookmarks")}>Bookmarks</li>
+        <li onClick={() => addFirstWidget("TrackExpenses")}>Track Expenses</li>
+        <li onClick={() => addFirstWidget("Book")}>Book Library</li>
+        <li onClick={() => addFirstWidget("TrackProject")}>Track Project</li>
+        <li onClick={() => addFirstWidget("Teams")}>Teams</li>
       </ul>
 
       <button onClick={Signout} className="exit">Log Out</button>
