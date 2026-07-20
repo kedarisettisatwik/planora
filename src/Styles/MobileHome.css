@@ -1,0 +1,60 @@
+.MobileHome{
+    width:100vw;
+    height:100dvh;
+    overflow: hidden;
+}
+.MobileHome .DesktopNav{
+    right: 0;
+    transform: translateX(100%);
+    box-shadow: 0px 0 0px rgb(0,0,0,0);
+    transition: 0.5s;
+}
+.MobileHome.active .DesktopNav{
+    box-shadow: -10px 0 10px rgb(0,0,0,0.05);
+    transform: translateX(0%);
+}
+.MobileHome .HomeMenuIcon{
+    width: 25px;
+    height: 25px;
+    border: 1px solid black;
+    border-radius: 3px;
+    position: fixed;
+    top: 20px;
+    right: 10px;
+    opacity: 0.7;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 980;
+}
+.MobileHome .HomeMenuIcon::before{
+    content: '';
+    position: absolute;
+    height: 25px;
+    width: 6px;
+    background: black;
+    opacity: 1;
+    left:0px;
+    transition: 0.3s;
+}
+.DesktopNav .menuIcon1{
+    width: 25px;
+    height: 25px;
+    border: 1px solid black;
+    border-radius: 3px;
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    opacity: 0.7;
+    overflow: hidden;
+    cursor: pointer;
+}
+.MobileHome .menuIcon1::before{
+    content: '';
+    position: absolute;
+    height: 25px;
+    width: 6px;
+    background: black;
+    opacity: 1;
+    left:0px;
+    transition: 0.3s;
+}

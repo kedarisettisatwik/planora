@@ -288,7 +288,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
           );
         })}
       </div>
-      <nav className={`DesktopNav ${navOpen ? 'open' : ''}`}>
+      <nav className={`DesktopNav desk ${navOpen ? 'open' : ''}`}>
 
           <div className="menuDetails">
               <h3>Planora</h3>

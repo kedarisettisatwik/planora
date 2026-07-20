@@ -17,8 +17,6 @@ import { auth, db } from "../firebase";
 function Home() {
   const navigate = useNavigate();
 
-  const [displayName, setDisplayName] = useState("");
-  
   const [email, setEmail] = useState("");
 
   const [widgetsCount, setWidgetsCount] = useState(0);
@@ -43,10 +41,8 @@ function Home() {
 
         if (userSnap.exists()) {
           const data = userSnap.data();
-          setDisplayName(data.displayName || currentUser.displayName || "");
           setWidgetsCount(data.widgetsCount || 0);
         } else {
-          setDisplayName(currentUser.displayName || "");
           setWidgetsCount(0);
         }
 
@@ -78,12 +74,12 @@ function Home() {
       <section className={`Home ${loading ? 'loading' : ''} ${popup ? 'popup' : ''}`}>
       { 
         widgetsCount == 0 ?
-        (<NoWidgets setWidgetsCount={setWidgetsCount} setDisplayName={setDisplayName} Signout={Signout} email={email} displayName={displayName} setLoading={setLoading}/>)
+        (<NoWidgets setWidgetsCount={setWidgetsCount} Signout={Signout} email={email} setLoading={setLoading}/>)
         :
         (
           isMobile 
-            ? <MobileHome/>
-            : <DesktopHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={Signout}/>
+            ? <MobileHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={Signout} />
+            : <MobileHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={Signout}/>
         )
       }
       <div style={style1} className="loadingModal"><LoadingBtn /></div>

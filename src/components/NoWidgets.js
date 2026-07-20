@@ -1,21 +1,39 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import toast from 'react-hot-toast';
 
 import '../Styles/Home.css';
 
-import { doc, updateDoc, setDoc, writeBatch } from "firebase/firestore";
+import { doc, updateDoc, setDoc, getDoc, writeBatch } from "firebase/firestore";
 import { db } from "../firebase";
 
-function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayName,setLoading }) {
+function NoWidgets({ setWidgetsCount, Signout, email, setLoading }) {
 
-  const [name,setName] = useState(displayName);
+  const [name, setName] = useState("");
   const [nameEditMode, setNameEditMode] = useState(false);
 
   const batch = writeBatch(db);
 
   useEffect(() => {
-    setName(displayName);
-  }, [displayName]);
+    if (!email) return;
+
+    const fetchDisplayName = async () => {
+      setLoading(true);
+      try {
+        const userDocRef = doc(db, email, "generalDetails");
+        const userSnap = await getDoc(userDocRef);
+
+        if (userSnap.exists()) {
+          setName(userSnap.data().displayName || "");
+        }
+      } catch (err) {
+        console.error("Error fetching display name:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDisplayName();
+  }, [email]);
 
   const saveName = async () => {
 
@@ -32,7 +50,6 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
     setLoading(true);
     try {
       await updateDoc(doc(db, email, "generalDetails"), { displayName: name });
-      setDisplayName(name); // update parent state
       console.log("Display name updated in Firestore!");
 
       toast('Name Changed !! ', {
@@ -60,7 +77,7 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
 
       try{
 
-      batch.update(doc(db, email, "generalDetails"), { widgetsCount: 1 });
+      batch.update(doc(db, email, "generalDetails"), { widgetsCount: 1,Homepage:widgetType});
       batch.set(doc(db, email, "widgets"), { [widgetType]: { x: 0, y: 0 } }, { merge: true });
       batch.set(doc(db, email, widgetType), { empty: true }, { merge: true });
 
@@ -127,7 +144,7 @@ function NoWidgets({ setWidgetsCount, setDisplayName, Signout, email, displayNam
           <p style={{ fontWeight:"bold",opacity: 0.6,margin:"10px 0"}}>Change Name : </p>
           <input type="text" placeholder="Enter New Name" value={name} onChange={(e) => setName(e.target.value)} style={{padding:"10px",borderRadius:"10px",border:"2px solid var(--base_color)",outline:"none"}}></input>
           <p style={{margin:"20px 0"}}> 
-            <button onClick={() => {setName(displayName);setNameEditMode(false);}} style={{display:"inline-block",margin:"0 20px 0 0",backgroundColor:"white", border:"2px solid var(--base_color)",color:"var(--base_color)"}}>Cancel</button> 
+            <button onClick={() => {setNameEditMode(false);}} style={{display:"inline-block",margin:"0 20px 0 0",backgroundColor:"white", border:"2px solid var(--base_color)",color:"var(--base_color)"}}>Cancel</button> 
             <button onClick={() => saveName()} style={{border:"2px solid var(--base_color)"}}>Save</button>
           </p>
         </div>
