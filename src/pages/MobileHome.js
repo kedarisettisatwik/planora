@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 
 import '../Styles/MobileHome.css'
@@ -85,6 +85,15 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
         fetchData();
     }, [email]);
 
+    const sectionRef = useRef(null);
+
+    useEffect(() => {
+        const section = sectionRef.current;
+        if (section) {
+        section.scrollTop = section.scrollHeight;
+        }
+    }, []);
+
     const handleAddWidget = async (type) => {
         setLoading(true);
 
@@ -134,41 +143,45 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
     return(
         <section className={`MobileHome ${navOpen ? 'active' : ''}`} >
 
-            <RenderComponent/>
+            <RenderComponent setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={signOut} />
 
-            <div className="HomeMenuIcon" onClick={() => setNavOpen(prev => !prev)}></div>
+            <div className='menuBtn' onClick={() => setNavOpen(prev => !prev)}>
+                <div className="HomeMenuIcon"></div>
+            </div>
 
-            <nav className="DesktopNav open">
-                <div className="menuDetails">
+            <nav className="DesktopNav open mobile">
+                <div className="menuDetails" ref={sectionRef}>
                     <h3>Planora</h3>
-                    <span style={{ margin: "15px 0 10px 0",fontSize: "17px",paddingTop:"20px",width:"100%"}}>Go to </span>
-                    <ul>
-                        {Object.keys(WIDGET_COMPONENTS)
-                            .filter((type) => (type in widgets))
-                            .map((type) => (
-                                <li key={type} onClick={() => setRenderComponent(() => WIDGET_COMPONENTS[type])}>{WIDGET_DISPLAY_NAMES[type]}</li>
-                            ))}
-                    </ul>
-                    <span style={{ margin: "0px 0 10px 0",fontSize: "17px",width:"100%"}}>Add Widgets </span>
 
-                    <ul>
+                    <p style={{marginTop:"15px"}}><a href="https://github.com/kedarisettisatwik/planora" target="_blank">FAQ ?</a></p>
+                    <i className="nameChange">change Name</i>
+                    <i className="out" onClick={() => {signOut()}}>Log Out</i>
+
+                    <span style={{ margin: "0px 0 10px 0",fontSize: "17px",width:"100%", paddingTop:"20px",borderTop:"1px dashed rgb(0, 0, 0, 0.2)"}}>Add Widgets </span>
+
+                    <ul style={{marginBottom:"5px"}}>
                         {Object.keys(WIDGET_COMPONENTS)
                             .filter((type) => !(type in widgets))
                             .map((type) => (
                                 <li key={type} onClick={() => handleAddWidget(type)}>{WIDGET_DISPLAY_NAMES[type]}</li>
                             ))}
                     </ul>
-
-                    <p><a href="https://github.com/kedarisettisatwik/planora" target="_blank">FAQ ?</a></p>
-                    <i className="nameChange">change Name</i>
-                    <i className="out" onClick={() => {signOut()}}>Log Out</i>
+                    
+                    <span style={{ margin: "0px 0 10px 0",fontSize: "17px",paddingTop:"20px",width:"100%"}}>Go to </span>
+                    <ul style={{border:"none",marginBottom:"0",paddingBottom:"0"}}>
+                        {Object.keys(WIDGET_COMPONENTS)
+                            .filter((type) => (type in widgets))
+                            .map((type) => (
+                                <li key={type} onClick={() => setRenderComponent(() => WIDGET_COMPONENTS[type])}>{WIDGET_DISPLAY_NAMES[type]}</li>
+                            ))}
+                    </ul>
+                    
                 </div>
 
                 <div className="nameEmail">
                         <label style={{display:"block"}}>{userName}</label>
                         <label style={{display:"block"}}>{email}</label>
                 </div>
-                <div className="menuIcon1" onClick={() => setNavOpen(prev => !prev)}></div>
                 <div className="UserIcon">{userName[0]}</div>
             </nav>
 

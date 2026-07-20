@@ -4,7 +4,7 @@ import '../Styles/Home.css'
 import DairyWidget from './DairyWidget';
 import NotesWidget from './NotesWidget';
 
-function DailyGoalsWidget ({ key, email, x, y ,setLoading, setPopup, setPopupContent}){
+function DailyGoalsWidget ({ key, email, x, y ,setLoading, setPopup, setPopupContent,signOut}){
     return (
         <div className='defaultWidgetDiv'>
             <button onClick={() => {setPopupContent(DairyWidget);setPopup(true)} }>popup1</button>
