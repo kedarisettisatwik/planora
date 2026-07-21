@@ -145,19 +145,24 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
 
             <RenderComponent setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={signOut} />
 
-            <div className='menuBtn' onClick={() => setNavOpen(prev => !prev)}>
-                <div className="HomeMenuIcon"></div>
+            <div className='MenuBar'>
+                <ul style={{border:"none",marginBottom:"0",paddingBottom:"0"}}>
+                    {Object.keys(WIDGET_COMPONENTS)
+                        .filter((type) => (type in widgets))
+                        .map((type) => (
+                            <li key={type} onClick={() => setRenderComponent(() => WIDGET_COMPONENTS[type])}>{WIDGET_DISPLAY_NAMES[type]}</li>
+                        ))}
+                </ul> 
+                <div className='menuBtn' onClick={() => setNavOpen(prev => !prev)}>
+                    <div className="HomeMenuIcon"></div>
+                </div>
             </div>
 
             <nav className="DesktopNav open mobile">
                 <div className="menuDetails" ref={sectionRef}>
                     <h3>Planora</h3>
 
-                    <p style={{marginTop:"15px"}}><a href="https://github.com/kedarisettisatwik/planora" target="_blank">FAQ ?</a></p>
-                    <i className="nameChange">change Name</i>
-                    <i className="out" onClick={() => {signOut()}}>Log Out</i>
-
-                    <span style={{ margin: "0px 0 10px 0",fontSize: "17px",width:"100%", paddingTop:"20px",borderTop:"1px dashed rgb(0, 0, 0, 0.2)"}}>Add Widgets </span>
+                    <span style={{ margin: "0px 0 10px 0",fontSize: "17px",width:"100%", paddingTop:"20px"}}>Add Widgets </span>
 
                     <ul style={{marginBottom:"5px"}}>
                         {Object.keys(WIDGET_COMPONENTS)
@@ -167,15 +172,10 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
                             ))}
                     </ul>
                     
-                    <span style={{ margin: "0px 0 10px 0",fontSize: "17px",paddingTop:"20px",width:"100%"}}>Go to </span>
-                    <ul style={{border:"none",marginBottom:"0",paddingBottom:"0"}}>
-                        {Object.keys(WIDGET_COMPONENTS)
-                            .filter((type) => (type in widgets))
-                            .map((type) => (
-                                <li key={type} onClick={() => setRenderComponent(() => WIDGET_COMPONENTS[type])}>{WIDGET_DISPLAY_NAMES[type]}</li>
-                            ))}
-                    </ul>
-                    
+                    <p style={{marginTop:"15px"}}><a href="https://github.com/kedarisettisatwik/planora" target="_blank">FAQ ?</a></p>
+                    <i className="nameChange">change Name</i>
+                    <i className="out" onClick={() => {signOut()}}>Log Out</i>
+
                 </div>
 
                 <div className="nameEmail">
@@ -183,6 +183,10 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
                         <label style={{display:"block"}}>{email}</label>
                 </div>
                 <div className="UserIcon">{userName[0]}</div>
+                
+                <div className='sideClose' onClick={() => setNavOpen(false)}>
+                        <i className="fas fa-chevron-right"></i>
+                </div>
             </nav>
 
         </section>

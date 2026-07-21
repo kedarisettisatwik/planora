@@ -8,6 +8,7 @@
     transform: translateX(100%);
     box-shadow: 0px 0 0px rgb(0,0,0,0);
     transition: 0.5s;
+    overflow: visible;
 }
 .MobileHome.active .DesktopNav.mobile{
     box-shadow: -10px 0 10px rgb(0,0,0,0.05);
@@ -15,26 +16,23 @@
 }
 .MobileHome .menuBtn{
     position: fixed;
-    bottom: 10px;
-    right: 10px;
+    bottom: 3px;
+    right: 0px;
     cursor: pointer;
-    z-index: 980;    
+    z-index: 980;
     width: 45px;
     height: 45px;
-    background-color: var(--base_color);
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     transition: 0.5s;
-}
-.MobileHome.active .menuBtn{
-    transform: translateX(-250px);
+    background-color: white;
 }
 .MobileHome .HomeMenuIcon{
     width: 25px;
     height: 25px;
-    border: 1px solid white;
+    border: 1px solid black;
     border-radius: 3px;
     overflow: hidden;
     position: relative;
@@ -45,8 +43,72 @@
     position: absolute;
     height: 25px;
     width: 6px;
-    background: white;
+    background: black;
     opacity: 1;
     left:0px;
     transition: 0.3s;
+}
+.MobileHome .MenuBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 50px;
+    overflow: hidden;
+    overflow-x: auto;
+    background-color: white;
+    box-shadow: 0 -10px 20px rgb(0,0,0,0.02);
+}
+.MobileHome .MenuBar::-webkit-scrollbar{
+    height: 0px;
+}
+.MobileHome .MenuBar::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.MobileHome .MenuBar::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #6a5acd, #00bfff);
+    border-radius: 6px;
+}
+.MobileHome .MenuBar ul{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    list-style:none;
+    height: 50px;
+}
+.MobileHome .MenuBar ul::after {
+    content: "";
+    display: block;   /* make it a flex child */
+    width: 70px;     /* reserve 100px space */
+    height: 1px;      /* minimal height so it renders */
+    flex-shrink: 0; 
+}
+.MobileHome .MenuBar ul li{
+    white-space: nowrap;   /* keeps text on one line */
+    margin: 0 10px;
+    padding: 10px;
+    cursor: pointer;
+    flex: 0 0 auto;        /* prevents shrinking, allows auto width */
+    overflow: visible;     /* let content show fully */
+    text-overflow: unset;
+}
+.MobileHome .sideClose{
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    opacity: 0.7;
+    cursor: pointer;
+}
+.MobileHome.active .sideClose{
+    display: flex;
 }
