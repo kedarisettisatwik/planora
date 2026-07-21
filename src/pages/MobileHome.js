@@ -52,6 +52,8 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
     const [userName, setUserName] = useState("O");
     const [homeWidget, setHomeWidget] = useState(null);
     const [widgets, setWidgets] = useState({});
+    const [activeWidget, setActiveWidget] = useState(null);
+
     const EmptyWidget = () => null;
     const [RenderComponent, setRenderComponent] = useState(() => EmptyWidget);
 
@@ -140,6 +142,10 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
         }
     };
 
+    const changeHomeWidget = (e) => {
+        console.log(e.target.value);
+    }
+
     return(
         <section className={`MobileHome ${navOpen ? 'active' : ''}`} >
 
@@ -150,7 +156,13 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
                     {Object.keys(WIDGET_COMPONENTS)
                         .filter((type) => (type in widgets))
                         .map((type) => (
-                            <li key={type} onClick={() => setRenderComponent(() => WIDGET_COMPONENTS[type])}>{WIDGET_DISPLAY_NAMES[type]}</li>
+                            <li key={type} onClick={() => {
+                                setRenderComponent(() => WIDGET_COMPONENTS[type]);
+                                setActiveWidget(type);   // track active widget
+                                }}
+                                className={activeWidget === type ? "activeWidget" : ""}>
+                                    {WIDGET_DISPLAY_NAMES[type]}
+                            </li>
                         ))}
                 </ul> 
                 <div className='menuBtn' onClick={() => setNavOpen(prev => !prev)}>
@@ -171,8 +183,23 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
                                 <li key={type} onClick={() => handleAddWidget(type)}>{WIDGET_DISPLAY_NAMES[type]}</li>
                             ))}
                     </ul>
+
+                    <span style={{ margin: "0px 0 10px 0",fontSize: "15px",width:"100%", paddingTop:"20px"}}>Home Page : </span>
+
+                    <select value={WIDGET_DISPLAY_NAMES[homeWidget] || ""} onChange={(e) => changeHomeWidget(e)}>
+                        {Object.keys(WIDGET_COMPONENTS)
+                            .filter((type) => (type in widgets))
+                            .map((type) => (
+                                <option key={type} value={type}>{WIDGET_DISPLAY_NAMES[type]}</option>
+                        ))}
+                    </select>
+
+                    <p style={{paddingTop:"20px",borderTop:"1px dashed rgb(0, 0, 0, 0.2)",cursor:"pointer",opacity:"0.6"}} onClick={() => window.location.reload()}>
+                        Refresh Data<i className="fas fa-sync" style={{display:"inline-block",marginLeft:"10px"}}></i>
+                    </p>
                     
-                    <p style={{marginTop:"15px"}}><a href="https://github.com/kedarisettisatwik/planora" target="_blank">FAQ ?</a></p>
+                    <p><a href="https://github.com/kedarisettisatwik/planora" target="_blank">FAQ ?</a></p>
+                    
                     <i className="nameChange">change Name</i>
                     <i className="out" onClick={() => {signOut()}}>Log Out</i>
 

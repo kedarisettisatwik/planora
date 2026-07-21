@@ -20,7 +20,7 @@
     right: 0px;
     cursor: pointer;
     z-index: 980;
-    width: 45px;
+    width: 60px;
     height: 45px;
     border-radius: 50%;
     display: flex;
@@ -94,6 +94,10 @@
     overflow: visible;     /* let content show fully */
     text-overflow: unset;
 }
+.MobileHome .MenuBar ul li.activeWidget{
+    color: var(--base_color);
+    font-weight: bold;
+}
 .MobileHome .sideClose{
     position: absolute;
     top: 50%;
@@ -111,4 +115,13 @@
 }
 .MobileHome.active .sideClose{
     display: flex;
+}
+.MobileHome .mobile select{
+    margin: 10px 0 20px 0;
+    padding: 10px 5px;
+    outline: none;
+    border: 2px solid var(--base_color);
+    border-radius: 10px;
+    width: 150px;
+    cursor: pointer;
 }
