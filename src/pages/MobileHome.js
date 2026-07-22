@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 import '../Styles/MobileHome.css'
@@ -14,6 +14,8 @@ import TrackExpensesWidget from "../components/TrackExpensesWidget";
 import BookWidget from "../components/BookWidget";
 import TrackProjectWidget from "../components/TrackProjectWidget";
 import TeamsWidget from "../components/TeamsWidget";
+import FormsWidget from '../components/FormsWidget';
+import SchedulesWidget from '../components/SchedulesWidget';
 
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
@@ -29,7 +31,9 @@ const WIDGET_COMPONENTS = {
   TrackExpenses: TrackExpensesWidget,
   Book: BookWidget,
   TrackProject: TrackProjectWidget,
-  Teams: TeamsWidget
+  Teams: TeamsWidget,
+  Forms:FormsWidget,
+  Schedules: SchedulesWidget
 };
 
 const WIDGET_DISPLAY_NAMES = {
@@ -43,7 +47,9 @@ const WIDGET_DISPLAY_NAMES = {
   TrackExpenses: "Track Expenses",
   Book: "Books",
   TrackProject: "Track Project",
-  Teams: "Teams"
+  Teams: "Teams",
+  Forms:"Forms",
+  Schedules:"Schedules"
 };
 
 function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
@@ -86,15 +92,6 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
 
         fetchData();
     }, [email]);
-
-    const sectionRef = useRef(null);
-
-    useEffect(() => {
-        const section = sectionRef.current;
-        if (section) {
-        section.scrollTop = section.scrollHeight;
-        }
-    }, []);
 
     const handleAddWidget = async (type) => {
         setLoading(true);
@@ -142,9 +139,26 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
         }
     };
 
-    const changeHomeWidget = (e) => {
-        console.log(e.target.value);
-    }
+    const changeHomeWidget = async (e) => {
+        const type = e.target.value;
+
+        setHomeWidget(type);
+        setRenderComponent(() => WIDGET_COMPONENTS[type] || EmptyWidget);
+
+        try {
+            await updateDoc(doc(db, email, "generalDetails"), {
+                Homepage: type
+            });
+        } catch (err) {
+            console.error("Error updating home widget:", err);
+            toast('Error !! ', {
+                duration: 2000,
+                position: 'top-center',
+                icon: '❌',
+                style: {"backgroundColor":"var(--toast_error)","color":"white"}
+            });
+        }
+    };
 
     return(
         <section className={`MobileHome ${navOpen ? 'active' : ''}`} >
@@ -171,7 +185,7 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
             </div>
 
             <nav className="DesktopNav open mobile">
-                <div className="menuDetails" ref={sectionRef}>
+                <div className="menuDetails">
                     <h3>Planora</h3>
 
                     <span style={{ margin: "0px 0 10px 0",fontSize: "17px",width:"100%", paddingTop:"20px"}}>Add Widgets </span>
@@ -186,7 +200,7 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
 
                     <span style={{ margin: "0px 0 10px 0",fontSize: "15px",width:"100%", paddingTop:"20px"}}>Home Page : </span>
 
-                    <select value={WIDGET_DISPLAY_NAMES[homeWidget] || ""} onChange={(e) => changeHomeWidget(e)}>
+                    <select value={homeWidget || ""} onChange={changeHomeWidget}>
                         {Object.keys(WIDGET_COMPONENTS)
                             .filter((type) => (type in widgets))
                             .map((type) => (

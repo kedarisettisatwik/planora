@@ -17,6 +17,8 @@ import TrackExpensesWidget from "../components/TrackExpensesWidget";
 import BookWidget from "../components/BookWidget";
 import TrackProjectWidget from "../components/TrackProjectWidget";
 import TeamsWidget from "../components/TeamsWidget";
+import FormsWidget from '../components/FormsWidget';
+import SchedulesWidget from '../components/SchedulesWidget';
 
 const WIDGET_COMPONENTS = {
   DailyGoals: DailyGoalsWidget,
@@ -29,7 +31,9 @@ const WIDGET_COMPONENTS = {
   TrackExpenses: TrackExpensesWidget,
   Book: BookWidget,
   TrackProject: TrackProjectWidget,
-  Teams: TeamsWidget
+  Teams: TeamsWidget,
+  Forms:FormsWidget,
+  Schedules: SchedulesWidget
 };
 
 const WIDGET_DISPLAY_NAMES = {
@@ -43,7 +47,9 @@ const WIDGET_DISPLAY_NAMES = {
   TrackExpenses: "Track Expenses",
   Book: "Books",
   TrackProject: "Track Project",
-  Teams: "Teams"
+  Teams: "Teams",
+  Forms:"Forms",
+  Schedules:"Schedules"
 };
 
 const WIDGET_WIDTH = 260;
