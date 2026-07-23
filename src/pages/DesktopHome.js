@@ -76,6 +76,72 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
   const boardRef = useRef(null);
   const dragState = useRef(null);
 
+
+  const [animatingWidget, setAnimatingWidget] = useState(null);
+  // { type, mode: 'closing' | 'opening', from: {x,y,opacity}, to: {x,y,opacity}, phase: 'start' | 'end' }
+
+  const getRandomY = () =>
+    Math.random() * Math.max(0, boardHeight - WIDGET_HEIGHT - BOTTOM_PADDING);
+
+  const handleCloseClick = (type) => {
+    const pos = widgets[type];
+    if (!pos) return;
+    setAnimatingWidget({
+      type,
+      mode: "closing",
+      from: { x: pos.x, y: pos.y, opacity: 1 },
+      to: { x: 0, y: getRandomY(), opacity: 0 },
+      phase: "start"
+    });
+  };
+
+  const handleOpenClick = (type) => {
+    const pos = widgets[type];
+    if (!pos) return;
+    setAnimatingWidget({
+      type,
+      mode: "opening",
+      from: { x: 0, y: getRandomY(), opacity: 0 },
+      to: { x: pos.x, y: pos.y, opacity: 1 },
+      phase: "start"
+    });
+  };
+
+  const handleListClick = (type) => {
+    const isClosed = widgets[type]?.close === "true";
+    isClosed ? handleOpenClick(type) : handleCloseClick(type);
+  };
+
+  // flip from "start" to "end" one frame after mount, so the browser
+  // paints the "from" position first and the transition has something to animate
+  useEffect(() => {
+    if (!animatingWidget || animatingWidget.phase !== "start") return;
+    const raf1 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setAnimatingWidget((aw) =>
+          aw && aw.phase === "start" ? { ...aw, phase: "end" } : aw
+        );
+      });
+    });
+    return () => cancelAnimationFrame(raf1);
+  }, [animatingWidget?.type, animatingWidget?.phase]);
+
+  const handleTransitionEnd = (e, type) => {
+    if (e.propertyName !== "opacity") return;
+    if (!animatingWidget || animatingWidget.type !== type) return;
+
+    const mode = animatingWidget.mode;
+    setWidgets((ws) => {
+      const current = ws[type];
+      if (!current) return ws;
+      return {
+        ...ws,
+        [type]: { ...current, close: mode === "closing" ? "true" : "false" }
+      };
+    });
+    setAnimatingWidget(null);
+  };
+
   // ---- fetch widgets ----
   useEffect(() => {
     if (!email) return;
@@ -269,44 +335,68 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
       className="boardDesktop"
     >
       <div style={{ position: "relative", height: boardHeight, width:boardWidth}}>
+
         {Object.entries(widgets).map(([type, pos]) => {
           const WidgetComponent = WIDGET_COMPONENTS[type];
-          if (!WidgetComponent) {
-            console.warn(`No component registered for widget type: ${type}`);
-            return null;
-          }
+          if (!WidgetComponent) return null;
 
-          // NEW: skip rendering if this widget is marked closed
-          if (pos.close === "true") {
-            return null;
+          const isAnimating = animatingWidget?.type === type;
+          if (pos.close === "true" && !isAnimating) return null;
+
+          let left, top, opacity, transitionStyle;
+          if (isAnimating) {
+            const { from, to, phase } = animatingWidget;
+            const current = phase === "start" ? from : to;
+            left = current.x;
+            top = current.y;
+            opacity = current.opacity;
+            transitionStyle = "left 0.4s ease, top 0.4s ease, opacity 0.4s ease";
+          } else {
+            left = pos.x;
+            top = pos.y;
+            opacity = 1;
+            transitionStyle = "none";
           }
 
           return (
             <div
               key={type}
+              onTransitionEnd={(e) => isAnimating && handleTransitionEnd(e, type)}
               style={{
                 position: "absolute",
-                left: pos.x,
-                top: pos.y,
+                left,
+                top,
+                opacity,
                 zIndex: pos.z,
                 minWidth: "200px",
                 minHeight: "200px",
                 backgroundColor: "white",
                 boxShadow: "0 0 20px rgb(0,0,0,0.1)",
                 borderRadius: "10px",
-                overflow: "hidden"
+                transition: transitionStyle,
+                pointerEvents: isAnimating ? "none" : "auto"
               }}
             >
-              {/* drag handle — only this strip triggers dragging */}
               <div
                 className="dragHoldEle"
                 onPointerDown={(e) => onPointerDown(e, type)}
-                style={{
-                  height: 10,
-                  cursor: "grab",
-                  background: "rgba(0,0,0,0.15)"
-                }}
+                style={{ height: 10, cursor: "grab", background: "rgba(0,0,0,0.15)" }}
               />
+
+              <div
+                className="closeWidget"
+                style={{
+                  position: "absolute", top: "5px", right: "5px", borderRadius: "50%",
+                  width: "18px", height: "18px", backgroundColor: "var(--base_color)",
+                  transform: "translate(50%,-50%)", cursor: "pointer",
+                  fontWeight: "bold", fontSize: "11px", textAlign: "center",
+                  lineHeight: "18px", color: "white"
+                }}
+                onClick={() => handleCloseClick(type)}
+              >
+                X
+              </div>
+
               <WidgetComponent
                 email={email}
                 x={pos.x}
@@ -318,6 +408,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
             </div>
           );
         })}
+
       </div>
       <nav className={`DesktopNav desk ${navOpen ? 'open' : ''}`}>
 
@@ -334,7 +425,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
                     <li
                       key={type}
                       className={widgets[type].close !== "true" ? "active" : ""}
-                      onClick={() => toggleWidgetClose(type)}
+                      onClick={() => handleListClick(type)}
                     >
                       {WIDGET_DISPLAY_NAMES[type]}
                     </li>

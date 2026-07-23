@@ -2,8 +2,7 @@
     width:100vw;
     height:100dvh;
     overflow: hidden;
-    background-color: white;
-    padding:60px 10px 0 10px;
+    padding:70px 10px 10px 10px;
 }
 .MobileHome .DesktopNav.mobile{
     right: 0;
@@ -18,7 +17,7 @@
 }
 .MobileHome .menuBtn{
     position: fixed;
-    top: 2px;
+    top: 8px;
     right: 0px;
     cursor: pointer;
     z-index: 980;
@@ -54,7 +53,7 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 50px;
+    height: 60px;
     overflow: hidden;
     background-color: white;
     display: flex;
@@ -94,10 +93,11 @@
     font-family: "Englebert";
     font-weight: 800;
     color:var(--base_color);
-    font-size: 1.5em;
+    font-size: 1.8em;
     margin: 0 10px;
     cursor: pointer;
     letter-spacing: 1px;
+    background: none;
 }
 .MobileHome .MenuBar select option{
     font-family:"Roboto";
