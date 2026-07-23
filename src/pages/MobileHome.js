@@ -160,28 +160,41 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
         }
     };
 
+    useEffect(() => {
+        if (homeWidget) {
+            setRenderComponent(() => WIDGET_COMPONENTS[homeWidget]);
+            setActiveWidget(homeWidget);
+        }
+        }, [homeWidget]);
+
     return(
         <section className={`MobileHome ${navOpen ? 'active' : ''}`} >
 
             <RenderComponent setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={signOut} />
 
             <div className='MenuBar'>
-                <ul style={{border:"none",marginBottom:"0",paddingBottom:"0"}}>
+                
+                <select
+                    value={activeWidget || ""}
+                    onChange={(e) => {
+                        const type = e.target.value;
+                        setRenderComponent(() => WIDGET_COMPONENTS[type]);
+                        setActiveWidget(type); // track active widget
+                    }}
+                    >
                     {Object.keys(WIDGET_COMPONENTS)
-                        .filter((type) => (type in widgets))
+                        .filter((type) => type in widgets)
                         .map((type) => (
-                            <li key={type} onClick={() => {
-                                setRenderComponent(() => WIDGET_COMPONENTS[type]);
-                                setActiveWidget(type);   // track active widget
-                                }}
-                                className={activeWidget === type ? "activeWidget" : ""}>
-                                    {WIDGET_DISPLAY_NAMES[type]}
-                            </li>
+                        <option key={type} value={type}>
+                            {WIDGET_DISPLAY_NAMES[type]}
+                        </option>
                         ))}
-                </ul> 
-                <div className='menuBtn' onClick={() => setNavOpen(prev => !prev)}>
-                    <div className="HomeMenuIcon"></div>
-                </div>
+                </select>
+
+            </div>
+
+            <div className='menuBtn' onClick={() => setNavOpen(prev => !prev)}>
+                <div className="HomeMenuIcon"></div>
             </div>
 
             <nav className="DesktopNav open mobile">

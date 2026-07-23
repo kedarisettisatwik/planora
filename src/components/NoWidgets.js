@@ -78,7 +78,7 @@ function NoWidgets({ setWidgetsCount, Signout, email, setLoading }) {
       try{
 
       batch.update(doc(db, email, "generalDetails"), { widgetsCount: 1,Homepage:widgetType});
-      batch.set(doc(db, email, "widgets"), { [widgetType]: { x: 0, y: 0 } }, { merge: true });
+      batch.set(doc(db, email, "widgets"), { [widgetType]: { x: 0, y: 0, close:"true" } }, { merge: true });
       batch.set(doc(db, email, widgetType), { empty: true }, { merge: true });
 
       await batch.commit();

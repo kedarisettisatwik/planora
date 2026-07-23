@@ -208,7 +208,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
       await updateDoc(
         doc(db,email,"widgets"),
         {
-          [type]: { x: boardWidth / 2 - WIDGET_WIDTH / 2, y: boardHeight / 2 - WIDGET_HEIGHT / 2 }
+          [type]: { x: boardWidth / 2 - WIDGET_WIDTH / 2, y: boardHeight / 2 - WIDGET_HEIGHT / 2, close:"false"}
         }
       )
 
@@ -241,6 +241,18 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
     }
   };
 
+  const toggleWidgetClose = (type) => {
+    setWidgets((ws) => {
+      const current = ws[type];
+      if (!current) return ws;
+      const newClose = current.close === "true" ? "false" : "true";
+      return {
+        ...ws,
+        [type]: { ...current, close: newClose }
+      };
+    });
+  };
+
   return (
     <div
       ref={boardRef}
@@ -264,6 +276,11 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
             return null;
           }
 
+          // NEW: skip rendering if this widget is marked closed
+          if (pos.close === "true") {
+            return null;
+          }
+
           return (
             <div
               key={type}
@@ -272,16 +289,17 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
                 left: pos.x,
                 top: pos.y,
                 zIndex: pos.z,
-                minWidth:"200px",
-                minHeight:"200px",
-                backgroundColor:"white",
-                boxShadow:"0 0 20px rgb(0,0,0,0.1)",
-                borderRadius:"10px",
-                overflow:"hidden"
+                minWidth: "200px",
+                minHeight: "200px",
+                backgroundColor: "white",
+                boxShadow: "0 0 20px rgb(0,0,0,0.1)",
+                borderRadius: "10px",
+                overflow: "hidden"
               }}
             >
               {/* drag handle — only this strip triggers dragging */}
-              <div className="dragHoldEle"
+              <div
+                className="dragHoldEle"
                 onPointerDown={(e) => onPointerDown(e, type)}
                 style={{
                   height: 10,
@@ -289,7 +307,14 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
                   background: "rgba(0,0,0,0.15)"
                 }}
               />
-              <WidgetComponent email={email} x={pos.x} y={pos.y} setLoading={setLoading} setPopup={setPopup} setPopupContent={setPopupContent}/>
+              <WidgetComponent
+                email={email}
+                x={pos.x}
+                y={pos.y}
+                setLoading={setLoading}
+                setPopup={setPopup}
+                setPopupContent={setPopupContent}
+              />
             </div>
           );
         })}
@@ -298,6 +323,24 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
 
           <div className="menuDetails">
               <h3>Planora</h3>
+              <span style={{ margin: "30px 0 10px 0",fontSize: "17px"}}>
+                Active Widgets
+              </span>
+
+              <ul style={{ marginBottom: "0px" }} className="ActiveWidgets">
+                {Object.keys(WIDGET_COMPONENTS)
+                  .filter((type) => (type in widgets))
+                  .map((type) => (
+                    <li
+                      key={type}
+                      className={widgets[type].close !== "true" ? "active" : ""}
+                      onClick={() => toggleWidgetClose(type)}
+                    >
+                      {WIDGET_DISPLAY_NAMES[type]}
+                    </li>
+                  ))}
+              </ul>
+
               <span style={{ margin: "30px 0 10px 0",fontSize: "17px"}}>Add Widgets </span>
               
               <ul>
@@ -322,7 +365,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
           <div className="menuIcon" onClick={() => setNavOpen(prev => !prev)}></div>
           <div className="UserIcon">{userName[0]}</div>
       </nav>
-      <button className={`savePositions ${widgetsChanged ? 'active' : ''} `} onClick={() => saveWidgets()}>save</button>
+      <button className="savePositions active" onClick={() => saveWidgets()}>save</button>
     </div>
   );
 }
