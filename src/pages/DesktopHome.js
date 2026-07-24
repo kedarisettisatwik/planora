@@ -380,21 +380,23 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
               <div
                 className="dragHoldEle"
                 onPointerDown={(e) => onPointerDown(e, type)}
-                style={{ height: 10, cursor: "grab", background: "rgba(0,0,0,0.15)" }}
-              />
+                style={{ height: 45, cursor: "grab" }}
+              >
+
+              <h1 style={{paddingLeft:15,fontFamily:"Englebert",fontSize:"20px",lineHeight:"45px",opacity:"0.6",letterSpacing:"1px"}}>{WIDGET_DISPLAY_NAMES[type]}</h1>
 
               <div
                 className="closeWidget"
                 style={{
-                  position: "absolute", top: "5px", right: "5px", borderRadius: "50%",
-                  width: "18px", height: "18px", backgroundColor: "var(--base_color)",
-                  transform: "translate(50%,-50%)", cursor: "pointer",
-                  fontWeight: "bold", fontSize: "11px", textAlign: "center",
-                  lineHeight: "18px", color: "white"
+                  position: "absolute", top: "5px", right: "15px",
+                  transform: "scaleX(2.1)", cursor: "pointer",
+                  fontSize: "20px",fontWeight:"bold",opacity:"0.5"
                 }}
                 onClick={() => handleCloseClick(type)}
               >
-                X
+                -
+              </div>
+
               </div>
 
               <WidgetComponent
