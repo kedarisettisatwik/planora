@@ -170,7 +170,7 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
     return(
         <section className={`MobileHome ${navOpen ? 'active' : ''}`} >
 
-            <RenderComponent setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={signOut} />
+            <RenderComponent setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={signOut}/>
 
             <div className='MenuBar'>
                 

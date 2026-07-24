@@ -103,3 +103,7 @@
     color: black;
     font-size: 15px;
 }
+.defaultWidgetDiv{
+    min-width:370px;
+    min-height: 250px;
+}

@@ -152,7 +152,6 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
         const snap = await getDoc(doc(db, email, "widgets"));
         const data = snap.exists() ? snap.data() : {};
 
-        // give each widget a z-index locally
         const withZ = {};
         Object.entries(data).forEach(([type, pos], i) => {
           withZ[type] = { ...pos, z: i + 1 };
@@ -160,12 +159,10 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
         setWidgets(withZ);
         setTopZ(Object.keys(withZ).length + 1);
 
-        const getName = await getDoc(doc(db,email,"generalDetails"));
-
+        const getName = await getDoc(doc(db, email, "generalDetails"));
         if (getName.exists()) {
           setUserName(getName.data().displayName || "O");
         }
-
       } catch (err) {
         console.error("Error fetching widgets:", err);
       } finally {

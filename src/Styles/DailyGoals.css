@@ -1,0 +1,23 @@
+.DailyGoalsMain.desk{
+    width: 370px;
+    max-height: 600px;
+}
+.DailyGoalsMain.mobile{
+    width: 100%;
+    height:100%;
+}
+.DailyGoalsMain.desk .emptyWidgetAdd{
+    height: 195px;
+}
+.DailyGoalsMain.mobile .emptyWidgetAdd{
+    height: 100%;
+}
+.DailyGoalsMain .emptyWidgetAdd button{
+    cursor: pointer;
+    padding: 10px;
+    background: var(--base_color);
+    outline: none;
+    border: none;
+    color: wheat;
+    border-radius: 10px;
+}
