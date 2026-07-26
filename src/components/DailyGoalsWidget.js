@@ -10,8 +10,8 @@ import { auth, db } from "../firebase";
 function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupContent, signOut }) {
 
   const [isWidgetEmpty, setIsWidgetEmpty] = useState(true);
-
   const [addGoalPage,setAddGoalPage] = useState(false);
+  const [newGoalTitle, setNewGoalTitle] = useState("Gym ..");
 
   useEffect(() => {
     if (!email) return;
@@ -51,7 +51,12 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
           }
 
           <div className="addNewGoal">
-            
+            <div style={{marginBottom:"20px"}}>
+              <i className="fa-solid fa-chevron-left" style={{display:"inline-block"}}></i>
+              <h3 style={{display:"inline-block"}}>Add a New Goal</h3>
+            </div>
+            <span style={{display:"block"}}>Title : </span>
+            <input value={newGoalTitle} onChange={(e) => setNewGoalTitle(e.target.value)}></input>
           </div>
         </div>
     )
