@@ -4,6 +4,7 @@
     overflow: hidden;
     padding:75px 0px 10px 0px;
     background-color: white;
+    position: relative;
 }
 .MobileHome .DesktopNav.mobile{
     right: 0;
