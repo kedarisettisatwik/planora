@@ -37,7 +37,7 @@ const WIDGET_COMPONENTS = {
 };
 
 const WIDGET_DISPLAY_NAMES = {
-  DailyGoals: "Daily Goals",
+  DailyGoals: "My Goals",
   TTD: "Things to do",
   Dairy: "Diary",
   Notes: "Notes",
@@ -80,9 +80,6 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
   const [animatingWidget, setAnimatingWidget] = useState(null);
   // { type, mode: 'closing' | 'opening', from: {x,y,opacity}, to: {x,y,opacity}, phase: 'start' | 'end' }
 
-  const getRandomY = () =>
-    Math.random() * Math.max(0, boardHeight - WIDGET_HEIGHT - BOTTOM_PADDING);
-
   const handleCloseClick = (type) => {
     const pos = widgets[type];
     if (!pos) return;
@@ -90,7 +87,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
       type,
       mode: "closing",
       from: { x: pos.x, y: pos.y, opacity: 1 },
-      to: { x: 0, y: getRandomY(), opacity: 0 },
+      to: { x: 0, y: pos.y, opacity: 0 },
       phase: "start"
     });
   };
@@ -101,7 +98,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
     setAnimatingWidget({
       type,
       mode: "opening",
-      from: { x: 0, y: getRandomY(), opacity: 0 },
+      from: { x: 0, y: pos.y, opacity: 0 },
       to: { x: pos.x, y: pos.y, opacity: 1 },
       phase: "start"
     });
@@ -338,9 +335,9 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
           if (!WidgetComponent) return null;
 
           const isAnimating = animatingWidget?.type === type;
-          if (pos.close === "true" && !isAnimating) return null;
 
-          let left, top, opacity, transitionStyle;
+          let left, top, opacity, transitionStyle, display;
+
           if (isAnimating) {
             const { from, to, phase } = animatingWidget;
             const current = phase === "start" ? from : to;
@@ -348,11 +345,13 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
             top = current.y;
             opacity = current.opacity;
             transitionStyle = "left 0.4s ease, top 0.4s ease, opacity 0.4s ease";
+            display = "block"; // stay visible for the whole animation, even when closing
           } else {
             left = pos.x;
             top = pos.y;
-            opacity = 1;
+            opacity = pos.close === "true" ? 0 : 1;
             transitionStyle = "none";
+            display = pos.close === "true" ? "none" : "block"; // hide once fully closed, but don't unmount
           }
 
           return (
@@ -364,6 +363,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
                 left,
                 top,
                 opacity,
+                display,
                 zIndex: pos.z,
                 minWidth: "200px",
                 minHeight: "200px",
@@ -371,7 +371,8 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
                 boxShadow: "0 0 20px rgb(0,0,0,0.1)",
                 borderRadius: "10px",
                 transition: transitionStyle,
-                pointerEvents: isAnimating ? "none" : "auto"
+                pointerEvents: isAnimating ? "none" : "auto",
+                overflow: "hidden"
               }}
             >
               <div
@@ -379,21 +380,21 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
                 onPointerDown={(e) => onPointerDown(e, type)}
                 style={{ height: 45, cursor: "grab" }}
               >
+                <h1 style={{ paddingLeft: 15, fontFamily: "Englebert", fontSize: "20px", lineHeight: "45px", opacity: "0.6", letterSpacing: "1px" }}>
+                  {WIDGET_DISPLAY_NAMES[type]}
+                </h1>
 
-              <h1 style={{paddingLeft:15,fontFamily:"Englebert",fontSize:"20px",lineHeight:"45px",opacity:"0.6",letterSpacing:"1px"}}>{WIDGET_DISPLAY_NAMES[type]}</h1>
-
-              <div
-                className="closeWidget"
-                style={{
-                  position: "absolute", top: "5px", right: "15px",
-                  transform: "scaleX(2.1)", cursor: "pointer",
-                  fontSize: "20px",fontWeight:"bold",opacity:"0.5"
-                }}
-                onClick={() => handleCloseClick(type)}
-              >
-                -
-              </div>
-
+                <div
+                  className="closeWidget"
+                  style={{
+                    position: "absolute", top: "5px", right: "15px",
+                    transform: "scaleX(2.1)", cursor: "pointer",
+                    fontSize: "20px", fontWeight: "bold", opacity: "0.5"
+                  }}
+                  onClick={() => handleCloseClick(type)}
+                >
+                  -
+                </div>
               </div>
 
               <WidgetComponent

@@ -37,7 +37,7 @@ const WIDGET_COMPONENTS = {
 };
 
 const WIDGET_DISPLAY_NAMES = {
-  DailyGoals: "Daily Goals",
+  DailyGoals: "My Goals",
   TTD: "Things to do",
   Dairy: "Diary",
   Notes: "Notes",

@@ -9,7 +9,9 @@ import { auth, db } from "../firebase";
 
 function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupContent, signOut }) {
 
-  const [isWidgetEmpty, setIsWidgetEmpty] = useState(true)
+  const [isWidgetEmpty, setIsWidgetEmpty] = useState(true);
+
+  const [addGoalPage,setAddGoalPage] = useState(false);
 
   useEffect(() => {
     if (!email) return;
@@ -33,14 +35,14 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
   }, [email]);
 
     return (
-        <div className={`defaultWidgetDiv DailyGoalsMain ${isMobile ? 'mobile' : 'desk'}`} style={{padding:"10px"}}>
+        <div className={`defaultWidgetDiv DailyGoalsMain ${isMobile ? 'mobile' : 'desk'} ${addGoalPage ? 'add' : ''}`} style={{padding:"10px"}}>
 
           {
             (isWidgetEmpty 
 
               ? (
                 <div className="emptyWidgetAdd" style={{width:"100%",display:"flex",justifyContent:"center",alignItems:"center"}}>
-                  <button>Create Your First Goal + </button>
+                  <button onClick={() => setAddGoalPage(true)}>Create Your First Goal + </button>
                 </div>
               )
               :
@@ -48,6 +50,9 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
             )
           }
 
+          <div className="addNewGoal">
+            
+          </div>
         </div>
     )
 }
