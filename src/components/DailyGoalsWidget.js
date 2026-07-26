@@ -31,6 +31,12 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
 
   const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
+  const [particularDates, setParticularDates] = useState([""]);
+
+  const [effFromDate,setEffFromDate] = useState("");
+  const [effToDate,setEffToDate] = useState("");
+
+
   useEffect(() => {
     if (!email) return;
 
@@ -51,6 +57,11 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
 
     fetchEmptyState();
   }, [email]);
+
+  const createNewGoal = () => {
+    console.log("A");
+    setAddGoalPage(false);
+  }
 
     return (
         <div className={`defaultWidgetDiv DailyGoalsMain ${isMobile ? 'mobile' : 'desk'} ${addGoalPage ? 'add' : ''}`} style={{padding:"10px"}}>
@@ -112,33 +123,56 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
 
               {scheduleType === "dates" && (
                 <div className="repeatSubPanel repeatDatesList">
-                  <div className="angDateRow">
-                    <input type="date" className="repeatInput repeatDateInput" />
-                    <button type="button" className="repeatRemoveDate" aria-label="Remove date">×</button>
-                  </div>
-                  <div className="repeatDateRow">
-                    <input type="date" className="repeatInput angDateInput" />
-                    <button type="button" className="repeatRemoveDate" aria-label="Remove date">×</button>
-                  </div>
-                  <button type="button" className="repeatAddDate">+ Add another date</button>
+                  {particularDates.map((date, idx) => (
+                    <div key={idx} className="repeatDateRow">
+                      <input
+                        type="date"
+                        className="repeatInput repeatDateInput"
+                        value={date}
+                        onChange={(e) => {
+                          const newDates = [...particularDates];
+                          newDates[idx] = e.target.value;
+                          setParticularDates(newDates);
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="repeatRemoveDate"
+                        aria-label="Remove date"
+                        onClick={() => {
+                          setParticularDates(particularDates.filter((_, i) => i !== idx));
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className="repeatAddDate"
+                    onClick={() => setParticularDates([...particularDates, ""])}
+                  >
+                    + Add another date
+                  </button>
                 </div>
               )}
+
 
               {scheduleType === "range" && (
                 <div className="repeatSubPanel repeatRangeRow">
                   <div className="repeatRangeField">
                     <span className="repeatRangeLabel">From</span>
-                    <input type="date" className="repeatInput repeatDateInput" />
+                    <input type="date" className="repeatInput repeatDateInput" max={effToDate} value={effFromDate} onChange={(e) => setEffFromDate(e.target.value)} />
                   </div>
                   <div className="repeatRangeField">
                     <span className="repeatRangeLabel">To</span>
-                    <input type="date" className="repeatInput repeatDateInput" />
+                    <input type="date" className="repeatInput repeatDateInput" min={effFromDate} value={effToDate} onChange={(e) => setEffToDate(e.target.value)} />
                   </div>
                 </div>
               )}
             </div>
 
-            <button className="saveNewGoalBtn"> Save</button>
+            <button className="saveNewGoalBtn" onClick={createNewGoal}> Save</button>
             
           </div>
 

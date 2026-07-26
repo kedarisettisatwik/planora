@@ -80,7 +80,6 @@
 }
 
 .addNewGoal > input {
-  font-family: 'Fraunces', Georgia, serif;
   font-size: 17px;
   border: 1px solid #DEDCD2;
   background: #FFFFFF;
@@ -123,13 +122,13 @@
 }
 
 .repeatSegBtn {
-  font-family: 'Inter', sans-serif;
   font-size: 12.5px;
-  padding: 7px 12px;
+  padding: 10px 15px;
   border-radius: 999px;
   border: 1px solid #DEDCD2;
   background: #fff;
   color: #4B5058;
+  letter-spacing: 1px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -264,8 +263,6 @@
 }
 
 .saveNewGoalBtn{
-    position: absolute;
-    bottom: 0;
     margin: 20px 0px;
     padding: 10px;
     border: none;
