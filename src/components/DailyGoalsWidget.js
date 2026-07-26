@@ -11,7 +11,25 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
 
   const [isWidgetEmpty, setIsWidgetEmpty] = useState(true);
   const [addGoalPage,setAddGoalPage] = useState(false);
-  const [newGoalTitle, setNewGoalTitle] = useState("Gym ..");
+  const [newGoalTitle, setNewGoalTitle] = useState("");
+
+  const [scheduleType, setScheduleType] = useState("everyday");
+  const [activeDays, setActiveDays] = useState([1, 3, 5]);
+
+  const toggleDay = (idx) => {
+    setActiveDays((prev) =>
+      prev.includes(idx) ? prev.filter((d) => d !== idx) : [...prev, idx].sort()
+    );
+  };
+
+  const SCHEDULE_OPTIONS = [
+    { id: "everyday", label: "Every day" },
+    { id: "days",     label: "Particular days" },
+    { id: "dates",    label: "Particular dates" },
+    { id: "range",    label: "Date range" },
+  ];
+
+  const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
   useEffect(() => {
     if (!email) return;
@@ -51,13 +69,79 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
           }
 
           <div className="addNewGoal">
-            <div style={{marginBottom:"20px"}}>
-              <i className="fa-solid fa-chevron-left" style={{display:"inline-block"}}></i>
+            <div style={{marginBottom:"30px"}}>
+              <i className="fa-solid fa-chevron-left" style={{display:"inline-block"}} onClick={() => setAddGoalPage(false)}></i>
               <h3 style={{display:"inline-block"}}>Add a New Goal</h3>
             </div>
             <span style={{display:"block"}}>Title : </span>
-            <input value={newGoalTitle} onChange={(e) => setNewGoalTitle(e.target.value)}></input>
+            <input value={newGoalTitle} placeholder="Gym .." onChange={(e) => setNewGoalTitle(e.target.value)}></input>
+
+            <div className="repeats">
+              <span className="repeatLabel">Repeats : </span>
+              <div className="repeatSegment" role="tablist" aria-label="Repeat schedule">
+                {SCHEDULE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={scheduleType === opt.id}
+                    className={`repeatSegBtn ${scheduleType === opt.id ? "repeatSegBtnActive" : ""}`}
+                    onClick={() => setScheduleType(opt.id)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {scheduleType === "days" && (
+                <div className="repeatSubPanel angWeekdays">
+                  {WEEKDAYS.map((d, idx) => (
+                    <button
+                      type="button"
+                      key={idx}
+                      className={`repeatDayDot ${activeDays.includes(idx) ? "repeatDayDotActive" : ""}`}
+                      onClick={() => toggleDay(idx)}
+                      aria-pressed={activeDays.includes(idx)}
+                      aria-label={d}
+                    >
+                      {d}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {scheduleType === "dates" && (
+                <div className="repeatSubPanel repeatDatesList">
+                  <div className="angDateRow">
+                    <input type="date" className="repeatInput repeatDateInput" />
+                    <button type="button" className="repeatRemoveDate" aria-label="Remove date">×</button>
+                  </div>
+                  <div className="repeatDateRow">
+                    <input type="date" className="repeatInput angDateInput" />
+                    <button type="button" className="repeatRemoveDate" aria-label="Remove date">×</button>
+                  </div>
+                  <button type="button" className="repeatAddDate">+ Add another date</button>
+                </div>
+              )}
+
+              {scheduleType === "range" && (
+                <div className="repeatSubPanel repeatRangeRow">
+                  <div className="repeatRangeField">
+                    <span className="repeatRangeLabel">From</span>
+                    <input type="date" className="repeatInput repeatDateInput" />
+                  </div>
+                  <div className="repeatRangeField">
+                    <span className="repeatRangeLabel">To</span>
+                    <input type="date" className="repeatInput repeatDateInput" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button className="saveNewGoalBtn"> Save</button>
+            
           </div>
+
         </div>
     )
 }

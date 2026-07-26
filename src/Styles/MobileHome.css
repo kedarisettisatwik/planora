@@ -2,7 +2,7 @@
     width:100vw;
     height:100dvh;
     overflow: hidden;
-    padding:75px 0px 10px 0px;
+    padding:65px 0px 10px 0px;
     background-color: white;
     position: relative;
 }
@@ -53,7 +53,7 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 65px;
+    height: 55px;
     overflow: hidden;
     display: flex;
     justify-content: flex-start;
