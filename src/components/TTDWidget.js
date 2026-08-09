@@ -20,7 +20,14 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
 
     const [newTaskTitle, setNewTaskTitle] = useState("");
     const [desc, setNewTaskDesc] = useState("");
-    const today = new Date().toISOString().split("T")[0];
+
+    const getLocalISODate = (d = new Date()) => {
+    const offsetMs = d.getTimezoneOffset() * 60000;   // e.g. -330 min for IST → -19800000 ms
+        return new Date(d.getTime() - offsetMs).toISOString().split("T")[0];
+    };
+
+  const today = getLocalISODate;
+
     const [startDate, setStartDate] = useState(today);
     const [endDate, setEndDate] = useState("");
 
