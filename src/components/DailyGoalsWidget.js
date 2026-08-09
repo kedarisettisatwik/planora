@@ -427,7 +427,7 @@ useEffect(() => {
                 <>
                 <span style={{position: "absolute",top: 0,right: "10px",fontSize: "12px",fontWeight: "bold",opacity: 0.6,cursor: "pointer",letterSpacing:"1px"}} onClick={() => setViewAllGoalsPage(true)}>view All</span>
                 <button style={{position:"absolute",bottom:"10px",right:"10px",padding:"10px",cursor:"pointer",border:"none",outline:"none",background:"var(--base_color)",color:"white",borderRadius:"10px"}} onClick={() => setAddGoalPage(true)}>Add Goal + </button>
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{outline:"none",border:"none",padding:"0 5px",cursor:"pointer",opacity:"0.6",fontWeight:"bold"}}></input>
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{outline:"none",border:"none",padding:"0 5px",cursor:"pointer",opacity:"0.6",fontWeight:"bold",background:"none"}}></input>
                 
                 <div className="goalsSummary" style={{ position: 'relative', margin: '25px 0 16px' }}>
                 <span

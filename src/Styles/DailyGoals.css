@@ -1,7 +1,7 @@
 .DailyGoalsMain.desk{
     width: 370px;
-    height: calc(100vh - 120px);
-    max-height: 600px;
+    height: 500px;
+    max-height: calc(100vh - 120px);
     position: relative;
 }
 .DailyGoalsMain.mobile{

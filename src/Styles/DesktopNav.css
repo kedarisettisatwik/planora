@@ -204,3 +204,46 @@ margin-bottom: 20px;
 .boardDesktop .savePositions.active{
     display: block;
 }
+.DesktopNav .menuDetails ul li.connections{
+    padding-left: 0px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.DesktopNav .connections span{
+    display: inline-block;
+    width:150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 15px;
+}
+.DesktopNav .menuDetails ul li.connections:hover{
+    color: black;
+}
+.DesktopNav .menuDetails .connections i{
+    transition:0.3s;
+}
+.DesktopNav .menuDetails .connections i:hover{
+    color: var(--base_color);
+}
+.DesktopNav .addFrnd input{
+    padding: 5px;
+    outline: none;
+    border: 1px solid rgb(0, 0, 0, 0.2);
+    border-radius: 5px;
+    margin-right: 10px;
+    font-size: 13px;
+}
+.DesktopNav .addFrnd input:focus {
+  border-color: var(--base_color);
+  box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
+}
+.DesktopNav .addFrnd i{
+    font-size: 13px;
+    background: var(--base_color);
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
