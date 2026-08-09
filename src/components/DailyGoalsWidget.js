@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from 'react-hot-toast';
 import { isMobile } from "react-device-detect";
+import { useMemo } from "react"; // add to your existing react import
 
 import '../Styles/Home.css'
 import '../Styles/DailyGoals.css'
@@ -41,7 +42,50 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
   const [goalsList, setGoalsList] = useState([]);
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [goalsFetched, setGoalsFetched] = useState(false);
 
+  const today = new Date().toISOString().split("T")[0];
+  const [date, setDate] = useState(today);
+
+  const parseLocalDate = (dateStr) => {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  };
+
+  const isGoalOnDate = (goal, dateStr) => {
+    const { type, days, dates, from, to } = goal.schedule;
+
+    switch (type) {
+      case "everyday":
+        return true;
+
+      case "days": {
+        const dayOfWeek = parseLocalDate(dateStr).getDay(); // 0 = Sun ... 6 = Sat
+        return (days || []).includes(dayOfWeek);
+      }
+
+      case "dates":
+        return (dates || []).includes(dateStr);
+
+      case "range": {
+        if (!from) return false;
+        const afterStart = dateStr >= from;         // "YYYY-MM-DD" strings compare lexicographically = chronologically
+        const beforeEnd = !to || dateStr <= to;
+        return afterStart && beforeEnd;
+      }
+
+      default:
+        return false;
+    }
+  };
+
+  const isGoalCompletedOnDate = (goal, dateStr) =>
+  (goal.completedDates || []).includes(dateStr);
+
+  const goalsForSelectedDate = useMemo(
+    () => goalsList.filter((g) => isGoalOnDate(g, date)),
+    [goalsList, date]
+  );
 
   useEffect(() => {
     if (!email) return;
@@ -64,33 +108,40 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
     fetchEmptyState();
   }, [email]);
 
-  useEffect(() => {
-    if (!viewAllGoalsPage || !email) return;
+ useEffect(() => {
+  if (!email) return;
+  if (goalsFetched) return; 
 
-    const fetchGoals = async () => {
-      setLoading(true);
-      try {
-        const snap = await getDoc(doc(db, email, "DailyGoals"));
-        if (snap.exists()) {
-          setGoalsList(snap.data().List || []);
-        } else {
-          setGoalsList([]);
-        }
-      } catch (err) {
-        console.error("Error fetching goals:", err);
-        toast("Couldn't load your goals.", {
-          duration: 2000,
-          position: 'top-center',
-          icon: '❌',
-          style: {"backgroundColor":"var(--toast_error)","color":"white"}
-        });
-      } finally {
-        setLoading(false);
+  const fetchGoals = async () => {
+    setLoading(true);
+    try {
+      const snap = await getDoc(doc(db, email, "DailyGoals"));
+      if (snap.exists()) {
+        setGoalsList(snap.data().List || []);
+      } else {
+        setGoalsList([]);
       }
-    };
+      setGoalsFetched(true); 
+    } catch (err) {
+      console.error("Error fetching goals:", err);
+      toast("Couldn't load your goals.", {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+    } finally {
+      setLoading(false);
+      console.log(goalsList);
+    }
+  };
 
-    fetchGoals();
-  }, [viewAllGoalsPage, email]);
+  fetchGoals();
+}, [email, goalsFetched]);
+
+useEffect(() => {
+  console.log("Updated goalsList:", goalsList);
+}, [goalsList]);
 
   const createNewGoal = () => {
     // Basic title check
@@ -145,8 +196,7 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
       id: Date.now().toString(),
       title: newGoalTitle.trim(),
       schedule,
-      createdAt: new Date().toISOString(),
-      completed: false,
+      createdAt: new Date().toISOString()
     };
 
     saveGoalToDb(newGoal);
@@ -170,6 +220,7 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
       setParticularDates([""]);
       setEffFromDate("");
       setEffToDate("");
+      setGoalsFetched(false); 
 
       toast('Goal Added Succesfully !! ', {
         duration: 2000,
@@ -311,8 +362,56 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
     setHasUnsavedChanges(true);
   };
 
+  const toggleGoalCompletion = async (goalId, dateStr) => {
+    const updatedList = goalsList.map((g) => {
+      if (g.id !== goalId) return g;
+      const completedDates = g.completedDates || [];
+      const alreadyDone = completedDates.includes(dateStr);
+      return {
+        ...g,
+        completedDates: alreadyDone
+          ? completedDates.filter((d) => d !== dateStr)   // uncheck
+          : [...completedDates, dateStr],                  // check
+      };
+    });
+
+    setGoalsList(updatedList); // optimistic UI update
+
+    try {
+      await setDoc(doc(db, email, "DailyGoals"), { List: updatedList }, { merge: true });
+    } catch (err) {
+      console.error("Error updating goal completion:", err);
+      setGoalsList(goalsList); // revert on failure
+      toast("Couldn't update goal. Please try again.", {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+    }
+  };
+
+  const sortedGoalsForSelectedDate = useMemo(() => {
+      return [...goalsForSelectedDate].sort((a, b) => {
+        const aDone = isGoalCompletedOnDate(a, date);
+        const bDone = isGoalCompletedOnDate(b, date);
+        return aDone === bDone ? 0 : aDone ? 1 : -1;
+      });
+    }, [goalsForSelectedDate, date]);
+
+  const goalCounts = useMemo(() => {
+    const total = goalsForSelectedDate.length;
+    const completed = goalsForSelectedDate.filter((g) => isGoalCompletedOnDate(g, date)).length;
+    const remaining = total - completed;
+    return { total, completed, remaining };
+  }, [goalsForSelectedDate, date]);
+
+  const completionPercent = goalCounts.total === 0
+  ? 0
+  : Math.round((goalCounts.completed / goalCounts.total) * 100);
+
     return (
-        <div className={`defaultWidgetDiv DailyGoalsMain ${isMobile ? 'mobile' : 'desk'} ${addGoalPage ? 'add' : ''} ${viewAllGoalsPage ? 'viewall' : ''}` } style={{padding:"10px"}}>
+        <div className={`defaultWidgetDiv DailyGoalsMain ${isMobile ? 'mobile' : 'desk'} ${addGoalPage ? 'add' : ''} ${viewAllGoalsPage ? 'viewall' : ''}` } style={{padding:"0 10px"}}>
 
           {
             (isWidgetEmpty 
@@ -324,7 +423,69 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
               )
               :
               (
-                <span onClick={() => setViewAllGoalsPage(true)}>view All</span>
+                
+                <>
+                <span style={{position: "absolute",top: 0,right: "10px",fontSize: "12px",fontWeight: "bold",opacity: 0.6,cursor: "pointer",letterSpacing:"1px"}} onClick={() => setViewAllGoalsPage(true)}>view All</span>
+                <button style={{position:"absolute",bottom:"10px",right:"10px",padding:"10px",cursor:"pointer",border:"none",outline:"none",background:"var(--base_color)",color:"white",borderRadius:"10px"}} onClick={() => setAddGoalPage(true)}>Add Goal + </button>
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{outline:"none",border:"none",padding:"0 5px",cursor:"pointer",opacity:"0.6",fontWeight:"bold"}}></input>
+                
+                <div className="goalsSummary" style={{ position: 'relative', margin: '25px 0 16px' }}>
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '-18px',
+                    right: 0,
+                    fontSize: '12px',
+                    opacity: 0.6,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {goalCounts.completed} / {goalCounts.total}
+                </span>
+
+                <div
+                  className="progressBarTrack"
+                  style={{
+                    width: '100%',
+                    height: '6px',
+                    borderRadius: '999px',
+                    backgroundColor: '#e0e0e0',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    className="progressBarFill"
+                    style={{
+                      width: `${completionPercent}%`,
+                      height: '100%',
+                      borderRadius: '999px',
+                      backgroundColor: 'var(--base_color)',
+                      transition: 'width 0.3s ease',
+                    }}
+                  />
+                </div>
+              </div>
+
+                <ul className={goalsForSelectedDate.length === 0 ? "NoGoals GoalsAsOfDate" : "GoalsAsOfDate"}>
+                    {sortedGoalsForSelectedDate.length === 0 ? (
+                      <li className="noGoalsForDate" style={{ fontSize: '15px', textAlign: 'center', margin: '100px', opacity: 0.6, listStyle: 'none' }}>No goals for this date</li>
+                    ) : (
+                      sortedGoalsForSelectedDate.map((goal) => (
+                        <li key={goal.id} className={isGoalCompletedOnDate(goal, date) ? "goalDone goalListItem" : "goalListItem"}>
+                          <input
+                            type="checkbox"
+                            checked={isGoalCompletedOnDate(goal, date)}
+                            onChange={() => toggleGoalCompletion(goal.id, date)}
+                            style={{cursor:"pointer"}}
+                          />
+                          <span>
+                            {goal.title}
+                          </span>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </>
               )
             )
           }
@@ -529,8 +690,10 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
                   </button>
                 )}
               </div>
+              <button style={{position:"absolute",top:"10px",right:"10px",padding:"10px",cursor:"pointer",border:"none",outline:"none",background:"var(--base_color)",color:"white",borderRadius:"10px"}} onClick={() => setAddGoalPage(true)}>Add Goal + </button>  
           </div>
 
+                   
         </div>
     )
 }

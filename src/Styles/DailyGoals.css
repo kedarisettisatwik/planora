@@ -1,6 +1,7 @@
 .DailyGoalsMain.desk{
     width: 370px;
-    height: 600px;
+    height: calc(100vh - 120px);
+    max-height: 600px;
     position: relative;
 }
 .DailyGoalsMain.mobile{
@@ -47,10 +48,13 @@
     opacity: 0;
     transition: 0.3s;
     padding: 10px 20px;
+    z-index: 10;
+    display: none;
 }
 .DailyGoalsMain.add .addNewGoal{
     transform: translateX(0);
     opacity: 1;
+    display: block;
 }
 
 .addNewGoal .fa-chevron-left {
@@ -309,10 +313,13 @@
     opacity: 0;
     transition: 0.3s;
     padding: 10px 20px;
+    z-index: 5;
+    display: none;
 }
 .DailyGoalsMain.viewall .viewAllGoals{
     transform: translateX(0);
     opacity: 1;
+    display: block;
 }
 .DailyGoalsMain .viewAllGoals .fa-chevron-left {
   font-size: 15px;
@@ -452,4 +459,34 @@
   background-color: var(--base_color);
   color: white;
   box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.08);
+}
+.DailyGoalsMain .GoalsAsOfDate{
+  margin:15px 0;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  border-top: 1px dashed rgb(0,0,0,0.1);
+  height: calc(100% - 120px);
+  overflow-y: auto;
+}
+.DailyGoalsMain .GoalsAsOfDate::-webkit-scrollbar{
+    width: 5px;
+}
+.DailyGoalsMain .GoalsAsOfDate::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.DailyGoalsMain .GoalsAsOfDate::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+.DailyGoalsMain .goalListItem{
+    margin: 10px 0;
+    padding: 5px;
+    position: relative;
+}
+.DailyGoalsMain .goalListItem span{
+    margin-left: 15px;
+}
+.DailyGoalsMain .goalListItem.goalDone{
+  opacity: 0.6;
 }
