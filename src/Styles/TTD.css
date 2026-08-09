@@ -210,156 +210,12 @@
     font-size: 14px;
     background-color: var(--base_color);
     color: white;
-}
-
-.TTDMain .viewAllTasks{
     position: absolute;
     top: 0;
-    right: 0;
-    width:100%;
-    height:100%;
-    background-color:white;
-    transform: translateX(100%);
-    opacity: 0;
-    transition: 0.3s;
-    padding: 10px 20px;
-    z-index: 5;
-    display: none;
-}
-.TTDMain.viewall .viewAllTasks{
-    transform: translateX(0);
-    opacity: 1;
-    display: block;
-}
-.TTDMain .viewAllTasks .fa-chevron-left {
-  font-size: 15px;
-  cursor: pointer;
-  margin-right: 12px;
-  vertical-align: middle;
-  padding: 10px;
-}
-.TTDMain .viewAllTasks h3 {
-  font-weight: 500;
-  font-size: 20px;
-  margin: 0;
-  font-family: "Englebert";
-  vertical-align: middle;
-  opacity:0.8;
-}
-
-/* ===== Goals list ===== */
-
-.TTDMain .viewAllTasks .listTasks {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-bottom: 20px;
-}
-
-.TTDMain .viewAllTasks .TaskCard {
-  border: 1px solid #DEDCD2;
-  border-radius: 10px;
-  background: #fff;
-  padding: 12px;
-}
-
-/* --- collapsed / display state --- */
-
-.TTDMain .viewAllTasks .TaskDisplay {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.TTDMain .viewAllTasks .TaskDisplay span:first-child {
-  flex: 1;
-  font-size: 15px;
-  font-weight: 500;
-  color: #1C2620;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-
-.TTDMain .viewAllTasks .TaskDisplay .fa-pen,
-.TTDMain .viewAllTasks .TaskDisplay .fa-trash {
-  font-size: 13px;
-  color: #7A8177;
-  cursor: pointer;
-  padding: 6px;
-  flex-shrink: 0;
-  transition: color 0.15s ease;
-}
-
-.TTDMain .viewAllTasks .TaskDisplay .fa-pen:hover {
-  color: var(--base_color);
-}
-
-.TTDMain .viewAllTasks .TaskDisplay .fa-trash:hover {
-  color: #C24545;
-}
-
-/* --- expanded / edit state --- */
-
-.TTDMain .viewAllTasks .TaskEditForm {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.TTDMain .viewAllTasks .TaskEditForm > input {
-  font-size: 15px;
-  border: 1px solid #DEDCD2;
-  background: #FFFFFF;
-  border-radius: 10px;
-  padding: 8px 10px;
-  color: #1C2620;
-  outline: none;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 10px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.TTDMain .viewAllTasks .TaskEditForm > input:focus {
-  border-color: var(--base_color);
-  box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
-}
-
-
-.TTDMain .viewAllTasks .TaskEditForm > button {
-  align-self: flex-end;
-  margin-top: 12px;
-  padding: 8px 16px;
-  border: none;
-  outline: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  background-color: var(--base_color);
-  color: white;
+    right: 10px;
 }
 
 /* ===== Save all changes ===== */
-
-.TTDMain .viewAllTasks .saveAllTasksBtn {
-  position: sticky;
-  bottom: 0;
-  width: 100%;
-  margin-top: 6px;
-  padding: 12px;
-  border: none;
-  outline: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  background-color: var(--base_color);
-  color: white;
-  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.08);
-}
 .TTDMain .TasksAsOfDate{
   margin:15px 0;
   padding-top: 5px;
@@ -378,4 +234,211 @@
 .TTDMain .TasksAsOfDate::-webkit-scrollbar-thumb {
     background: rgb(0,0,0,0.4);
     border-radius: 6px;
+}
+
+.TTDMain .TasksList{
+    position: relative;
+    width: 100%;
+    height:calc(100% - 60px);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.TTDMain .TasksList::-webkit-scrollbar{
+    width: 5px;
+}
+.TTDMain .TasksList::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.TTDMain .TasksList::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+
+.TTDMain ul{
+    list-style: none;
+}
+.TTDMain .taskblock{
+    list-style: none;
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgb(0, 0, 0, 0.1);
+    position: relative;
+}
+.TTDMain .taskblock h3{
+    font-size: 21px;
+    font-weight: bold;
+    opacity: 0.6;
+    margin-bottom: 10px;
+}
+.TTDMain .taskblock .btns{
+    display: flex;    
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+.TTDMain .taskblock .Done,.TTDMain .taskblock .Back{
+    outline: none;
+    background: white;
+    border: 1px solid var(--base_color);
+    border-radius: 10px;
+    padding: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    color: white;
+    background-color: var(--base_color);
+    transition: 0.3s;
+    display: none;
+}
+.TTDMain .taskblock .Back{
+    color: black;
+    background-color:white;
+}
+.TTDMain .taskblock .Back:hover{
+    color: white;
+    background-color: var(--base_color);
+}
+.TTDMain .taskblock .Done:hover{
+    background-color: white;
+    color: black;
+}
+.TTDMain .taskblock.completed .Back,.TTDMain .taskblock.completedAll .Back{
+    display: block;
+}
+.TTDMain .taskblock.notcompleted .Done{
+    display: block;
+}
+.TTDMain .taskblock.createdforothers .Back,.TTDMain .taskblock.createdforothers .Done{
+    display: none;
+}
+.TTDMain .taskblock .shared, .TTDMain .taskblock .request,.TTDMain .taskblock .assign{
+    font-size: 12px;
+    background: #dfdfdf;
+    padding: 5px 10px;
+    border-radius: 10px;
+    letter-spacing: 1px;
+    margin-right: 10px;
+    display: none;
+}
+.TTDMain .taskblock.createdforothers  .request{
+    display: block;
+}
+.TTDMain .taskblock.shared  .shared{
+    display: block;
+}
+.TTDMain .taskblock.assignedbyother  .assign{
+    display: block;
+}
+.TTDMain .taskblock .TaskDone{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border-radius: 10px;
+    background: #66eb66;
+    opacity: 0.6;
+    font-size: 12px;
+    padding: 6px;
+    display: none;
+}
+.TTDMain .taskblock.completed .TaskDone,.TTDMain .taskblock.completedAll .TaskDone {
+    display: block;
+}
+.TTDMain .assigneeStatusRow{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 10px 0;
+    gap: 10px;
+    font-size: 14px;
+    opacity: 0.8;
+}
+.TTDMain .taskblock .TaskDates {
+    margin:10px 0;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+}
+.TTDMain .taskblock .TaskDates p{
+    font-size: 12px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid rgb(0, 0, 0, 0.2);
+    padding: 5px;
+}
+.TTDMain .taskblock .TaskDates p span{
+    font-size: 14px;
+}
+.TTDMain .taskblock.futureTask .TaskDates .TaskStartDate{
+    background-color: #b1fdb1;
+}
+.TTDMain .taskblock.overdue .TaskDates .TaskEndDate{
+    background-color: rgb(255 89 89);
+    color: white;
+}
+.TTDMain .taskblock.futureTask.completed .TaskDates .TaskStartDate,
+.TTDMain .taskblock.futureTask.completedAll .TaskDates .TaskEndDate,
+.TTDMain .taskblock.overdue.completed .TaskDates .TaskEndDate,
+.TTDMain .taskblock.overdue.completedAll .TaskDates .TaskEndDate{
+    background-color: white;
+    color: black;
+}
+.TTDMain .taskblock .remainingDaysLabel, .TTDMain .taskblock .overDueLabel{
+    opacity: 0.8;
+    font-size: 15px;
+    color: red;
+}
+.TTDMain .taskblock .overDueLabel{
+    display: none;
+}
+.TTDMain .taskblock.overdue .overDueLabel{
+    display: block;
+}
+.TTDMain .taskblock.completed .remainingDaysLabel,
+.TTDMain .taskblock.completedAll .overDueLabel,
+.TTDMain .taskblock.completedAll .remainingDaysLabel,
+.TTDMain .taskblock.completed .overDueLabel{
+    display: none;
+}
+
+.TTDMain .taskFilterBar {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin: 10px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.TTDMain .taskFilterBar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.TTDMain .filterPill {
+  flex-shrink: 0;
+}
+.TTDMain .filterPill {
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #DEDCD2;
+  background: #fff;
+  color: #4B5058;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.TTDMain .filterPill:hover {
+  border-color: #C7C4B6;
+}
+
+.TTDMain .filterPillActive {
+  background: var(--base_color);
+  border-color: var(--base_color);
+  color: #fff;
 }
