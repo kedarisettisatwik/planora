@@ -14,7 +14,6 @@ import { auth, db } from "../firebase";
 function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, signOut }) {
 
     const [addTaskPage, setAddTaskPage] = useState(false);
-    const [viewAllTasksPage, setViewAllTasksPage] = useState(false);
 
     // when non-null, the "addNewTask" panel is in edit mode for this task instead of create mode
     const [editingOriginalTask, setEditingOriginalTask] = useState(null);
@@ -424,11 +423,29 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         return { classes, remainingDays };
     };
 
-    const CLASS_PRIORITY = ["selfAssignedOnlyU", "assignedbyother", "shared", "createdforothers"];
+    // Ordered groups exactly as requested:
+    // assignedbyother notcompleted -> selfAssignedOnlyU notcompleted -> createdforothers notcompleted
+    // -> shared notcompleted -> completed -> completedall
+    const GROUP_ORDER = [
+        (c) => c.includes("assignedbyother") && c.includes("notcompleted"),
+        (c) => c.includes("selfAssignedOnlyU") && c.includes("notcompleted"),
+        (c) => c.includes("createdforothers") && c.includes("notcompleted"),
+        (c) => c.includes("shared") && c.includes("notcompleted"),
+        (c) => c.toLowerCase().includes("completed") && !c.toLowerCase().includes("completedall"),
+        (c) => c.toLowerCase().includes("completedall"),
+    ];
 
     const getClassPriority = (listClassName) => {
-        const idx = CLASS_PRIORITY.findIndex((key) => listClassName.includes(key));
-        return idx === -1 ? CLASS_PRIORITY.length : idx; // unmatched classes sink to the end
+        const idx = GROUP_ORDER.findIndex((test) => test(listClassName));
+        return idx === -1 ? GROUP_ORDER.length : idx; // unmatched classes sink to the end
+    };
+
+    // Active-only ordering: overdue first, normal in the middle, futureTask last
+    const getDateStatusPriority = (task) => {
+        const classes = getDateStatusClass(task).classes;
+        if (classes.includes("overdue")) return 0;
+        if (classes.includes("futureTask")) return 2;
+        return 1;
     };
 
     const formatDate = (dateStr) => {
@@ -554,9 +571,24 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
             return null;
         }
 
-        const sortedList = [...list].sort(
-            (a, b) => getClassPriority(a.listClassName) - getClassPriority(b.listClassName)
-        );
+        const sortedList = [...list].sort((a, b) => {
+            // 1) group by className bucket in the required order
+            const groupDiff = getClassPriority(a.listClassName) - getClassPriority(b.listClassName);
+            if (groupDiff !== 0) return groupDiff;
+
+            // 2) within an active (notcompleted) group: overdue first, futureTask last
+            if (a.bucket === "active" && b.bucket === "active") {
+                const dateStatusDiff = getDateStatusPriority(a) - getDateStatusPriority(b);
+                if (dateStatusDiff !== 0) return dateStatusDiff;
+            }
+
+            // 3) tie-break by start date ascending (ISO yyyy-mm-dd strings sort correctly as strings)
+            const aDate = a.startDate || "";
+            const bDate = b.startDate || "";
+            if (aDate < bDate) return -1;
+            if (aDate > bDate) return 1;
+            return 0;
+        });
 
         return (
             <>
@@ -616,22 +648,29 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                                     </h3>
 
                                     <label style={{ fontSize: "16px", opacity: 0.7, marginBottom: "10px", display: "block" }}>Description : </label>
-                                    <p style={{ fontSize: "15px", padding: "0 10px 10px 10px", minHeight: "50px", borderBottom: "1px dashed rgb(0,0,0,0.1)" }}>{task.description}</p>
+                                    <p style={{ fontSize: "15px", padding: "0 10px 10px 10px", minHeight: "50px", borderBottom: "1px dashed rgb(0,0,0,0.1)",whiteSpace:"break-spaces" }}>{task.description}</p>
 
                                     {showAssignees && task.assign && typeof task.assign === "object" && (
                                         <ul className="assigneeStatusList" style={{ margin: "10px 0" }}>
-                                            {Object.values(task.assign).map((a) => (
-                                                <li key={a.email} className="assigneeStatusRow">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={a.done}
-                                                        disabled
-                                                        readOnly
-                                                    />
-                                                    <span>{a.email}</span><br></br>
-                                                    <i>{formatDate(a.completionDate)}</i>
-                                                </li>
-                                            ))}
+                                            {Object.values(task.assign).map((a) => {
+                                                // creator can uncheck someone else's completed box to send it back to pending;
+                                                // they can't check it on the assignee's behalf, and no one can touch their own row here
+                                                const canUncheck = task.createdBy === email && a.email !== email && a.done;
+
+                                                return (
+                                                    <li key={a.email} className="assigneeStatusRow">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={a.done}
+                                                            disabled={!canUncheck}
+                                                            readOnly={!canUncheck}
+                                                            onChange={canUncheck ? () => unmarkAssigneeDone(task, a.email) : undefined}
+                                                        />
+                                                        <span>{a.email}</span><br></br>
+                                                        <i>{formatDate(a.completionDate)}</i>
+                                                    </li>
+                                                );
+                                            })}
                                         </ul>
                                     )}
 
@@ -737,8 +776,56 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
     const markTaskDone = (task) => updateTaskStatus(task, true);
     const moveTaskToPending = (task) => updateTaskStatus(task, false);
 
+    // Lets the creator of a "createdforothers" / shared task uncheck a specific assignee's
+    // completion — clears that assignee's done flag + completionDate in the assign map
+    // (on the creator's own doc), and clears their personal completed status on their own doc.
+    const unmarkAssigneeDone = async (task, assigneeEmail) => {
+        if (task.createdBy !== email || assigneeEmail === email) return; // creator-only, and only for others
+
+        setLoading(true);
+        try {
+            // Creator's own doc: reset this assignee's entry inside the assign map
+            const creatorTaskRef = doc(db, email, "TTD", "List", task.id);
+            await updateDoc(
+                creatorTaskRef,
+                new FieldPath("assign", assigneeEmail, "done"), false,
+                new FieldPath("assign", assigneeEmail, "completionDate"), null
+            );
+
+            // Assignee's own doc: reset their personal completed status as well as their
+            // own entry inside their copy of the assign map, so both sides stay in sync
+            const assigneeTaskRef = doc(db, assigneeEmail, "TTD", "List", task.id);
+            await updateDoc(
+                assigneeTaskRef,
+                "completed", false,
+                "completionDate", null,
+                new FieldPath("assign", assigneeEmail, "done"), false,
+                new FieldPath("assign", assigneeEmail, "completionDate"), null
+            );
+
+            await readTasks();
+
+            toast(`Moved ${assigneeEmail}'s portion back to pending.`, {
+                duration: 2000,
+                position: 'top-center',
+                icon: '↩️',
+                style: { "backgroundColor": "var(--toast_error)", "color": "white" }
+            });
+        } catch (err) {
+            console.error("Error unmarking assignee:", err);
+            toast("Something went wrong. Please try again.", {
+                duration: 2000,
+                position: 'top-center',
+                icon: '❌',
+                style: { "backgroundColor": "var(--toast_error)", "color": "white" }
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className={`defaultWidgetDiv TTDMain ${isMobile ? 'mobile' : 'desk'} ${addTaskPage ? 'add' : ''} ${viewAllTasksPage ? 'viewall' : ''}`} style={{ padding: "0px 0px 40px 15px" }}>
+        <div className={`defaultWidgetDiv TTDMain ${isMobile ? 'mobile' : 'desk'} ${addTaskPage ? 'add' : ''}}`} style={{ padding: "0px 0px 40px 15px" }}>
 
             {
                 <>
