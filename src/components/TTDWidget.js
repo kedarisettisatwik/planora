@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import toast from 'react-hot-toast';
 import { isMobile } from "react-device-detect";
@@ -8,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import '../Styles/Home.css'
 import '../Styles/TTD.css'
 
-import { doc, getDoc, setDoc, arrayUnion, updateDoc, collection, getDocs, FieldPath } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, arrayUnion, updateDoc, collection, getDocs, FieldPath } from "firebase/firestore";
 import { auth, db } from "../firebase";
 
 
@@ -16,6 +15,9 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
 
     const [addTaskPage, setAddTaskPage] = useState(false);
     const [viewAllTasksPage, setViewAllTasksPage] = useState(false);
+
+    // when non-null, the "addNewTask" panel is in edit mode for this task instead of create mode
+    const [editingOriginalTask, setEditingOriginalTask] = useState(null);
 
 
     const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -155,6 +157,48 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         return emails;
     };
 
+    const resetTaskForm = () => {
+        setAddTaskPage(false);
+        setEditingOriginalTask(null);
+        setNewTaskTitle("");
+        setNewTaskDesc("");
+        setStartDate("");
+        setEndDate("");
+        setAssignSelf(true);
+        setAssignConnections([]);
+        setAssignOthers([]);
+        setShowOthersInputs(false);
+    };
+
+    // Opens the "addNewTask" panel pre-filled with an existing task's data so the user can edit it.
+    const openEditTask = (task) => {
+        setEditingOriginalTask(task);
+
+        setNewTaskTitle(task.title || "");
+        setNewTaskDesc(task.description || "");
+        setStartDate(task.startDate || "");
+        setEndDate(task.endDate || "");
+
+        const assignedEmails = task.assign && typeof task.assign === "object"
+            ? Object.keys(task.assign)
+            : [];
+
+        setAssignSelf(assignedEmails.includes(email));
+
+        const assignedConnections = assignedEmails.filter(
+            (mail) => mail !== email && connections.includes(mail)
+        );
+        setAssignConnections(assignedConnections);
+
+        const otherEmails = assignedEmails.filter(
+            (mail) => mail !== email && !connections.includes(mail)
+        );
+        setAssignOthers(otherEmails);
+        setShowOthersInputs(otherEmails.length > 0);
+
+        setAddTaskPage(true);
+    };
+
     const createTaskDB = async () => {
         if (!newTaskTitle.trim()) {
             toast("Please enter a task title.", {
@@ -220,15 +264,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
             }
 
             // reset form on success
-            setAddTaskPage(false);
-            setNewTaskTitle("");
-            setNewTaskDesc("");
-            setStartDate("");
-            setEndDate("");
-            setAssignSelf(true);
-            setAssignConnections([]);
-            setAssignOthers([]);
-            setShowOthersInputs(false);
+            resetTaskForm();
 
             await readTasks();
 
@@ -248,6 +284,117 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
             });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const updateTaskDB = async () => {
+        if (!editingOriginalTask) return;
+
+        if (!newTaskTitle.trim()) {
+            toast("Please enter a task title.", {
+                duration: 2000,
+                position: 'top-center',
+                icon: '❌',
+                style: { "backgroundColor": "var(--toast_error)", "color": "white" }
+            });
+            return;
+        }
+
+        let assignedEmails = buildAssignedEmails();
+
+        if (assignedEmails.length === 0) {
+            toast("Please assign the task to at least one person.", {
+                duration: 2000,
+                position: 'top-center',
+                icon: '❌',
+                style: { "backgroundColor": "var(--toast_error)", "color": "white" }
+            });
+            return;
+        }
+
+        const oldTask = editingOriginalTask;
+
+        // every place the old task's doc could exist: each old assignee, plus the creator's own
+        // copy (covers the IsRequested case where the creator isn't an assignee)
+        const oldTargets = new Set(
+            oldTask.assign && typeof oldTask.assign === "object" ? Object.keys(oldTask.assign) : []
+        );
+        if (oldTask.createdBy) oldTargets.add(oldTask.createdBy);
+
+        const newTaskId = newTaskTitle.trim() + "_" + uuidv4();
+
+        const selfSelected = assignSelf;
+        const hasOtherAssignees = assignedEmails.some(mail => mail !== email);
+
+        const assigneeMap = assignedEmails.reduce((acc, mail) => {
+            acc[mail] = { email: mail, done: false };
+            return acc;
+        }, {});
+
+        const baseTaskData = {
+            id: newTaskId,
+            title: newTaskTitle.trim(),
+            description: desc.trim(),
+            startDate,
+            endDate,
+            assign: assigneeMap,
+            createdBy: email,
+            createdAt: new Date().toISOString(),
+            completed: false,
+            selfSelected: selfSelected,
+            hasOtherAssignees: hasOtherAssignees
+        };
+
+        setLoading(true);
+        try {
+            // delete every existing copy of the old task first
+            for (const targetEmail of oldTargets) {
+                await deleteDoc(doc(db, targetEmail, "TTD", "List", oldTask.id));
+            }
+
+            // create the new task in its place
+            for (const assignedEmail of assignedEmails) {
+                await setDoc(
+                    doc(db, assignedEmail, "TTD", "List", newTaskId),
+                    baseTaskData
+                );
+            }
+
+            if (!selfSelected) {
+                await setDoc(
+                    doc(db, email, "TTD", "List", newTaskId),
+                    { ...baseTaskData, IsRequested: true }
+                );
+            }
+
+            resetTaskForm();
+
+            await readTasks();
+
+            toast('Task updated successfully !!', {
+                duration: 2000,
+                position: 'top-center',
+                icon: '✅',
+                style: { "backgroundColor": "var(--toast_success)", "color": "white" }
+            });
+        } catch (err) {
+            console.error("Error updating task:", err);
+            toast("Something went wrong while updating the task. Please try again.", {
+                duration: 2000,
+                position: 'top-center',
+                icon: '❌',
+                style: { "backgroundColor": "var(--toast_error)", "color": "white" }
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const saveTask = () => {
+        if (editingOriginalTask) {
+            updateTaskDB();
+        } else {
+            createTaskDB();
         }
     };
 
@@ -425,7 +572,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                                 task.listClassName.includes("completedAll");
 
                             const { classes: dateClasses, remainingDays } = getDateStatusClass(task);
-                            const fullClassName = [task.listClassName, ...dateClasses].join(" ");
+                            let fullClassName = [task.listClassName, ...dateClasses];
 
                             // resolve the display completion date for finished tasks
                             let displayCompletionDate = null;
@@ -444,9 +591,29 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                                 }
                             }
 
+                            if (isTaskCompleted && task.endDate && displayCompletionDate) {
+                                const completion = new Date(displayCompletionDate);
+                                const deadline = new Date(task.endDate);
+                                if (completion > deadline) {
+                                    fullClassName.push("overdue");
+                                }
+                            }
+
+                            fullClassName = fullClassName.join(" ")
+
                             return (
                                 <li key={task.id} className={fullClassName}>
-                                    <h3>{task.title}</h3>
+                                    <h3>
+                                        {task.title}
+                                        {task.createdBy === email && (
+                                            <i
+                                                className="fa-solid fa-pen editTaskIcon"
+                                                title="Edit task"
+                                                style={{ fontSize: "13px", marginLeft: "10px", opacity: 0.6, cursor: "pointer" }}
+                                                onClick={() => openEditTask(task)}
+                                            ></i>
+                                        )}
+                                    </h3>
 
                                     <label style={{ fontSize: "16px", opacity: 0.7, marginBottom: "10px", display: "block" }}>Description : </label>
                                     <p style={{ fontSize: "15px", padding: "0 10px 10px 10px", minHeight: "50px", borderBottom: "1px dashed rgb(0,0,0,0.1)" }}>{task.description}</p>
@@ -593,7 +760,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                         {renderTaskList(completedTasks, "Completed ")}
                     </div>
 
-                    <button style={{ position: "absolute", bottom: "10px", right: "10px", padding: "10px", cursor: "pointer", border: "none", outline: "none", background: "var(--base_color)", color: "white", borderRadius: "10px" }} onClick={() => setAddTaskPage(true)}>New Task + </button>
+                    <button style={{ position: "absolute", bottom: "10px", right: "10px", padding: "10px", cursor: "pointer", border: "none", outline: "none", background: "var(--base_color)", color: "white", borderRadius: "10px" }} onClick={() => { setEditingOriginalTask(null); setAddTaskPage(true); }}>New Task + </button>
 
                 </>
 
@@ -601,8 +768,8 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
 
             <div className="addNewTask">
                 <div style={{ marginBottom: "30px" }}>
-                    <i className="fa-solid fa-chevron-left" style={{ display: "inline-block" }} onClick={() => setAddTaskPage(false)}></i>
-                    <h3 style={{ display: "inline-block" }}>SetUp New Task</h3>
+                    <i className="fa-solid fa-chevron-left" style={{ display: "inline-block" }} onClick={resetTaskForm}></i>
+                    <h3 style={{ display: "inline-block" }}>{editingOriginalTask ? "Edit Task" : "SetUp New Task"}</h3>
                 </div>
                 <span style={{ display: "block" }}>Title : </span>
                 <input value={newTaskTitle} placeholder="Create Doc .." onChange={(e) => setNewTaskTitle(e.target.value)}></input>
@@ -666,7 +833,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                 </div>
 
 
-                <button className="saveNewTaskBtn" onClick={createTaskDB}> Save</button>
+                <button className="saveNewTaskBtn" onClick={saveTask}>{editingOriginalTask ? "Update" : "Save"}</button>
 
                 <div style={{ height: "20px" }}></div>
 

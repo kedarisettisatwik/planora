@@ -397,9 +397,7 @@
     display: block;
 }
 .TTDMain .taskblock.completed .remainingDaysLabel,
-.TTDMain .taskblock.completedAll .overDueLabel,
-.TTDMain .taskblock.completedAll .remainingDaysLabel,
-.TTDMain .taskblock.completed .overDueLabel{
+.TTDMain .taskblock.completedAll .remainingDaysLabel{
     display: none;
 }
 
