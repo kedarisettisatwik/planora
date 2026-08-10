@@ -267,13 +267,13 @@
     position: relative;
 }
 .TTDMain .taskblock h3{
-    font-size: 21px;
+    font-size: 19px;
     font-weight: bold;
     opacity: 0.6;
     margin-bottom: 10px;
 }
 .TTDMain .taskblock.completed h3,.TTDMain .taskblock.completedAll h3{
-    max-width: 180px;
+    max-width: calc(100% - 140px);
 }
 .TTDMain .taskblock .btns{
     display: flex;    
