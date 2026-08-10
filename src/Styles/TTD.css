@@ -25,6 +25,61 @@
     background: rgb(0,0,0,0.4);
     border-radius: 6px;
 }
+.TTDMain .descriptionBlock{
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 250px;
+    white-space: break-spaces;
+    margin-bottom: 10px;
+    user-select: text;
+}
+.TTDMain .descriptionBlock::-webkit-scrollbar{
+    width: 5px;
+}
+.TTDMain .descriptionBlock::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.TTDMain .descriptionBlock::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+
+
+.TTDMain textarea::-webkit-scrollbar{
+    width: 5px;
+}
+.TTDMain textarea::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.TTDMain textarea::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+.TTDMain .notesBlock{
+    border-top: 1px dashed rgb(0,0,0,0.1);
+    padding-top: 10px;
+}
+.TTDMain .taskblock.createdforothers .notesBlock,.TTDMain .taskblock.shared .notesBlock{
+    border: none;
+}
+.TTDMain .taskblock.createdforothers .assigneeStatusList,.TTDMain .taskblock.shared .assigneeStatusList{
+    border-top: 1px dashed rgb(0,0,0,0.1);
+    margin:20px 0 10px 0;
+}
+.TTDMain .notesBlock textarea{
+    width: 100%;
+    resize:vertical;
+    min-height: 100px;
+    max-height: 200px;
+    padding: 10px;
+    font-size: 13px;
+    margin: 10px 0;
+    outline: none;
+    border: 1px solid rgb(0,0,0,0.1);
+    border-radius: 10px;
+}
 
 .TTDMain .addNewTask{
     position: absolute;
@@ -271,6 +326,7 @@
     font-weight: bold;
     opacity: 0.6;
     margin-bottom: 10px;
+    user-select: text;
 }
 .TTDMain .taskblock.completed h3,.TTDMain .taskblock.completedAll h3{
     max-width: calc(100% - 140px);
@@ -293,6 +349,7 @@
     background-color: var(--base_color);
     transition: 0.3s;
     display: none;
+    margin-left: 10px;
 }
 .TTDMain .taskblock .Back{
     color: black;
@@ -321,7 +378,6 @@
     padding: 5px 10px;
     border-radius: 10px;
     letter-spacing: 1px;
-    margin-right: 10px;
     display: none;
 }
 .TTDMain .taskblock.createdforothers  .request{
@@ -355,9 +411,12 @@
     gap: 10px;
     font-size: 14px;
     opacity: 0.8;
+    border: 1px solid rgb(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 10px 5px;
 }
 .TTDMain .taskblock .TaskDates {
-    margin:10px 0;
+    margin:0 0 10px 0;
     display: flex;
     justify-content: flex-start;
     flex-direction: row;
@@ -442,4 +501,25 @@
   background: var(--base_color);
   border-color: var(--base_color);
   color: #fff;
+}
+
+.TTDMain .assigneeInfo{
+    width: calc(100% - 20px);
+}
+.TTDMain .assigneeInfo textarea{
+    font-size: 13px;
+    margin-top: 4px;
+    opacity: 0.8;
+    padding: 10px;
+    border: 1px solid rgb(0, 0, 0, 0.1);
+    border-radius: 10px;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: break-spaces;
+    max-height: 200px;
+}
+.TTDMain textarea:focus{
+  border-color: var(--base_color);
+  box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
 }

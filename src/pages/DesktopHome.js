@@ -13,7 +13,6 @@ import NotesWidget from "../components/NotesWidget";
 import MeetingsWidget from "../components/MeetingsWidget";
 import EventsWidget from "../components/EventsWidget";
 import BookmarksWidget from "../components/BookmarksWidget";
-import TrackExpensesWidget from "../components/TrackExpensesWidget";
 import BookWidget from "../components/BookWidget";
 import TrackProjectWidget from "../components/TrackProjectWidget";
 import TeamsWidget from "../components/TeamsWidget";
@@ -28,7 +27,6 @@ const WIDGET_COMPONENTS = {
   Meetings: MeetingsWidget,
   Events: EventsWidget,
   Bookmarks: BookmarksWidget,
-  TrackExpenses: TrackExpensesWidget,
   Book: BookWidget,
   TrackProject: TrackProjectWidget,
   Teams: TeamsWidget,
@@ -44,7 +42,6 @@ const WIDGET_DISPLAY_NAMES = {
   Meetings: "Meetings",
   Events: "Events",
   Bookmarks: "Bookmarks",
-  TrackExpenses: "Track Expenses",
   Book: "Books",
   TrackProject: "Track Project",
   Teams: "Teams",

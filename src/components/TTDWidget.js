@@ -43,6 +43,9 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
 
     const [selectedFilters, setSelectedFilters] = useState(["viewAll"]);
 
+    const [searchInput, setSearchInput] = useState("");   // live input value
+    const [searchQuery, setSearchQuery] = useState("");   // committed value used for filtering (set onBlur)
+
     const FILTER_OPTIONS = [
         { id: "viewAll", label: "View All" },
         { id: "pending", label: "Pending" },
@@ -229,7 +232,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         const hasOtherAssignees = assignedEmails.some(mail => mail !== email);
 
         const assigneeMap = assignedEmails.reduce((acc, mail) => {
-            acc[mail] = { email: mail, done: false };
+            acc[mail] = { email: mail, done: false, privateNotes: "" };
             return acc;
         }, {});
 
@@ -326,8 +329,17 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         const selfSelected = assignSelf;
         const hasOtherAssignees = assignedEmails.some(mail => mail !== email);
 
+        const oldAssign = oldTask.assign && typeof oldTask.assign === "object" ? oldTask.assign : {};
+
         const assigneeMap = assignedEmails.reduce((acc, mail) => {
-            acc[mail] = { email: mail, done: false };
+            acc[mail] = {
+                email: mail,
+                done: false,
+                // privateNotes deliberately left blank here: this object gets written to every
+                // assignee's doc copy below, and a person's private notes must never land in
+                // anyone else's doc. Each person's own privateNotes is restored separately after.
+                privateNotes: ""
+            };
             return acc;
         }, {});
 
@@ -365,6 +377,17 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                     doc(db, email, "TTD", "List", newTaskId),
                     { ...baseTaskData, IsRequested: true }
                 );
+            }
+
+            // Restore each assignee's own private notes — only into their own doc, never anyone else's
+            for (const assignedEmail of assignedEmails) {
+                const oldPrivateNotes = oldAssign[assignedEmail]?.privateNotes;
+                if (oldPrivateNotes) {
+                    await updateDoc(
+                        doc(db, assignedEmail, "TTD", "List", newTaskId),
+                        new FieldPath("assign", assignedEmail, "privateNotes"), oldPrivateNotes
+                    );
+                }
             }
 
             resetTaskForm();
@@ -548,6 +571,13 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         });
     };
 
+    const matchesSearch = (task, query) => {
+        if (!query) return true;
+        const title = (task.title || "").toLowerCase();
+        const description = (task.description || "").toLowerCase();
+        return title.includes(query) || description.includes(query);
+    };
+
     const { activeTasks, completedTasks } = useMemo(() => {
         const activeTasks = [];
         const completedTasks = [];
@@ -555,6 +585,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         tasks.forEach((task) => {
             const bucketed = bucketTask(task);
             if (!matchesFilters(task, bucketed)) return;
+            if (!matchesSearch(task, searchQuery)) return;   // <-- new line
 
             if (bucketed.bucket === "completed") {
                 completedTasks.push(bucketed);
@@ -564,7 +595,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         });
 
         return { activeTasks, completedTasks };
-    }, [tasks, email, selectedFilters]);
+    }, [tasks, email, selectedFilters, searchQuery]);   // <-- add searchQuery to deps
 
 
     const renderTaskList = (list, Blockabel) => {
@@ -648,15 +679,18 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                                         )}
                                     </h3>
 
-                                    <label style={{ fontSize: "16px", opacity: 0.7, marginBottom: "10px", display: "block" }}>Description : </label>
-                                    <p style={{ fontSize: "15px", padding: "0 10px 10px 10px", minHeight: "50px", borderBottom: "1px dashed rgb(0,0,0,0.1)" }}>{task.description}</p>
+                                    <label style={{ fontSize: "13px", opacity: 0.7, marginBottom: "10px", display: "block" }}>Description : </label>
+                                    <p className="descriptionBlock" style={{ fontSize: "13px", padding: "0 10px 10px 10px", minHeight: "30px" }}>{task.description}</p>
 
                                     {showAssignees && task.assign && typeof task.assign === "object" && (
-                                        <ul className="assigneeStatusList" style={{ margin: "10px 0" }}>
+                                        <ul className="assigneeStatusList">
                                             {Object.values(task.assign).map((a) => {
+                                                const isMe = a.email === email;
+                                                const isCreator = task.createdBy === email;
+
                                                 // creator can check/uncheck someone else's box on their behalf;
                                                 // no one can touch their own row here (that's done via the normal Done/Back buttons)
-                                                const canToggle = task.createdBy === email && a.email !== email;
+                                                const canToggle = isCreator && !isMe;
 
                                                 return (
                                                     <li key={a.email} className="assigneeStatusRow">
@@ -667,12 +701,39 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                                                             readOnly={!canToggle}
                                                             onChange={canToggle ? () => (a.done ? unmarkAssigneeDone(task, a.email) : markAssigneeDone(task, a.email)) : undefined}
                                                         />
-                                                        <span>{a.email}</span><br></br>
-                                                        <i>{formatDate(a.completionDate)}</i>
+
+                                                        <div className="assigneeInfo">
+                                                            <span>{a.email}</span>
+                                                            <i style={{display:"inline-block",margin:"0 10px"}}>{formatDate(a.completionDate)}</i>
+                                                            {isMe && (
+                                                            <div className="notesBlock">
+                                                                <label style={{ fontSize: "13px", opacity: 0.7, display: "block" }}>Private Notes :</label>
+                                                                <textarea
+                                                                    defaultValue={a.privateNotes || ""}
+                                                                    placeholder="Only visible to you..."
+                                                                    onBlur={(e) => updatePrivateNotes(task, e.target.value)}
+                                                                    style={{ width: "100%", fontSize: "13px", minHeight: "40px" }}
+                                                                ></textarea>
+                                                            </div>
+                                                        )}
+                                                        </div>
+
                                                     </li>
                                                 );
                                             })}
                                         </ul>
+                                    )}
+
+                                    {!showAssignees && task.assign && task.assign[email] && (
+                                        <div className="notesBlock">
+                                            <label style={{ fontSize: "13px", opacity: 0.7, display: "block" }}>Private Notes :</label>
+                                            <textarea
+                                                defaultValue={task.assign[email].privateNotes || ""}
+                                                placeholder="Only visible to you..."
+                                                onBlur={(e) => updatePrivateNotes(task, e.target.value)}
+                                                style={{ width: "100%", fontSize: "13px", minHeight: "40px" }}
+                                            ></textarea>
+                                        </div>
                                     )}
 
                                     <div className="TaskDates">
@@ -830,12 +891,53 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
     const markAssigneeDone = (task, assigneeEmail) => setAssigneeDoneStatus(task, assigneeEmail, true);
     const unmarkAssigneeDone = (task, assigneeEmail) => setAssigneeDoneStatus(task, assigneeEmail, false);
 
+    // Private notes: only ever written into the assignee's own doc — never the creator's or
+    // any co-assignee's doc — so there's no copy of it anywhere else to read.
+    const updatePrivateNotes = async (task, value) => {
+        if (!task.assign || !task.assign[email]) return; // only the assignee can update their own notes
+
+        try {
+            const ownRef = doc(db, email, "TTD", "List", task.id);
+            await updateDoc(ownRef, new FieldPath("assign", email, "privateNotes"), value);
+            await readTasks();
+        } catch (err) {
+            console.error("Error saving private notes:", err);
+            toast("Failed to save private notes.", {
+                duration: 2000,
+                position: 'top-center',
+                icon: '❌',
+                style: { "backgroundColor": "var(--toast_error)", "color": "white" }
+            });
+        }
+    };
+
+    
+
     return (
         <div className={`defaultWidgetDiv TTDMain ${isMobile ? 'mobile' : 'desk'} ${addTaskPage ? 'add' : ''} ${viewAllTasksPage ? 'viewall' : ''}`} style={{ padding: "0px 0px 40px 15px" }}>
 
             {
                 <>
                     <div className="taskFilterBar">
+                        <input
+                            style={{
+                            outline: "none",
+                            border: "1px solid rgba(0, 0, 0, 0.2)",
+                            paddingLeft: "10px",
+                            borderRadius: "20px",
+                            }}
+                            type="text"
+                            placeholder="Search tasks..."
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
+                            onBlur={() => setSearchQuery(searchInput.trim().toLowerCase())}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    setSearchQuery(searchInput.trim().toLowerCase());
+                                    e.target.blur();
+                                }
+                            }}
+                        />
                         {FILTER_OPTIONS.map((opt) => (
                             <button
                                 key={opt.id}
