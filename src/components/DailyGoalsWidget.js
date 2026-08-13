@@ -484,13 +484,14 @@ useEffect(() => {
                   style={{ outline: "none", border: "none", padding: "0 5px", cursor: "pointer", opacity: "0.6", fontWeight: "bold", background: "none" }}
                 />
 
-                <h5>Note of the Day : </h5>
+                <h5 style={{marginLeft:"6px"}}>Note of the Day : </h5>
                 <textarea
+                  className="noteDay"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   onBlur={(e) => saveNote(e.target.value)}
                   placeholder="Note of the day..."
-                  style={{ width: "100%", minHeight: "60px", resize: "vertical", border: "1px solid #e0e0e0", borderRadius: "8px", padding: "8px", outline: "none" }}
+                  style={{ width: "100%",marginLeft:"5px", minHeight: "60px", resize: "vertical", borderRadius: "8px", padding: "8px", outline: "none" }}
                 />
                 <button onClick={() => setAddGoalPage(true)}>Create Your First Goal + </button>
               </div>
@@ -506,12 +507,12 @@ useEffect(() => {
                   <span style={{ fontSize: "12px", fontWeight: "bold", opacity: 0.6, cursor: "pointer", letterSpacing: "1px" }} onClick={() => setViewAllGoalsPage(true)}>view All</span>
                 </div>
 
-                <div className="goalsSummary" style={{ position: 'relative', margin: '25px 0 16px' }}>
+                <div className="goalsSummary" style={{ position: 'relative', margin: '15px 0 16px',paddingLeft:'5px' }}>
                 <span
                   style={{
                     position: 'absolute',
-                    top: '-18px',
-                    right: 0,
+                    bottom: '-25px',
+                    right: '5px',
                     fontSize: '12px',
                     opacity: 0.6,
                     fontWeight: 'bold',
@@ -543,14 +544,15 @@ useEffect(() => {
                 </div>
               </div>
 
-              <h5>Note of the Day : </h5>
+              <h5 style={{marginLeft:"6px"}}>Note of the Day : </h5>
               <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  onBlur={(e) => saveNote(e.target.value)}
-                  placeholder="Note of the day..."
-                  style={{ width: "100%", minHeight: "60px", resize: "vertical", border: "1px solid #e0e0e0", borderRadius: "8px", padding: "8px", marginTop: "12px", outline: "none" }}
-                />
+                className="noteDay"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                onBlur={(e) => saveNote(e.target.value)}
+                placeholder="Note of the day..."
+                style={{ width: "100%",marginLeft:"5px",marginTop:"10px", minHeight: "60px", resize: "vertical", borderRadius: "8px", padding: "8px", outline: "none" }}
+              />
 
                 <ul className={goalsForSelectedDate.length === 0 ? "NoGoals GoalsAsOfDate" : "GoalsAsOfDate"}>
                       {sortedGoalsForSelectedDate.length === 0 ? (

@@ -496,3 +496,10 @@
 .DailyGoalsMain .goalListItem.goalDone{
   opacity: 0.6;
 }
+.DailyGoalsMain .noteDay{
+  border: "1px solid #e0e0e0"
+}
+.DailyGoalsMain .noteDay:focus{
+  border-color: var(--base_color);
+  box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
+}
