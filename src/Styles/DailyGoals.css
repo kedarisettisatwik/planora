@@ -11,18 +11,25 @@
 }
 .DailyGoalsMain{
     overflow-x: hidden;
-    overflow-y : auto;
+    overflow-y: auto;
 }
-.DailyGoalsMain::-webkit-scrollbar{
+.DailyGoalsScrollArea::-webkit-scrollbar, .DailyGoalsMain::-webkit-scrollbar{
     width: 5px;
 }
-.DailyGoalsMain::-webkit-scrollbar-track {
+.DailyGoalsScrollArea::-webkit-scrollbar-track, .DailyGoalsMain::-webkit-scrollbar-track {
     background: white; 
     border-radius: 6px;
 }
-.DailyGoalsMain::-webkit-scrollbar-thumb {
+.DailyGoalsScrollArea::-webkit-scrollbar-thumb, .DailyGoalsMain::-webkit-scrollbar-thumb {
     background: rgb(0,0,0,0.4);
     border-radius: 6px;
+}
+.DailyGoalsScrollArea {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  padding-bottom: 20px; 
+  padding-right: 15px;
 }
 
 .DailyGoalsMain .emptyWidgetAdd{
@@ -36,6 +43,7 @@
     border: none;
     color: wheat;
     border-radius: 10px;
+    margin: 50px auto;
 }
 .DailyGoalsMain .addNewGoal{
     position: absolute;
@@ -465,8 +473,6 @@
   padding-top: 5px;
   padding-bottom: 20px;
   border-top: 1px dashed rgb(0,0,0,0.1);
-  height: calc(100% - 120px);
-  overflow-y: auto;
 }
 .DailyGoalsMain .GoalsAsOfDate::-webkit-scrollbar{
     width: 5px;

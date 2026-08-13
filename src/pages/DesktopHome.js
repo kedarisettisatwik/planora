@@ -8,7 +8,6 @@ import '../Styles/DesktopNav.css';
 
 import DailyGoalsWidget from "../components/DailyGoalsWidget";
 import TTDWidget from "../components/TTDWidget";
-import DairyWidget from "../components/DairyWidget";
 import NotesWidget from "../components/NotesWidget";
 import MeetingsWidget from "../components/MeetingsWidget";
 import EventsWidget from "../components/EventsWidget";
@@ -22,7 +21,6 @@ import SchedulesWidget from '../components/SchedulesWidget';
 const WIDGET_COMPONENTS = {
   DailyGoals: DailyGoalsWidget,
   TTD: TTDWidget,
-  Dairy: DairyWidget,
   Notes: NotesWidget,
   Meetings: MeetingsWidget,
   Events: EventsWidget,
@@ -37,7 +35,6 @@ const WIDGET_COMPONENTS = {
 const WIDGET_DISPLAY_NAMES = {
   DailyGoals: "Daily Goals",
   TTD: "Things to do",
-  Dairy: "Diary",
   Notes: "Notes",
   Meetings: "Meetings",
   Events: "Events",

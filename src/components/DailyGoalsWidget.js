@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from 'react-hot-toast';
 import { isMobile } from "react-device-detect";
-import { useMemo } from "react"; // add to your existing react import
+import { useMemo } from "react";
 
 import '../Styles/Home.css'
 import '../Styles/DailyGoals.css'
@@ -43,6 +43,12 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [goalsFetched, setGoalsFetched] = useState(false);
+
+
+  const [note, setNote] = useState("");
+  const [diaryData, setDiaryData] = useState({}); // { "2026-08-13": { note: "..." }, ... }
+  const [diaryFetched, setDiaryFetched] = useState(false);
+  const [savingNote, setSavingNote] = useState(false);
 
   const getLocalISODate = (d = new Date()) => {
     const offsetMs = d.getTimezoneOffset() * 60000;   // e.g. -330 min for IST → -19800000 ms
@@ -91,6 +97,56 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
     () => goalsList.filter((g) => isGoalOnDate(g, date)),
     [goalsList, date]
   );
+
+  useEffect(() => {
+    if (!email) return;
+    if (diaryFetched) return;
+
+    const fetchDiary = async () => {
+      try {
+        const snap = await getDoc(doc(db, email, "diary"));
+        setDiaryData(snap.exists() ? snap.data() : {});
+        setDiaryFetched(true);
+      } catch (err) {
+        console.error("Error fetching diary:", err);
+        toast("Couldn't load your notes.", {
+          duration: 2000,
+          position: 'top-center',
+          icon: '❌',
+          style: {"backgroundColor":"var(--toast_error)","color":"white"}
+        });
+      }
+    };
+
+    fetchDiary();
+  }, [email, diaryFetched]);
+
+  useEffect(() => {
+      setNote(diaryData[date]?.note || "");
+    }, [date, diaryData]);
+
+    const saveNote = async (value) => {
+    if (!email) return;
+    setSavingNote(true);
+    try {
+      await setDoc(
+        doc(db, email, "diary"),
+        { [date]: { note: value } },
+        { merge: true }
+      );
+      setDiaryData((prev) => ({ ...prev, [date]: { ...prev[date], note: value } }));
+    } catch (err) {
+      console.error("Error saving note:", err);
+      toast("Couldn't save your note.", {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+    } finally {
+      setSavingNote(false);
+    }
+  };
 
   useEffect(() => {
     if (!email) return;
@@ -416,24 +472,40 @@ useEffect(() => {
   : Math.round((goalCounts.completed / goalCounts.total) * 100);
 
     return (
-        <div className={`defaultWidgetDiv DailyGoalsMain ${isMobile ? 'mobile' : 'desk'} ${addGoalPage ? 'add' : ''} ${viewAllGoalsPage ? 'viewall' : ''}` } style={{padding:"0 10px"}}>
+        <div className={`defaultWidgetDiv DailyGoalsMain ${isMobile ? 'mobile' : 'desk'} ${addGoalPage ? 'add' : ''} ${viewAllGoalsPage ? 'viewall' : ''}` } style={{padding:"0 0px 0 10px"}}>
 
-          {
-            (isWidgetEmpty 
+          <div className="DailyGoalsScrollArea">
+            {isWidgetEmpty ? (
+              <div className="emptyWidgetAdd" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "12px" }}>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  style={{ outline: "none", border: "none", padding: "0 5px", cursor: "pointer", opacity: "0.6", fontWeight: "bold", background: "none" }}
+                />
 
-              ? (
-                <div className="emptyWidgetAdd" style={{width:"100%",display:"flex",justifyContent:"center",alignItems:"center"}}>
-                  <button onClick={() => setAddGoalPage(true)}>Create Your First Goal + </button>
+                <h5>Note of the Day : </h5>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  onBlur={(e) => saveNote(e.target.value)}
+                  placeholder="Note of the day..."
+                  style={{ width: "100%", minHeight: "60px", resize: "vertical", border: "1px solid #e0e0e0", borderRadius: "8px", padding: "8px", outline: "none" }}
+                />
+                <button onClick={() => setAddGoalPage(true)}>Create Your First Goal + </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",marginTop:"5px" }}>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    style={{ outline: "none", border: "none", padding: "0 5px", cursor: "pointer", opacity: "0.6", fontWeight: "bold", background: "none" }}
+                  />
+                  <span style={{ fontSize: "12px", fontWeight: "bold", opacity: 0.6, cursor: "pointer", letterSpacing: "1px" }} onClick={() => setViewAllGoalsPage(true)}>view All</span>
                 </div>
-              )
-              :
-              (
-                
-                <>
-                <span style={{position: "absolute",top: 0,right: "10px",fontSize: "12px",fontWeight: "bold",opacity: 0.6,cursor: "pointer",letterSpacing:"1px"}} onClick={() => setViewAllGoalsPage(true)}>view All</span>
-                <button style={{position:"absolute",bottom:"10px",right:"10px",padding:"10px",cursor:"pointer",border:"none",outline:"none",background:"var(--base_color)",color:"white",borderRadius:"10px"}} onClick={() => setAddGoalPage(true)}>Add Goal + </button>
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{outline:"none",border:"none",padding:"0 5px",cursor:"pointer",opacity:"0.6",fontWeight:"bold",background:"none"}}></input>
-                
+
                 <div className="goalsSummary" style={{ position: 'relative', margin: '25px 0 16px' }}>
                 <span
                   style={{
@@ -471,29 +543,39 @@ useEffect(() => {
                 </div>
               </div>
 
+              <h5>Note of the Day : </h5>
+              <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  onBlur={(e) => saveNote(e.target.value)}
+                  placeholder="Note of the day..."
+                  style={{ width: "100%", minHeight: "60px", resize: "vertical", border: "1px solid #e0e0e0", borderRadius: "8px", padding: "8px", marginTop: "12px", outline: "none" }}
+                />
+
                 <ul className={goalsForSelectedDate.length === 0 ? "NoGoals GoalsAsOfDate" : "GoalsAsOfDate"}>
-                    {sortedGoalsForSelectedDate.length === 0 ? (
-                      <li className="noGoalsForDate" style={{ fontSize: '15px', textAlign: 'center', margin: '100px', opacity: 0.6, listStyle: 'none' }}>No goals for this date</li>
-                    ) : (
-                      sortedGoalsForSelectedDate.map((goal) => (
-                        <li key={goal.id} className={isGoalCompletedOnDate(goal, date) ? "goalDone goalListItem" : "goalListItem"}>
-                          <input
-                            type="checkbox"
-                            checked={isGoalCompletedOnDate(goal, date)}
-                            onChange={() => toggleGoalCompletion(goal.id, date)}
-                            style={{cursor:"pointer"}}
-                          />
-                          <span>
-                            {goal.title}
-                          </span>
-                        </li>
-                      ))
-                    )}
-                  </ul>
-                </>
-              )
-            )
-          }
+                      {sortedGoalsForSelectedDate.length === 0 ? (
+                        <li className="noGoalsForDate" style={{ fontSize: '15px', textAlign: 'center', margin: '100px', opacity: 0.6, listStyle: 'none' }}>No goals for this date</li>
+                      ) : (
+                        sortedGoalsForSelectedDate.map((goal) => (
+                          <li key={goal.id} className={isGoalCompletedOnDate(goal, date) ? "goalDone goalListItem" : "goalListItem"}>
+                            <input
+                              type="checkbox"
+                              checked={isGoalCompletedOnDate(goal, date)}
+                              onChange={() => toggleGoalCompletion(goal.id, date)}
+                              style={{cursor:"pointer"}}
+                            />
+                            <span>
+                              {goal.title}
+                            </span>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                    <button style={{ position: "absolute", bottom: "10px", right: "10px", padding: "10px", cursor: "pointer", border: "none", outline: "none", background: "var(--base_color)", color: "white", borderRadius: "10px" }} onClick={() => setAddGoalPage(true)}>Add Goal + </button>
+                
+              </>
+            )}
+          </div>
 
           <div className="addNewGoal">
             <div style={{marginBottom:"30px"}}>

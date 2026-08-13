@@ -13,7 +13,7 @@
     left: 0;
 }
 .DesktopNav.open{
-    width: 250px;
+    width: 270px;
 }
 .boardDesktop::-webkit-scrollbar{
     width: 5px;
@@ -78,7 +78,7 @@
     line-height: 35px;
 }
 .DesktopNav .menuDetails {
-    width: 250px;
+    width: 270px;
     height: 100%;
     transform: translateX(-100%);
     transition:0.5s;

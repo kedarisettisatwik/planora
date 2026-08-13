@@ -712,7 +712,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                                                                     defaultValue={a.privateNotes || ""}
                                                                     placeholder="Only visible to you..."
                                                                     onBlur={(e) => updatePrivateNotes(task, e.target.value)}
-                                                                    style={{ width: "100%", fontSize: "13px", minHeight: "40px" }}
+                                                                    style={{ width: "100%", fontSize: "13px", minHeight: "30px" }}
                                                                 ></textarea>
                                                             </div>
                                                         )}
