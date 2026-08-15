@@ -484,14 +484,14 @@ useEffect(() => {
                   style={{ outline: "none", border: "none", padding: "0 5px", cursor: "pointer", opacity: "0.6", fontWeight: "bold", background: "none" }}
                 />
 
-                <h5 style={{marginLeft:"6px"}}>Note of the Day : </h5>
+                <h5 style={{marginLeft:"6px",opacity:"0.5"}}>Note of the Day : </h5>
                 <textarea
                   className="noteDay"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   onBlur={(e) => saveNote(e.target.value)}
-                  placeholder="Note of the day..."
-                  style={{ width: "100%",marginLeft:"5px", minHeight: "60px", resize: "vertical", borderRadius: "8px", padding: "8px", outline: "none" }}
+                  placeholder="Memorize your day here .. "
+                  style={{ width: "100%",marginLeft:"5px",marginTop:"10px", minHeight: "60px", resize: "vertical", borderRadius: "8px", padding: "8px", outline: "none" }}
                 />
                 <button onClick={() => setAddGoalPage(true)}>Create Your First Goal + </button>
               </div>
@@ -544,13 +544,13 @@ useEffect(() => {
                 </div>
               </div>
 
-              <h5 style={{marginLeft:"6px"}}>Note of the Day : </h5>
+              <h5 style={{marginLeft:"6px",opacity:"0.5"}}>Note of the Day : </h5>
               <textarea
                 className="noteDay"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 onBlur={(e) => saveNote(e.target.value)}
-                placeholder="Note of the day..."
+                placeholder="Memorize your day here .. "
                 style={{ width: "100%",marginLeft:"5px",marginTop:"10px", minHeight: "60px", resize: "vertical", borderRadius: "8px", padding: "8px", outline: "none" }}
               />
 

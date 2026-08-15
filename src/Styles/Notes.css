@@ -1,0 +1,64 @@
+.notesWidget{
+    width: 700px;
+}
+@media (max-width: 700px) {
+  .notesWidget {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+.notesWidget .notesWidgetLayout .notesListPanel::-webkit-scrollbar{
+    width: 5px;
+}
+.notesWidget .notesWidgetLayout .notesListPanel::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.notesWidget .notesWidgetLayout .notesListPanel::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+.notesWidget .notesListPanel button{
+    padding: 10px;
+    outline: none;
+    border: none;
+    background: var(--base_color);
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.notesWidget .notesListPanel input{
+    padding: 6px;
+    border-radius: 5px;
+    outline: none;
+    border: 1px solid rgb(0, 0, 0, 0.2);
+    margin: 10px 0;
+}
+.notesWidget textarea::-webkit-scrollbar{
+    width: 5px;
+}
+.notesWidget textarea::-webkit-scrollbar-track, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.notesWidget textarea::-webkit-scrollbar-thumb, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-thumb{
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+.notesWidget .notesEditorPanel input{
+    outline: none;
+    border: 1px solid rgb(0,0,0,0.1);
+    border-radius: 5px;
+}
+.notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar{
+    height: 5px;
+}
+.notesWidget textarea{
+    border: 1px solid rgb(0,0,0,0.2);
+    border-radius: 10px;
+    outline: none;
+}
+.notesWidget textarea:focus, .notesWidget .notesEditorPanel input:focus {
+  border-color: var(--base_color);
+  box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
+}
