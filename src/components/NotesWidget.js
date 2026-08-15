@@ -25,6 +25,8 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
     const [checkedLabels, setCheckedLabels] = useState([]);
     const [showLabelFilter, setShowLabelFilter] = useState(false);
 
+    const [openAddNew,setOpenAddNew] = useState(false);
+
     // FIX: this needs to be state, not a ref — updating a ref doesn't
     // trigger the isDirty useMemo to recompute, so the Save button
     // kept showing "dirty" after a successful save.
@@ -220,7 +222,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
     }, [notes, selectedNoteId, initialLoad]);
 
     return (
-        <div className={`defaultWidgetDiv notesWidget ${isMobile ? 'mobile' : 'desk'}`} style={{ padding: "10px" }}>
+        <div className={`defaultWidgetDiv notesWidget ${isMobile ? 'mobile' : 'desk'}`} style={{ padding: "0 10px" }}>
 
             {initialLoad ? null : notes.length === 0 ? (
                 <div className="notesEmptyState" style={{
@@ -237,7 +239,6 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
             ) : (
                 <div className="notesWidgetLayout" style={{
                     display: "flex",
-                    height: "500px",
                     width: "100%",
                     gap: "10px"
                 }}>
@@ -250,12 +251,19 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                             flexDirection: "column",
                             gap: "8px",
                             overflowY: "auto",
-                            paddingRight:"5px"
+                            paddingRight:"5px",
+                            position:"relative"
                         }}>
-                            
-                            <div style={{ display: "flex", gap: "8px" }}>
-                                <button onClick={() => createNewItem("note")} style={{ flex: 1 }}>New Note +</button>
-                                <button onClick={() => createNewItem("todo")} style={{ flex: 1 }}>New List +</button>
+
+                            <div className="createBtns">
+                                <span onClick={() => setOpenAddNew(prev => !prev)}>New +</span>
+
+                                {openAddNew && (
+                                <div className="addOptions">
+                                    <button onClick={() => createNewItem("note")}>Note +</button>
+                                    <button onClick={() => createNewItem("todo")}>List +</button>
+                                </div>
+                                )}
                             </div>
 
                             <input
@@ -263,7 +271,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                                 placeholder="Search by title..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                style={{ padding: "6px" }}
+                                style={{ padding: "10px" }}
                             />
 
                             {allLabels.length > 0 && (
@@ -358,6 +366,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                                     </div>
                                 ))
                             )}
+                            
                         </div>
                     )}
 

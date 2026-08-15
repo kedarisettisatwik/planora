@@ -7,6 +7,12 @@
     max-width: 100%;
   }
 }
+.notesWidget.desk .notesWidgetLayout{
+    height: 500px;
+}
+.notesWidget.mobile .notesWidgetLayout{
+    height: calc(100vh - 150px);
+}
 .notesWidget .notesWidgetLayout .notesListPanel::-webkit-scrollbar{
     width: 5px;
 }
@@ -33,6 +39,7 @@
     outline: none;
     border: 1px solid rgb(0, 0, 0, 0.2);
     margin: 10px 0;
+    margin-top: 0;
 }
 .notesWidget .richTextEditor::-webkit-scrollbar, .notesWidget .todoItemsList::-webkit-scrollbar {
     width: 5px;
@@ -53,12 +60,8 @@
 .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar{
     height: 5px;
 }
-.notesWidget textarea{
-    border: 1px solid rgb(0,0,0,0.2);
-    border-radius: 10px;
-    outline: none;
-}
-.notesWidget textarea:focus, .notesWidget .notesEditorPanel input:focus {
+
+.notesWidget .notesEditorPanel input:focus {
   border-color: var(--base_color);
   box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
 }
@@ -71,6 +74,9 @@
     overflow: hidden;
     overflow-y: scroll;
     font-size: 0.83em;
+}
+.notesWidget.mobile .richTextEditor{
+    height: calc(100vh - 300px);
 }
 .notesWidget .editorToolbar{
     display: flex;
@@ -175,4 +181,42 @@
 }
 .notesWidget .todoItem .todoDeleteBtn:hover{
     color: red;
+}
+.notesWidget .createBtns{
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+}
+.notesWidget .createBtns span{
+    padding: 0 10px;
+    cursor: pointer;
+    background: var(--base_color);
+    height: 30px;
+    display: inline-block;
+    line-height: 30px;
+    font-size: 14px;
+    text-align: center;
+    color: white;
+    border-radius: 5px;
+}
+.notesWidget .createBtns .addOptions{
+    z-index: 10;
+    position: absolute;
+    bottom: 0px;
+    padding: 0 5px 0 20px;
+    background: white;
+    min-height: 80px;
+    transform: translateY(calc(100% + 10px));
+    border-radius: 10px;
+    box-shadow: 0 0px 15px rgb(0, 0, 0, 0.2);
+}
+.notesWidget .createBtns .addOptions button{
+    display: block;
+    width: 100%;
+    text-align: right;
+    margin: 5px 0;
+    background: none;
+    color: black;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
