@@ -6,7 +6,6 @@ import '../Styles/MobileHome.css'
 import DailyGoalsWidget from "../components/DailyGoalsWidget";
 import TTDWidget from "../components/TTDWidget";
 import NotesWidget from "../components/NotesWidget";
-import MeetingsWidget from "../components/MeetingsWidget";
 import EventsWidget from "../components/EventsWidget";
 import BookmarksWidget from "../components/BookmarksWidget";
 import BookWidget from "../components/BookWidget";
@@ -14,6 +13,8 @@ import TrackProjectWidget from "../components/TrackProjectWidget";
 import TeamsWidget from "../components/TeamsWidget";
 import FormsWidget from '../components/FormsWidget';
 import SchedulesWidget from '../components/SchedulesWidget';
+import Connections from '../components/Connections';
+import Tracker from '../components/Tracker';
 
 import { doc, getDoc, setDoc, arrayUnion, arrayRemove, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
@@ -22,28 +23,30 @@ const WIDGET_COMPONENTS = {
   DailyGoals: DailyGoalsWidget,
   TTD: TTDWidget,
   Notes: NotesWidget,
-  Meetings: MeetingsWidget,
   Events: EventsWidget,
   Bookmarks: BookmarksWidget,
   Book: BookWidget,
   TrackProject: TrackProjectWidget,
   Teams: TeamsWidget,
   Forms:FormsWidget,
-  Schedules: SchedulesWidget
+  Schedules: SchedulesWidget,
+  Connections:Connections,
+  Tracker:Tracker
 };
 
 const WIDGET_DISPLAY_NAMES = {
   DailyGoals: "Daily Goals",
   TTD: "Things to do",
   Notes: "Notes",
-  Meetings: "Meetings",
-  Events: "Events",
+  Events: "Events / Meetings",
   Bookmarks: "Bookmarks",
   Book: "Books",
-  TrackProject: "Track Project",
+  TrackProject: "Workflows",
   Teams: "Teams",
   Forms:"Forms",
-  Schedules:"Schedules"
+  Schedules:"Schedules",
+  Connections:"Connections",
+  Tracker:"Tracker"
 };
 
 function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
@@ -166,104 +169,6 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
         }, [homeWidget]);
 
 
-    // fetch connections 
-  useEffect(() => {
-    if (!email) return;
-
-    const fetchConnections = async () => {
-    try {
-        const snap = await getDoc(doc(db, email, "Connections"));
-        const data = snap.exists() ? snap.data().List || [] : [];
-
-        setConnections(data);
-        console.log(data);
-    } catch (err) {
-        console.error("Error fetching connections:", err);
-    }
-    };
-
-    fetchConnections();
-    }, [email]); 
-    
-  const addFrndMailtoDB = async () => {
-    const trimmedMail = addFrndMail.trim().toLowerCase();
-
-    // basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!trimmedMail || !emailRegex.test(trimmedMail)) {
-        toast("Please enter a valid email.", {
-            duration: 2000,
-            position: 'top-center',
-            icon: '❌',
-            style: {"backgroundColor":"var(--toast_error)","color":"white"}
-        });
-        return;
-        }
-
-        if (connections.includes(trimmedMail)) {
-        toast("This friend is already added.", {
-            duration: 2000,
-            position: 'top-center',
-            icon: '❌',
-            style: {"backgroundColor":"var(--toast_error)","color":"white"}
-        });
-        return;
-        }
-
-        setLoading(true);
-        try {
-        const docRef = doc(db, email, "Connections");
-        await setDoc(docRef, { List: arrayUnion(trimmedMail) }, { merge: true });
-
-        setConnections((prev) => [...prev, trimmedMail]);
-        setAddFrndMail("");
-
-        toast('Friend added !!', {
-            duration: 2000,
-            position: 'top-center',
-            icon: '✅',
-            style: {"backgroundColor":"var(--toast_success)","color":"white"}
-        });
-        } catch (err) {
-        console.error("Error adding friend:", err);
-        toast("Something went wrong. Please try again.", {
-            duration: 2000,
-            position: 'top-center',
-            icon: '❌',
-            style: {"backgroundColor":"var(--toast_error)","color":"white"}
-        });
-        } finally {
-        setLoading(false);
-        }
-    };
-
-  const deleteThisRecord = async (connToDelete) => {
-    setLoading(true);
-    try {
-      const docRef = doc(db, email, "Connections");
-      await updateDoc(docRef, { List: arrayRemove(connToDelete) });
-
-      setConnections((prev) => prev.filter((c) => c !== connToDelete));
-
-      toast('Friend removed.', {
-        duration: 2000,
-        position: 'top-center',
-        icon: '✅',
-        style: {"backgroundColor":"var(--toast_success)","color":"white"}
-      });
-    } catch (err) {
-      console.error("Error deleting friend:", err);
-      toast("Something went wrong. Please try again.", {
-        duration: 2000,
-        position: 'top-center',
-        icon: '❌',
-        style: {"backgroundColor":"var(--toast_error)","color":"white"}
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
     return(
         <section className={`MobileHome ${navOpen ? 'active' : ''}`} >
 
@@ -317,28 +222,6 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
                                 <option key={type} value={type}>{WIDGET_DISPLAY_NAMES[type]}</option>
                         ))}
                     </select>
-
-                    <span style={{ margin: "20px 0 10px 0",fontSize: "15px",width:"100%"}}>Connections : </span>
-
-                    <ul style={{ marginBottom: "0px" }} className="List">
-                        {Array.isArray(connections) &&
-                            connections.map((conn, index) => (
-                            <li key={index} className="connections">
-                                <span>{conn} </span>
-                                <i className="fa-solid fa-trash" onClick={() => deleteThisRecord(conn)}></i>
-                            </li>
-                            ))}
-                        <div style={{ margin: "20px 0 10px 0" }} className="addFrnd">
-                            <input
-                            type="email"
-                            placeholder="friend@gmail.com"
-                            autoComplete="off"
-                            value={addFrndMail}
-                            onChange={(e) => setAddFrndMail(e.target.value)}
-                            />
-                            <i onClick={addFrndMailtoDB}>Add +</i>
-                        </div>
-                    </ul>
 
                     <p style={{paddingTop:"20px",borderTop:"1px dashed rgb(0, 0, 0, 0.2)",cursor:"pointer",opacity:"0.6"}} onClick={() => window.location.reload()}>
                         Refresh Data<i className="fas fa-sync" style={{display:"inline-block",marginLeft:"10px"}}></i>

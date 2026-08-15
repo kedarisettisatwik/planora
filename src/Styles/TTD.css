@@ -44,6 +44,14 @@
     background: rgb(0,0,0,0.4);
     border-radius: 6px;
 }
+.TTDMain .recordsCount{
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 10px;
+    font-size: 13px;
+    opacity: 0.6;
+}
 
 
 .TTDMain textarea::-webkit-scrollbar{

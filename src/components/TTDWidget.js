@@ -955,6 +955,10 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                         {renderTaskList(completedTasks, "Completed ")}
                     </div>
 
+                    <div className="recordsCount">
+                        <span>Records : </span>
+                        <label>{activeTasks.length + completedTasks.length}</label>
+                    </div>
                     <button style={{ position: "absolute", bottom: "10px", right: "10px", padding: "10px", cursor: "pointer", border: "none", outline: "none", background: "var(--base_color)", color: "white", borderRadius: "10px" }} onClick={() => { setEditingOriginalTask(null); setAddTaskPage(true); }}>New Task + </button>
 
                 </>

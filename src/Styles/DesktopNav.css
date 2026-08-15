@@ -13,7 +13,7 @@
     left: 0;
 }
 .DesktopNav.open{
-    width: 270px;
+    width: 250px;
 }
 .boardDesktop::-webkit-scrollbar{
     width: 5px;
@@ -78,7 +78,7 @@
     line-height: 35px;
 }
 .DesktopNav .menuDetails {
-    width: 270px;
+    width: 250px;
     height: 100%;
     transform: translateX(-100%);
     transition:0.5s;
@@ -137,6 +137,7 @@
     background-color: white;
     padding: 10px 0 0 60px;
     border-top: 1px solid rgb(0,0,0,0.2);
+    box-shadow: 0 -10px 10px rgb(0, 0, 0, 0.1);
 }
 .DesktopNav .menuDetails ul{
 list-style: none;
@@ -203,47 +204,4 @@ margin-bottom: 20px;
 } 
 .boardDesktop .savePositions.active{
     display: block;
-}
-.DesktopNav .menuDetails ul li.connections{
-    padding-left: 0px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.DesktopNav .connections span{
-    display: inline-block;
-    width:150px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-right: 15px;
-}
-.DesktopNav .menuDetails ul li.connections:hover{
-    color: black;
-}
-.DesktopNav .menuDetails .connections i{
-    transition:0.3s;
-}
-.DesktopNav .menuDetails .connections i:hover{
-    color: var(--base_color);
-}
-.DesktopNav .addFrnd input{
-    padding: 5px;
-    outline: none;
-    border: 1px solid rgb(0, 0, 0, 0.2);
-    border-radius: 5px;
-    margin-right: 10px;
-    font-size: 13px;
-}
-.DesktopNav .addFrnd input:focus {
-  border-color: var(--base_color);
-  box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
-}
-.DesktopNav .addFrnd i{
-    font-size: 13px;
-    background: var(--base_color);
-    color: white;
-    padding: 5px;
-    border-radius: 5px;
-    cursor: pointer;
 }

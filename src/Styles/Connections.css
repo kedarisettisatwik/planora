@@ -1,0 +1,64 @@
+
+.connections  ul{
+    margin: 10px 0;
+    margin-top: 20px;
+    max-height: 280px;
+    overflow: hidden;
+    padding-right: 10px;
+    overflow-y: auto;
+}
+.connections  ul::-webkit-scrollbar{
+    width: 5px;
+}
+.connections  ul::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.connections  ul::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+.connections  ul li{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 10px;
+}
+.connections span{
+    display: inline-block;
+    font-size: 14px;
+}
+.connections ul li:hover{
+    color: black;
+}
+.connections i{
+    transition:0.3s;
+    cursor: pointer;
+}
+.connections i:hover{
+    color: var(--base_color);
+}
+.connections .addFrnd input{
+    padding: 8px;
+    outline: none;
+    border: 1px solid rgb(0, 0, 0, 0.2);
+    border-radius: 5px;
+    margin-right: 10px;
+    font-size: 13px;
+    width: 250px;
+}
+.connections .addFrnd input:focus {
+  border-color: var(--base_color);
+  box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
+}
+.connections .addFrnd i{
+    font-size: 13px;
+    background: var(--base_color);
+    color: white;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+}

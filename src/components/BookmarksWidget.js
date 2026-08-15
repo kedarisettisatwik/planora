@@ -508,7 +508,7 @@ function BookmarksWidget ({ email, x, y, setLoading, setPopup, setPopupContent, 
                         New Folder +
                     </button>
                     <button onClick={expandAll} style={{ padding: "8px", cursor: "pointer", marginRight: "10px", borderRadius: "5px", outline: "none", border: "none" }}>
-                        Open All
+                        Expand All
                     </button>
                     <button onClick={collapseAll} style={{ padding: "8px", cursor: "pointer", marginRight: "10px", borderRadius: "5px", outline: "none", border: "none" }}>
                         Close All
