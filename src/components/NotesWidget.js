@@ -204,6 +204,12 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
     const showListOnMobile = isMobile && !selectedNoteId;
     const showEditorOnMobile = isMobile && !!selectedNoteId;
 
+    useEffect(() => {
+        if (!initialLoad && selectedNoteId && !notes.find(n => n.id === selectedNoteId)) {
+            setSelectedNoteId(null);
+        }
+    }, [notes, selectedNoteId, initialLoad]);
+
     return (
         <div className='defaultWidgetDiv notesWidget' style={{ padding: "10px" }}>
 
