@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { isMobile } from "react-device-detect";
+import RichEditor from "./RichEditor";
 
 import '../Styles/Home.css'
 import '../Styles/Notes.css'
@@ -430,12 +431,15 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                                 </div>
 
 
-                            <textarea
+                            {/* <textarea
                                 value={editContent}
                                 onChange={(e) => setEditContent(e.target.value)}
                                 placeholder="Start writing..."
                                 style={{ flex: 1, resize: "none", padding: "8px" }}
-                            />
+                            /> */}
+                            <div>
+                                <RichEditor value={editContent} onChange={setEditContent} />
+                            </div>
                         </div>
                     )}
 

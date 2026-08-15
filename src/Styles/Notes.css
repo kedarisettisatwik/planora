@@ -34,14 +34,14 @@
     border: 1px solid rgb(0, 0, 0, 0.2);
     margin: 10px 0;
 }
-.notesWidget textarea::-webkit-scrollbar{
+.notesWidget .richTextEditor::-webkit-scrollbar{
     width: 5px;
 }
-.notesWidget textarea::-webkit-scrollbar-track, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-track {
+.notesWidget .richTextEditor::-webkit-scrollbar-track, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-track {
     background: white; 
     border-radius: 6px;
 }
-.notesWidget textarea::-webkit-scrollbar-thumb, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-thumb{
+.notesWidget .richTextEditor::-webkit-scrollbar-thumb, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-thumb{
     background: rgb(0,0,0,0.4);
     border-radius: 6px;
 }
@@ -61,4 +61,72 @@
 .notesWidget textarea:focus, .notesWidget .notesEditorPanel input:focus {
   border-color: var(--base_color);
   box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
+}
+.notesWidget .richTextEditor{
+    display: flex;
+    flex-direction: column;
+    height: 350px;
+    border: 1px solid rgb(0,0,0,0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    overflow-y: scroll;
+}
+
+.notesWidget .editorToolbar{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px;
+    border-bottom: 1px solid rgb(0,0,0,0.1);
+    background: rgb(0,0,0,0.02);
+}
+
+.notesWidget .editorToolbar button{
+    padding: 5px 9px;
+    outline: none;
+    border: 1px solid rgb(0,0,0,0.15);
+    background: white;
+    color: black;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+    line-height: 1;
+}
+
+.notesWidget .editorToolbar button:hover{
+    background: rgb(0,0,0,0.05);
+}
+
+.notesWidget .editorToolbar button.active{
+    background: var(--base_color);
+    color: white;
+    border-color: var(--base_color);
+}
+
+.notesWidget .richTextEditor .ProseMirror{
+    flex: 1;
+    padding: 12px;
+    outline: none;
+    overflow-y: auto;
+}
+
+.notesWidget .richTextEditor .ProseMirror p{
+    margin: 0 0 8px 0;
+}
+
+.notesWidget .richTextEditor .ProseMirror ul,
+.notesWidget .richTextEditor .ProseMirror ol{
+    padding-left: 20px;
+    margin: 0 0 8px 0;
+}
+
+.notesWidget .richTextEditor .ProseMirror blockquote{
+    border-left: 3px solid var(--base_color);
+    margin: 0 0 8px 0;
+    padding-left: 10px;
+    opacity: 0.8;
+}
+
+.notesWidget .richTextEditor .ProseMirror h2{
+    margin: 10px 0 6px 0;
 }
