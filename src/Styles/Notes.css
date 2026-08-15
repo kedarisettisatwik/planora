@@ -72,10 +72,6 @@
     overflow-y: scroll;
     font-size: 0.83em;
 }
-.notesWidget.mobile .richTextEditor{
-    font-size: 1em;
-    height: calc(100vh - 200px);
-}
 .notesWidget .editorToolbar{
     display: flex;
     flex-wrap: wrap;

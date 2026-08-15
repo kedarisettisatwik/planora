@@ -35,15 +35,25 @@
 .Home::-webkit-scrollbar{
     width: 5px;
 }
-.Home::-webkit-scrollbar-track {
+.Home::-webkit-scrollbar-track{
     background: white; 
     border-radius: 6px;
 }
-.Home::-webkit-scrollbar-thumb {
+.Home::-webkit-scrollbar-thumb{
     background: linear-gradient(45deg, #6a5acd, #00bfff);
     border-radius: 6px;
 }
-
+.bookMarksScroll::-webkit-scrollbar{
+    width: 5px;
+}
+.bookMarksScroll::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+ .bookMarksScroll::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
 .Home .addWidget{
     position: relative;
     background-color: white;

@@ -222,7 +222,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
     y = Math.max(0, y);
 
     setBoardHeight((h) => {
-      const needed = y + WIDGET_HEIGHT + BOTTOM_PADDING;
+      const needed = y + WIDGET_HEIGHT + BOTTOM_PADDING ;
       return needed > h ? needed : h;
     });
 
@@ -425,7 +425,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
       }}
       className="boardDesktop"
     >
-      <div style={{ position: "relative", height: boardHeight, width:boardWidth}}>
+      <div style={{ position: "relative", height: `calc(${boardHeight + 250}px)`,width: `calc(${boardWidth-10}px)`}}>
 
         {Object.entries(widgets).map(([type, pos]) => {
           const WidgetComponent = WIDGET_COMPONENTS[type];
