@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { isMobile } from "react-device-detect";
 import RichEditor from "./RichEditor";
+import ToDoEditor from "./ToDoEditor";
 
 import '../Styles/Home.css'
 import '../Styles/Notes.css'
@@ -16,6 +17,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
     const [editTitle, setEditTitle] = useState("");
     const [editContent, setEditContent] = useState("");
     const [editLabels, setEditLabels] = useState([]);
+    const [editItems, setEditItems] = useState([]);
     const [labelInput, setLabelInput] = useState("");
 
     const [initialLoad, setInitialLoad] = useState(true);
@@ -75,12 +77,14 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
         }
     };
 
-    const createNewNote = async () => {
+    const createNewItem = async (type) => {
         const now = Date.now();
         const newId = `${now}_${crypto.randomUUID()}`;
         const newNote = {
-            title: "Untitled Note",
+            title: type === "todo" ? "Untitled List" : "Untitled Note",
+            type,
             content: "",
+            items: [],
             labels: [],
             dateCreated: now,
             lastModified: now
@@ -108,11 +112,13 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
         setEditTitle(note.title || "");
         setEditContent(note.content || "");
         setEditLabels(note.labels || []);
+        setEditItems(note.items || []);
         setLabelInput("");
         setSavedSnapshot({
             title: note.title || "",
             content: note.content || "",
-            labels: note.labels || []
+            labels: note.labels || [],
+            items: note.items || []
         });
     };
 
@@ -125,9 +131,10 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
         return (
             editTitle !== savedSnapshot.title ||
             editContent !== savedSnapshot.content ||
-            JSON.stringify(editLabels) !== JSON.stringify(savedSnapshot.labels)
+            JSON.stringify(editLabels) !== JSON.stringify(savedSnapshot.labels) ||
+            JSON.stringify(editItems) !== JSON.stringify(savedSnapshot.items)
         );
-    }, [editTitle, editContent, editLabels, selectedNoteId, savedSnapshot]);
+    }, [editTitle, editContent, editLabels, editItems, selectedNoteId, savedSnapshot]);
 
     const saveNote = async () => {
         if (!selectedNoteId || !isDirty) return;
@@ -138,6 +145,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                 title: editTitle,
                 content: editContent,
                 labels: editLabels,
+                items: editItems,
                 lastModified: now
             });
             setNotes(prev =>
@@ -212,7 +220,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
     }, [notes, selectedNoteId, initialLoad]);
 
     return (
-        <div className='defaultWidgetDiv notesWidget' style={{ padding: "10px" }}>
+        <div className={`defaultWidgetDiv notesWidget ${isMobile ? 'mobile' : 'desk'}`} style={{ padding: "10px" }}>
 
             {initialLoad ? null : notes.length === 0 ? (
                 <div className="notesEmptyState" style={{
@@ -224,7 +232,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                     gap: "12px"
                 }}>
                     <p style={{opacity:"0.7"}}>No Notes created</p>
-                    <button onClick={createNewNote} style={{ padding: "10px", cursor: "pointer", outline: "none", border: "none", background: "var(--base_color)", color: "white", borderRadius: "10px" }} >New Note +</button>
+                    <button onClick={createNewItem("note")} style={{ padding: "10px", cursor: "pointer", outline: "none", border: "none", background: "var(--base_color)", color: "white", borderRadius: "10px" }} >New Note +</button>
                 </div>
             ) : (
                 <div className="notesWidgetLayout" style={{
@@ -244,7 +252,11 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                             overflowY: "auto",
                             paddingRight:"5px"
                         }}>
-                            <button onClick={createNewNote}>New Note +</button>
+                            
+                            <div style={{ display: "flex", gap: "8px" }}>
+                                <button onClick={() => createNewItem("note")} style={{ flex: 1 }}>New Note +</button>
+                                <button onClick={() => createNewItem("todo")} style={{ flex: 1 }}>New List +</button>
+                            </div>
 
                             <input
                                 type="text"
@@ -324,7 +336,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                                         <div style={{ fontWeight: "bold",opacity:"0.6",margin:"5px 0 10px 0" }}>
                                             {note.title || "Untitled Note"}
                                         </div>
-                                        <div style={{ fontSize: "0.8em", color: "#666",marginBottom:"10px"}}>
+                                        <div style={{ fontSize: "0.7em", color: "#666"}}>
                                             {note.lastModified
                                                 ? new Date(note.lastModified).toLocaleString()
                                                 : ""}
@@ -430,15 +442,12 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                                 />
                                 </div>
 
-
-                            {/* <textarea
-                                value={editContent}
-                                onChange={(e) => setEditContent(e.target.value)}
-                                placeholder="Start writing..."
-                                style={{ flex: 1, resize: "none", padding: "8px" }}
-                            /> */}
                             <div>
-                                <RichEditor value={editContent} onChange={setEditContent} />
+                                {selectedNote.type === "todo" ? (
+                                    <ToDoEditor items={editItems} onChange={setEditItems} />
+                                ) : (
+                                    <RichEditor value={editContent} onChange={setEditContent} />
+                                )}
                             </div>
                         </div>
                     )}

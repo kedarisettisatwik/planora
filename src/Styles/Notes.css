@@ -34,14 +34,14 @@
     border: 1px solid rgb(0, 0, 0, 0.2);
     margin: 10px 0;
 }
-.notesWidget .richTextEditor::-webkit-scrollbar{
+.notesWidget .richTextEditor::-webkit-scrollbar, .notesWidget .todoItemsList::-webkit-scrollbar {
     width: 5px;
 }
-.notesWidget .richTextEditor::-webkit-scrollbar-track, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-track {
+.notesWidget .richTextEditor::-webkit-scrollbar-track, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-track, .notesWidget .todoItemsList::-webkit-scrollbar-track {
     background: white; 
     border-radius: 6px;
 }
-.notesWidget .richTextEditor::-webkit-scrollbar-thumb, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-thumb{
+.notesWidget .richTextEditor::-webkit-scrollbar-thumb, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-thumb, .notesWidget .todoItemsList::-webkit-scrollbar-thumb{
     background: rgb(0,0,0,0.4);
     border-radius: 6px;
 }
@@ -70,8 +70,12 @@
     border-radius: 10px;
     overflow: hidden;
     overflow-y: scroll;
+    font-size: 0.83em;
 }
-
+.notesWidget.mobile .richTextEditor{
+    font-size: 1em;
+    height: calc(100vh - 200px);
+}
 .notesWidget .editorToolbar{
     display: flex;
     flex-wrap: wrap;
@@ -129,4 +133,50 @@
 
 .notesWidget .richTextEditor .ProseMirror h2{
     margin: 10px 0 6px 0;
+}
+.notesWidget .todoAddRow button{
+    padding: 5px;
+    background: none;
+    outline: none;
+    border: 1px solid var(--base_color);
+    border-radius: 5px;
+    cursor: pointer;
+    color: var(--base_color);
+    font-size: 12px;
+}
+.notesWidget .todoAddRow input{
+    padding: 5px;
+    margin-right: 10px;
+}
+.notesWidget .todoAddRow{
+    margin: 10px 0;
+}
+.notesWidget .todoItemsList{
+    border-top: 1px dashed rgb(0, 0, 0, 0.1);
+    margin-top: 20px;
+    padding-top: 10px;
+    max-height: 300px;
+    overflow: hidden;
+    padding-right: 10px;
+    overflow-y: auto;
+}
+.notesWidget .todoItem{
+    margin: 5px 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px 10px 10px;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+.notesWidget .todoItem input{
+    cursor: pointer;
+    margin-right: 10px;
+}
+.notesWidget .todoItem .todoDeleteBtn{
+    cursor: pointer;
+}
+.notesWidget .todoItem .todoDeleteBtn:hover{
+    color: red;
 }
