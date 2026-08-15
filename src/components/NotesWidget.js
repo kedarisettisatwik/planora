@@ -450,6 +450,14 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                             Select a note to edit
                         </div>
                     )}
+
+                    {isMobile && showEditorOnMobile && !selectedNote && (
+                        <div style={{ padding: "20px", textAlign: "center", color: "#888" }}>
+                            Note not found. 
+                            <button onClick={closeEditor}>← Back to notes</button>
+                        </div>
+                    )}
+
                 </div>
             )}
         </div>
