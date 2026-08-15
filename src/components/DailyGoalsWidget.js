@@ -6,6 +6,8 @@ import { useMemo } from "react";
 import '../Styles/Home.css'
 import '../Styles/DailyGoals.css'
 
+import ReportsMain from "./ReportsMain";
+
 import { doc, getDoc, setDoc, arrayUnion, updateDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 
@@ -14,7 +16,20 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
   const [isWidgetEmpty, setIsWidgetEmpty] = useState(true);
   const [addGoalPage,setAddGoalPage] = useState(false);
   const [viewAllGoalsPage,setViewAllGoalsPage] = useState(false);
+  const [viewReports,setViewReports] = useState(false);
   const [newGoalTitle, setNewGoalTitle] = useState("");
+  const [newGoalType, setNewGoalType] = useState("checklist"); // "checklist" | "tracker"
+  const [newGoalTrackerUnit, setNewGoalTrackerUnit] = useState("count"); // "count" | "time"
+
+  const GOAL_TYPE_OPTIONS = [
+    { id: "checklist", label: "Checkbox" },
+    { id: "tracker", label: "Tracker" },
+  ];
+
+  const TRACKER_UNIT_OPTIONS = [
+    { id: "count", label: "Count" },
+    { id: "time", label: "Time (mins)" },
+  ];
 
   const [scheduleType, setScheduleType] = useState("everyday");
   const [activeDays, setActiveDays] = useState([1, 2, 3, 4, 5]);
@@ -43,6 +58,10 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [goalsFetched, setGoalsFetched] = useState(false);
+
+  // holds tracker input values while the user is actively typing, keyed by goal id,
+  // so we don't write to Firestore (or re-sort the list) on every keystroke
+  const [trackerDrafts, setTrackerDrafts] = useState({});
 
 
   const [note, setNote] = useState("");
@@ -90,8 +109,13 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
     }
   };
 
-  const isGoalCompletedOnDate = (goal, dateStr) =>
-  (goal.completedDates || []).includes(dateStr);
+  const isGoalCompletedOnDate = (goal, dateStr) => {
+    if ((goal.goalType || "checklist") === "tracker") {
+      const val = (goal.trackerValues || {})[dateStr];
+      return val !== undefined && val !== null && val !== "" && Number(val) > 0;
+    }
+    return (goal.completedDates || []).includes(dateStr);
+  };
 
   const goalsForSelectedDate = useMemo(
     () => goalsList.filter((g) => isGoalOnDate(g, date)),
@@ -124,6 +148,10 @@ function DailyGoalsWidget ({ key, email, x, y, setLoading, setPopup, setPopupCon
   useEffect(() => {
       setNote(diaryData[date]?.note || "");
     }, [date, diaryData]);
+
+  useEffect(() => {
+    setTrackerDrafts({});
+  }, [date]);
 
     const saveNote = async (value) => {
     if (!email) return;
@@ -257,7 +285,11 @@ useEffect(() => {
       id: Date.now().toString(),
       title: newGoalTitle.trim(),
       schedule,
-      createdAt: new Date().toISOString()
+      goalType: newGoalType,
+      createdAt: new Date().toISOString(),
+      ...(newGoalType === "tracker"
+        ? { trackerUnit: newGoalTrackerUnit, trackerValues: {} }
+        : { completedDates: [] }),
     };
 
     saveGoalToDb(newGoal);
@@ -276,6 +308,8 @@ useEffect(() => {
       setIsWidgetEmpty(false);
       setAddGoalPage(false);
       setNewGoalTitle("");
+      setNewGoalType("checklist");
+      setNewGoalTrackerUnit("count");
       setScheduleType("everyday");
       setActiveDays([1, 2, 3, 4, 5]);
       setParticularDates([""]);
@@ -452,6 +486,57 @@ useEffect(() => {
     }
   };
 
+  const setGoalTrackerValue = async (goalId, dateStr, rawValue) => {
+    const prevList = goalsList;
+    const updatedList = goalsList.map((g) => {
+      if (g.id !== goalId) return g;
+      const trackerValues = { ...(g.trackerValues || {}) };
+      if (rawValue === "" || rawValue === undefined || rawValue === null || isNaN(rawValue)) {
+        delete trackerValues[dateStr];
+      } else {
+        trackerValues[dateStr] = Number(rawValue);
+      }
+      return { ...g, trackerValues };
+    });
+
+    setGoalsList(updatedList); // optimistic UI update
+
+    try {
+      await setDoc(doc(db, email, "DailyGoals"), { List: updatedList }, { merge: true });
+    } catch (err) {
+      console.error("Error updating tracker value:", err);
+      setGoalsList(prevList); // revert on failure
+      toast("Couldn't update goal. Please try again.", {
+        duration: 2000,
+        position: 'top-center',
+        icon: '❌',
+        style: {"backgroundColor":"var(--toast_error)","color":"white"}
+      });
+    }
+  };
+
+  // While typing, keep the value local (avoids a Firestore write + re-sort on every keystroke)
+  const getTrackerInputValue = (goal, dateStr) => {
+    if (goal.id in trackerDrafts) return trackerDrafts[goal.id];
+    const val = (goal.trackerValues || {})[dateStr];
+    return val === undefined || val === null ? "" : val;
+  };
+
+  const handleTrackerInputChange = (goalId, value) => {
+    setTrackerDrafts((prev) => ({ ...prev, [goalId]: value }));
+  };
+
+  const handleTrackerInputBlur = (goal, dateStr) => {
+    if (!(goal.id in trackerDrafts)) return; // nothing changed
+    const value = trackerDrafts[goal.id];
+    setGoalTrackerValue(goal.id, dateStr, value);
+    setTrackerDrafts((prev) => {
+      const next = { ...prev };
+      delete next[goal.id];
+      return next;
+    });
+  };
+
   const sortedGoalsForSelectedDate = useMemo(() => {
       return [...goalsForSelectedDate].sort((a, b) => {
         const aDone = isGoalCompletedOnDate(a, date);
@@ -472,7 +557,7 @@ useEffect(() => {
   : Math.round((goalCounts.completed / goalCounts.total) * 100);
 
     return (
-        <div className={`defaultWidgetDiv DailyGoalsMain ${isMobile ? 'mobile' : 'desk'} ${addGoalPage ? 'add' : ''} ${viewAllGoalsPage ? 'viewall' : ''}` } style={{padding:"0 0px 0 10px"}}>
+        <div className={`defaultWidgetDiv DailyGoalsMain ${isMobile ? 'mobile' : 'desk'} ${addGoalPage ? 'add' : ''} ${viewAllGoalsPage ? 'viewall' : ''} ${viewReports ? 'reports' : ''}` } style={{padding:"0 0px 0 10px"}}>
 
           <div className="DailyGoalsScrollArea">
             {isWidgetEmpty ? (
@@ -554,21 +639,44 @@ useEffect(() => {
                 style={{ width: "100%",marginLeft:"5px",marginTop:"10px", minHeight: "60px", resize: "vertical", borderRadius: "8px", padding: "8px", outline: "none" }}
               />
 
+              <span onClick={() => setViewReports(true) } style={{ fontSize: "11px", textAlign: "right", display: "block", marginTop: "8px", opacity: 0.6, cursor: "pointer",fontWeight:"bold",letterSpacing:"1px" }}>View Reports</span>
+
                 <ul className={goalsForSelectedDate.length === 0 ? "NoGoals GoalsAsOfDate" : "GoalsAsOfDate"}>
                       {sortedGoalsForSelectedDate.length === 0 ? (
                         <li className="noGoalsForDate" style={{ fontSize: '15px', textAlign: 'center', margin: '100px', opacity: 0.6, listStyle: 'none' }}>No goals for this date</li>
                       ) : (
                         sortedGoalsForSelectedDate.map((goal) => (
                           <li key={goal.id} className={isGoalCompletedOnDate(goal, date) ? "goalDone goalListItem" : "goalListItem"}>
-                            <input
-                              type="checkbox"
-                              checked={isGoalCompletedOnDate(goal, date)}
-                              onChange={() => toggleGoalCompletion(goal.id, date)}
-                              style={{cursor:"pointer"}}
-                            />
-                            <span>
-                              {goal.title}
-                            </span>
+                            {(goal.goalType || "checklist") === "tracker" ? (
+                              <>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  inputMode="numeric"
+                                  className="trackerInput"
+                                  placeholder={goal.trackerUnit === "time" ? "mins" : "count"}
+                                  value={getTrackerInputValue(goal, date)}
+                                  onChange={(e) => handleTrackerInputChange(goal.id, e.target.value)}
+                                  onBlur={() => handleTrackerInputBlur(goal, date)}
+                                  style={{ width: "60px", borderRadius: "6px" }}
+                                />
+                                <span>
+                                  {goal.title}{goal.trackerUnit === "time" ? " (mins)" : ""}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <input
+                                  type="checkbox"
+                                  checked={isGoalCompletedOnDate(goal, date)}
+                                  onChange={() => toggleGoalCompletion(goal.id, date)}
+                                  style={{cursor:"pointer"}}
+                                />
+                                <span>
+                                  {goal.title}
+                                </span>
+                              </>
+                            )}
                           </li>
                         ))
                       )}
@@ -579,6 +687,15 @@ useEffect(() => {
             )}
           </div>
 
+          <div className="reportMain">
+              <div style={{marginBottom:"10px"}}>
+                <i className="fa-solid fa-chevron-left" style={{display:"inline-block"}} onClick={() => setViewReports(false)}></i>
+                <h3 style={{display:"inline-block"}}>Reports</h3>
+              </div>
+
+              <ReportsMain goalsList={goalsList} />
+          </div>
+
           <div className="addNewGoal">
             <div style={{marginBottom:"30px"}}>
               <i className="fa-solid fa-chevron-left" style={{display:"inline-block"}} onClick={() => setAddGoalPage(false)}></i>
@@ -586,6 +703,44 @@ useEffect(() => {
             </div>
             <span style={{display:"block"}}>Title : </span>
             <input value={newGoalTitle} placeholder="Gym .." onChange={(e) => setNewGoalTitle(e.target.value)}></input>
+
+            <div className="repeats">
+              <span className="repeatLabel">Type : </span>
+              <div className="repeatSegment" role="tablist" aria-label="Goal type">
+                {GOAL_TYPE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={newGoalType === opt.id}
+                    className={`repeatSegBtn ${newGoalType === opt.id ? "repeatSegBtnActive" : ""}`}
+                    onClick={() => setNewGoalType(opt.id)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {newGoalType === "tracker" && (
+                <div className="repeatSubPanel" style={{marginBottom:"10px"}}>
+                  <span className="repeatLabel" style={{marginTop:"0px",display:"block"}}>Track by : </span>
+                  <div className="repeatSegment" role="tablist" aria-label="Tracker unit">
+                    {TRACKER_UNIT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={newGoalTrackerUnit === opt.id}
+                        className={`repeatSegBtn ${newGoalTrackerUnit === opt.id ? "repeatSegBtnActive" : ""}`}
+                        onClick={() => setNewGoalTrackerUnit(opt.id)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="repeats">
               <span className="repeatLabel">Repeats : </span>
@@ -766,6 +921,11 @@ useEffect(() => {
                       <div className="goalDisplay">
                         <span>{goal.title}</span>
                         <span className="goalSchedulePreview">{goal.schedule.type}</span>
+                        <span className="goalTypePreview">
+                          {(goal.goalType || "checklist") === "tracker"
+                            ? `Tracker · ${goal.trackerUnit === "time" ? "mins" : "count"}`
+                            : "Checkbox"}
+                        </span>
                         <i className="fa-solid fa-pen" onClick={() => setEditingGoalId(goal.id)}></i>
                         <i className="fa-solid fa-trash" onClick={() => deleteGoal(goal.id)}></i>
                       </div>

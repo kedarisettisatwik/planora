@@ -34,12 +34,16 @@
 .connections ul li:hover{
     color: black;
 }
+.connections  ul li i{
+    opacity: 0.4;
+}
 .connections i{
     transition:0.3s;
     cursor: pointer;
 }
 .connections i:hover{
     color: var(--base_color);
+    opacity: 1;
 }
 .connections .addFrnd input{
     padding: 8px;

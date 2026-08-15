@@ -14,9 +14,8 @@ import TeamsWidget from "../components/TeamsWidget";
 import FormsWidget from '../components/FormsWidget';
 import SchedulesWidget from '../components/SchedulesWidget';
 import Connections from '../components/Connections';
-import Tracker from '../components/Tracker';
 
-import { doc, getDoc, setDoc, arrayUnion, arrayRemove, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 const WIDGET_COMPONENTS = {
@@ -30,8 +29,7 @@ const WIDGET_COMPONENTS = {
   Teams: TeamsWidget,
   Forms:FormsWidget,
   Schedules: SchedulesWidget,
-  Connections:Connections,
-  Tracker:Tracker
+  Connections:Connections
 };
 
 const WIDGET_DISPLAY_NAMES = {
@@ -59,10 +57,6 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
 
     const EmptyWidget = () => null;
     const [RenderComponent, setRenderComponent] = useState(() => EmptyWidget);
-
-    
-  const [connections,setConnections] = useState([]);
-  const [addFrndMail,setAddFrndMail] = useState("");
 
     useEffect(() => {
         if (!email) return;

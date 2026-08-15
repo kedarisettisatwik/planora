@@ -17,7 +17,6 @@ import TeamsWidget from "../components/TeamsWidget";
 import FormsWidget from '../components/FormsWidget';
 import SchedulesWidget from '../components/SchedulesWidget';
 import Connections from "../components/Connections";
-import Tracker from '../components/Tracker';
 
 const WIDGET_COMPONENTS = {
   DailyGoals: DailyGoalsWidget,
@@ -30,8 +29,7 @@ const WIDGET_COMPONENTS = {
   Teams: TeamsWidget,
   Forms:FormsWidget,
   Connections:Connections,
-  Schedules: SchedulesWidget,
-  Tracker:Tracker
+  Schedules: SchedulesWidget
 };
 
 const WIDGET_DISPLAY_NAMES = {
@@ -45,8 +43,7 @@ const WIDGET_DISPLAY_NAMES = {
   Teams: "Teams",
   Forms:"Forms",
   Schedules:"Schedules",
-  Connections:"Connections",
-  Tracker:"Tracker"
+  Connections:"Connections"
 };
 
 const WIDGET_WIDTH = 260;
@@ -335,7 +332,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
       }}
       className="boardDesktop"
     >
-      <div style={{ position: "relative", height: `calc(${boardHeight + 250}px)`,width: `calc(${boardWidth-10}px)`}}>
+      <div style={{ position: "relative", height: `calc(${boardHeight*1.5}px)`,width: `calc(${boardWidth-10}px)`}}>
 
         {Object.entries(widgets).map(([type, pos]) => {
           const WidgetComponent = WIDGET_COMPONENTS[type];

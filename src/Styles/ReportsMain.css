@@ -1,0 +1,266 @@
+/* ---------------------------------------------------------------------- */
+/*  ReportsMain widget                                                    */
+/* ---------------------------------------------------------------------- */
+
+.reportsMainWidget {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- range picker -------------------------------------------------- */
+
+.reportsRangePicker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reportsRangeSegment {
+  flex-wrap: wrap;
+}
+
+/* Explicit, self-contained active-state styling so the selected range
+   option is always visibly distinct, regardless of what (if anything)
+   .repeatSegBtnActive already does elsewhere in the app. */
+.reportsRangeBtn {
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.reportsRangeSegment .reportsRangeBtn.reportsRangeBtnActive {
+  background: var(--base_color);
+  color: #fff;
+  border-radius: 8px;
+}
+
+.reportsCustomRange {
+  margin-top: 4px;
+}
+
+.reportsCustomRange input[type="month"] {
+  width: fit-content;
+}
+
+.reportsRangeSummary {
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.5;
+  letter-spacing: 0.5px;
+}
+
+.reportsRangeBtn {
+    transition: background 0.15s ease, color 0.15s ease;
+    margin: 5px;
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+}
+
+
+/* ---- goal cards ------------------------------------------------------ */
+
+.reportsGoalsList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 20px;
+}
+
+.reportGoalCard {
+  background: var(--widget_bg, rgba(0, 0, 0, 0.03));
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.reportGoalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.reportGoalTitle {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.reportGoalStat {
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.6;
+}
+
+.reportsEmptyState {
+  text-align: center;
+  opacity: 0.5;
+  font-size: 13px;
+  padding: 30px 10px;
+}
+
+.reportsEmptyState.small {
+  padding: 8px 0;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* ---- flat checkbox square grid (last7 / last30 / custom) ------------- */
+
+.reportSquareGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.reportSquare {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  cursor: default;
+}
+
+.reportSquareFilled {
+  background: var(--base_color);
+}
+
+/* ---- calendar-style month grid --------------------------------------- */
+
+.calendarGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.calendarWeekdayRow,
+.calendarDaysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendarWeekdayLabel {
+  text-align: center;
+  font-size: 10px;
+  font-weight: bold;
+  opacity: 0.4;
+}
+
+.reportSquareCal {
+  width:22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.reportSquareBlank {
+  background: transparent;
+}
+
+.reportSquareDayNum {
+  font-size: 9px;
+  font-weight: 600;
+  opacity: 0.55;
+  color: inherit;
+}
+
+/* not scheduled that day -> faint, mostly invisible */
+.reportSquare-inactive {
+  background: rgba(0, 0, 0, 0.08);
+  opacity: 0.2;
+}
+
+/* scheduled but not completed -> solid gray */
+.reportSquare-missed {
+  background: rgba(0, 0, 0, 0.18);
+  opacity: 1;
+}
+
+/* scheduled and completed -> solid brand fill */
+.reportSquare-done {
+  background: var(--base_color);
+  opacity: 1;
+}
+
+.reportSquare-done .reportSquareDayNum {
+  color: #fff;
+  opacity: 0.85;
+}
+
+/* ---- tracker min/max chips --------------------------------------------- */
+
+.reportTrackerStatsRow {
+  display: flex;
+  gap: 8px;
+  margin: -4px 0 10px;
+}
+
+.reportTrackerStatChip {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.55;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+/* ---- good days summary card -------------------------------------------- */
+
+.reportsGoodDaysCard {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ---- tracker bar chart (flat ranges) ----------------------------------- */
+
+.reportChartScroll {
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.reportChartScroll::-webkit-scrollbar{
+    height: 5px;
+}
+.reportChartScroll::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.reportChartScroll::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+
+.reportTrackerChart {
+  display: block;
+}
+
+.reportBar {
+  fill: var(--base_color);
+}
+
+.reportBarEmpty {
+  fill: rgba(0, 0, 0, 0.08);
+}
+
+.reportBarLabel {
+  font-size: 8px;
+  fill: currentColor;
+  opacity: 0.5;
+}
+
+/* ---- mobile tweaks ----------------------------------------------------- */
+
+.reportsMainWidget.mobile .reportSquare {
+  width: 14px;
+  height: 14px;
+}
+
+.reportsMainWidget.mobile .reportSquareDayNum {
+  font-size: 8px;
+}
+
+.reportsMainWidget.mobile .reportGoalTitle {
+  font-size: 13px;
+}

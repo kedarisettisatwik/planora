@@ -128,7 +128,7 @@ function Connections ({ key, email, x, y ,setLoading, setPopup, setPopupContent,
             <ul style={{ marginBottom: "0px" }} className="List">
               {Array.isArray(connections) &&
                 connections.map((conn, index) => (
-                  <li key={index} className="connections">
+                  <li key={index}>
                     <span>{conn} </span>
                     <i className="fa-solid fa-trash" onClick={() => deleteThisRecord(conn)}></i>
                   </li>
