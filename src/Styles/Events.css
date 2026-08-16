@@ -211,7 +211,8 @@
   letter-spacing: 0.04em;
   background: #F7F6F1;
   border-radius: 999px;
-  padding: 2px 8px;
+  padding: 2px 8px;    
+  display: inline-block;
 }
 
 .EventsMain .eventOwnerTag{
@@ -472,36 +473,24 @@
 
 /* ============================================================
    SHARED FORM STYLING
-   .eventForm  -> used inline inside .addEventPanel
-   .eventPopupForm -> still used by the small action-sheet
-   popups (occurrence menu / postpone), which stay as popups
+   Used by the inline create/edit panel (.eventForm, inside
+   .addEventPanel) and the inline occurrence details panel
+   (.occurrenceDetails, inside .occurrencePanel) - both are
+   slide-in panels now, no popups.
    ============================================================ */
 
-.eventForm,
-.eventPopupForm{
+.eventForm{
   padding: 6px 2px;
 }
 
-.eventPopupForm{
-  width: 320px;
-  max-width: 88vw;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.eventForm h3,
-.eventPopupForm h3{
+.EventsMain h3{
   font-weight: 500;
   font-size: 19px;
-  margin: 0 0 14px;
   font-family: "Englebert";
   opacity: 0.85;
 }
 
-.eventForm > label,
-.eventForm .fieldLabel,
-.eventPopupForm > label,
-.eventPopupForm .fieldLabel{
+.EventsMain .fieldLabel{
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -511,13 +500,13 @@
   margin: 12px 0 6px;
 }
 
-.eventForm input[type="text"],
-.eventForm input[type="date"],
-.eventForm input[type="time"],
-.eventForm input[type="number"],
-.eventForm input[type="email"],
-.eventForm select,
-.eventForm textarea{
+.EventsMain input[type="text"],
+.EventsMain input[type="date"],
+.EventsMain input[type="time"],
+.EventsMain input[type="number"],
+.EventsMain input[type="email"],
+.EventsMain select,
+.EventsMain textarea{
   font-size: 15px;
   border: 1px solid #DEDCD2;
   background: #FFFFFF;
@@ -530,20 +519,20 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.eventForm input:focus,
-.eventForm select:focus,
-.eventForm textarea:focus{
+.EventsMain input:focus,
+.EventsMain select:focus,
+.EventsMain textarea:focus{
   border-color: var(--base_color);
   box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
 }
 
-.eventForm .repeatSegment{
+.EventsMain .repeatSegment{
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.eventForm .repeatSegBtn{
+.EventsMain .repeatSegBtn{
   font-size: 12px;
   padding: 8px 12px;
   border-radius: 999px;
@@ -552,19 +541,19 @@
   color: #4B5058;
   cursor: pointer;
 }
-.eventForm .repeatSegBtnActive{
+.EventsMain .repeatSegBtnActive{
   background: var(--base_color);
   border-color: var(--base_color);
   color: #fff;
 }
 
-.eventForm .angWeekdays{
+.EventsMain .angWeekdays{
   display: flex;
   gap: 6px;
   justify-content: space-between;
   margin-top: 6px;
 }
-.eventForm .repeatDayDot{
+.EventsMain .repeatDayDot{
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -575,42 +564,42 @@
   color: #4B5058;
   cursor: pointer;
 }
-.eventForm .repeatDayDotActive{
+.EventsMain .repeatDayDotActive{
   background: var(--base_color);
   border-color: var(--base_color);
   color: #fff;
 }
 
-.eventForm .timeRow,
-.eventForm .rangeRow{
+.EventsMain .timeRow,
+.EventsMain .rangeRow{
   display: flex;
   gap: 10px;
 }
-.eventForm .timeRow > div,
-.eventForm .rangeRow > div{
+.EventsMain .timeRow > div,
+.EventsMain .rangeRow > div{
   flex: 1;
 }
-.eventForm .smallLabel{
+.EventsMain .smallLabel{
   font-size: 11px;
   color: #7A8177;
   margin-bottom: 4px;
   display: block;
 }
 
-.eventForm .datesList{
+.EventsMain .datesList{
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.eventForm .datesRow{
+.EventsMain .datesRow{
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.eventForm .datesRow input{
+.EventsMain .datesRow input{
   flex: 1;
 }
-.eventForm .removeDateBtn{
+.EventsMain .removeDateBtn{
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -622,7 +611,7 @@
   cursor: pointer;
   flex-shrink: 0;
 }
-.eventForm .addDateBtn{
+.EventsMain .addDateBtn{
   align-self: flex-start;
   background: none;
   border: none;
@@ -633,29 +622,29 @@
   padding: 4px 0;
 }
 
-.eventForm .attendeeRow{
+.EventsMain .attendeeRow{
   display: flex;
   align-items: center;
   gap: 6px;
   margin-bottom: 8px;
 }
-.eventForm .attendeeRow input{
+.EventsMain .attendeeRow input{
   flex: 1;
 }
-.eventForm .attendeeRow select{
+.EventsMain .attendeeRow select{
   width: 90px;
   flex-shrink: 0;
 }
 
 /* connections suggestion dropdown */
-.eventForm .attendeeInputWrap{
+.EventsMain .attendeeInputWrap{
   position: relative;
   flex: 1;
 }
-.eventForm .attendeeInputWrap input{
+.EventsMain .attendeeInputWrap input{
   width: 100%;
 }
-.eventForm .suggestDropdown{
+.EventsMain .suggestDropdown{
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -668,32 +657,32 @@
   max-height: 170px;
   overflow-y: auto;
 }
-.eventForm .suggestItem{
+.EventsMain .suggestItem{
   padding: 8px 10px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
-.eventForm .suggestItem:hover{
+.EventsMain .suggestItem:hover{
   background: #F7F6F1;
 }
-.eventForm .suggestName{
+.EventsMain .suggestName{
   font-size: 13px;
   font-weight: 600;
   color: #1C2620;
 }
-.eventForm .suggestEmail{
+.EventsMain .suggestEmail{
   font-size: 11px;
   color: #7A8177;
 }
-.eventForm .noConnectionsHint{
+.EventsMain .noConnectionsHint{
   font-size: 12px;
   opacity: 0.6;
   margin-bottom: 8px;
 }
 
-.eventForm .formActions{
+.EventsMain .formActions{
   display: flex;
   gap: 10px;
   margin-top: 20px;
@@ -703,7 +692,7 @@
   padding-top: 10px;
 }
 
-.eventForm .formActions button{
+.EventsMain .formActions button{
   flex: 1;
   padding: 11px;
   border: none;
@@ -713,27 +702,142 @@
   font-size: 14px;
   font-weight: 600;
 }
-.eventForm .btnPrimary{
+.EventsMain .btnPrimary{
   background-color: var(--base_color);
   color: white;
 }
-.eventForm .btnGhost{
+.EventsMain .btnGhost{
   background-color: #F0EFE9;
   color: #4B5058;
 }
-.eventForm .btnDanger{
+.EventsMain .btnDanger{
   background-color: #C24545;
   color: white;
 }
 
-.eventPopupForm input[type="text"],
-.eventPopupForm input[type="date"],
-.eventPopupForm input[type="time"],
-.eventPopupForm input[type="number"],
-.eventPopupForm input[type="email"],
-.eventPopupForm select,
-.eventPopupForm textarea{
+/* ===== Occurrence details panel (inline slide-in, no popup) ===== */
+
+.EventsMain .occurrencePanel{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width:100%;
+    height:100%;
+    background-color:white;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: 0.3s;
+    padding: 10px 20px;
+    z-index: 17;
+    display: none;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+.EventsMain.occ .occurrencePanel{
+    transform: translateX(0);
+    opacity: 1;
+    display: block;
+}
+.EventsMain .occurrencePanel::-webkit-scrollbar{
+    width: 5px;
+}
+.EventsMain .occurrencePanel::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.EventsMain .occurrencePanel::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+.EventsMain .occurrencePanel .fa-chevron-left{
   font-size: 15px;
+  cursor: pointer;
+  margin-right: 12px;
+  vertical-align: middle;
+  padding: 10px;
+}
+
+.EventsMain .occurrenceDetails{
+  padding-top: 4px;
+}
+
+.EventsMain .eventTagReminder{
+  background: #F3E9D2;
+  color: #8A6A1F;
+}
+
+.EventsMain .occDetailsTitle{
+  font-size: 18px;
+  font-weight: 600;
+  color: #1C2620;
+  margin: 10px 0 12px;
+}
+
+.EventsMain .occDetailsRow{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #4B5058;
+  margin-bottom: 8px;
+}
+.EventsMain .occDetailsRow i{
+  width: 16px;
+  text-align: center;
+  color: #7A8177;
+  font-size: 12px;
+}
+
+.EventsMain .occDescription{
+  font-size: 13.5px;
+  color: #4B5058;
+  line-height: 1.5;
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+}
+
+.EventsMain .occManageActions{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.EventsMain .occOption{
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #DEDCD2;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: #1C2620;
+  box-sizing: border-box;
+}
+.EventsMain .occOption:hover{
+  border-color: var(--base_color);
+}
+.EventsMain .occOptionDanger{
+  color: #C24545;
+  border-color: #F1D4D4;
+}
+
+.EventsMain .postponeInline{
+  border: 1px solid #DEDCD2;
+  border-radius: 10px;
+  padding: 12px;
+  background: #F7F6F1;
+}
+.EventsMain .postponeInline .formActions{
+  position: static;
+  background: transparent;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.EventsMain .occNotesArea{
+  font-size: 14px;
   border: 1px solid #DEDCD2;
   background: #FFFFFF;
   border-radius: 10px;
@@ -742,194 +846,47 @@
   outline: none;
   width: 100%;
   box-sizing: border-box;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  resize: vertical;
+  font-family: inherit;
 }
-
-.eventPopupForm input:focus,
-.eventPopupForm select:focus,
-.eventPopupForm textarea:focus{
+.EventsMain .occNotesArea:focus{
   border-color: var(--base_color);
   box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
 }
 
-.eventPopupForm .repeatSegment{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.eventPopupForm .repeatSegBtn{
-  font-size: 12px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid #DEDCD2;
-  background: #fff;
-  color: #4B5058;
-  cursor: pointer;
-}
-.eventPopupForm .repeatSegBtnActive{
-  background: var(--base_color);
-  border-color: var(--base_color);
-  color: #fff;
-}
-
-.eventPopupForm .angWeekdays{
-  display: flex;
-  gap: 6px;
-  justify-content: space-between;
-  margin-top: 6px;
-}
-.eventPopupForm .repeatDayDot{
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid #DEDCD2;
-  background: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  color: #4B5058;
-  cursor: pointer;
-}
-.eventPopupForm .repeatDayDotActive{
-  background: var(--base_color);
-  border-color: var(--base_color);
-  color: #fff;
-}
-
-.eventPopupForm .timeRow,
-.eventPopupForm .rangeRow{
-  display: flex;
-  gap: 10px;
-}
-.eventPopupForm .timeRow > div,
-.eventPopupForm .rangeRow > div{
-  flex: 1;
-}
-.eventPopupForm .smallLabel{
-  font-size: 11px;
-  color: #7A8177;
-  margin-bottom: 4px;
-  display: block;
-}
-
-.eventPopupForm .datesList{
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.eventPopupForm .datesRow{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.eventPopupForm .datesRow input{
-  flex: 1;
-}
-.eventPopupForm .removeDateBtn{
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 1px solid #DEDCD2;
-  background: #fff;
-  color: #7A8177;
-  font-size: 15px;
-  line-height: 1;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.eventPopupForm .addDateBtn{
-  align-self: flex-start;
-  background: none;
-  border: none;
-  color: var(--base_color);
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px 0;
-}
-
-.eventPopupForm .attendeeRow{
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-.eventPopupForm .attendeeRow input{
-  flex: 1;
-}
-.eventPopupForm .attendeeRow select{
-  width: 90px;
-  flex-shrink: 0;
-}
-
-.eventPopupForm .formActions{
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-  position: sticky;
-  bottom: 0;
-  background: white;
-  padding-top: 10px;
-}
-
-.eventPopupForm .formActions button{
-  flex: 1;
-  padding: 11px;
+.EventsMain .occSaveNoteBtn{
+  margin-top: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
   border: none;
   outline: none;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
-}
-.eventPopupForm .btnPrimary{
   background-color: var(--base_color);
   color: white;
+  width: 100%;
 }
-.eventPopupForm .btnGhost{
-  background-color: #F0EFE9;
-  color: #4B5058;
-}
-.eventPopupForm .btnDanger{
-  background-color: #C24545;
-  color: white;
+.EventsMain .occSaveNoteBtn:disabled{
+  opacity: 0.6;
+  cursor: default;
 }
 
-/* Occurrence action-sheet popup */
-.occurrencePopup{
-  width: 280px;
-  max-width: 85vw;
-  padding: 6px 2px;
-}
-.occurrencePopup h3{
-  font-weight: 500;
-  font-size: 17px;
-  margin: 0 0 6px;
-  font-family: "Englebert";
-  opacity: 0.85;
-}
-.occurrencePopup .occSub{
-  font-size: 12px;
-  opacity: 0.6;
-  margin-bottom: 14px;
-}
-.occurrencePopup .occOption{
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 12px;
-  margin-bottom: 8px;
-  border-radius: 10px;
-  border: 1px solid #DEDCD2;
-  background: #fff;
+/* ===== Share with team checkbox ===== */
+
+.EventsMain .shareTeamRow{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 6px;
+  font-size: 12.5px;
+  color: #4B5058;
   cursor: pointer;
-  font-size: 13.5px;
-  color: #1C2620;
 }
-.occurrencePopup .occOption:hover{
-  border-color: var(--base_color);
-}
-.occurrencePopup .occOptionDanger{
-  color: #C24545;
-  border-color: #F1D4D4;
+.EventsMain .shareTeamRow input[type="checkbox"]{
+  width: 16px;
+  height: 16px;
+  accent-color: var(--base_color);
+  cursor: pointer;
 }

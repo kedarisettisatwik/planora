@@ -127,6 +127,24 @@ function parseDL(dlElement) {
 
 function BookmarksWidget ({ email, x, y, setLoading, setPopup, setPopupContent, signOut}){
 
+    const [refreshState, setRefreshState] = useState(0);
+
+    const [contextMenu, setContextMenu] = useState({
+        visible: false,
+        x: 0,
+        y: 0,
+    });
+
+    const handleRightClick = (e) => {
+        e.preventDefault();
+
+        setContextMenu({
+        visible: true,
+        x: e.clientX,
+        y: e.clientY,
+        });
+    };
+
     const [tree, setTree] = useState([]);
     // Snapshot of what's actually persisted in Firestore, used to detect
     // unsaved changes since we no longer auto-save on every operation.
@@ -157,7 +175,7 @@ function BookmarksWidget ({ email, x, y, setLoading, setPopup, setPopupContent, 
         if (!email) return;
         fetchBookmarks();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [email]);
+    }, [email, refreshState]);
 
     const fetchBookmarks = async () => {
         setLoading && setLoading(true);
@@ -500,7 +518,7 @@ function BookmarksWidget ({ email, x, y, setLoading, setPopup, setPopupContent, 
     };
 
     return (
-        <div className='defaultWidgetDiv bookmarksWidget' style={{ padding: "10px" }}>
+        <div className='defaultWidgetDiv bookmarksWidget' style={{ padding: "10px" }} onContextMenu={handleRightClick} onClick={() => setContextMenu((prev) => ({ ...prev, visible: false }))}>
 
             <div style={{ marginBottom: "10px" }}>
                 <div>
@@ -557,6 +575,8 @@ function BookmarksWidget ({ email, x, y, setLoading, setPopup, setPopupContent, 
                     {tree.map(node => renderNode(node, 0))}
                 </div>
             )}
+
+            <div className="refreshWidget" style={{ display: contextMenu.visible ? "block" : "none",left: contextMenu.x,top: contextMenu.y, cursor:"pointer", width: "auto", overflow: "hidden", padding: "10px", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)", zIndex: 20, position: "fixed", background: "white", borderRadius: "10px", fontSize: "13px" }} onClick={() => setRefreshState(prev => prev + 1)}>Refresh</div>
         </div>
     )
 }

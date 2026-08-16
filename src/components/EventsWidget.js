@@ -10,6 +10,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  setDoc,
   updateDoc,
   deleteField,
   writeBatch,
@@ -45,6 +46,18 @@ import { db } from "../firebase";
 //     picker and the "viewing as" scope chips. The widget still
 //     works fine (via free-text email entry) if this doesn't
 //     exist.
+//
+// {email}/TeamMembers/List/{memberId} -> { email, name }
+//     Optional. Powers the "Share with team" checkbox in the
+//     create/edit form - checking it adds every team member as
+//     a view-access attendee in one click.
+//
+// {email}/Events/OccurrenceNotes/{ownerEmail__eventId__date}
+//     -> { note, updatedAt }
+//     PRIVATE per-occurrence notes. Deliberately NOT fanned out
+//     to attendees - it lives only under the viewing user's own
+//     path, so it's naturally private even though the event
+//     itself is shared. Saved manually (no autosave).
 // =============================================================
 
 // ---------------------------------------------------------
@@ -268,6 +281,25 @@ function EventsWidget({
   setPopup,
   setPopupContent,
 }) {
+
+  const [refreshState, setRefreshState] = useState(0);
+
+  const [contextMenu, setContextMenu] = useState({
+      visible: false,
+      x: 0,
+      y: 0,
+  });
+
+  const handleRightClick = (e) => {
+      e.preventDefault();
+
+      setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      });
+  };
+
   const today = getLocalISODate();
 
   const [isWidgetEmpty, setIsWidgetEmpty] = useState(true);
@@ -276,6 +308,7 @@ function EventsWidget({
   const [ownEvents, setOwnEvents] = useState([]); // events I own
   const [sharedEvents, setSharedEvents] = useState([]); // denormalized copies shared with me
   const [connections, setConnections] = useState([]); // [{email,name}]
+  const [teamMembers, setTeamMembers] = useState([]); // [{email,name}]
 
   const [viewMode, setViewMode] = useState("day"); // day | week | month
   const [selectedDate, setSelectedDate] = useState(today);
@@ -292,6 +325,20 @@ function EventsWidget({
   const [formCategory, setFormCategory] = useState("meeting");
   const [editingEvent, setEditingEvent] = useState(null);
   const [viewAllTab, setViewAllTab] = useState("meeting"); // meeting | reminder
+
+  // inline occurrence details panel (also mirrors the "View All"
+  // slide-in pattern instead of a popup)
+  const [occurrencePage, setOccurrencePage] = useState(false);
+  const [activeOccurrence, setActiveOccurrence] = useState(null); // { event, occ }
+  const [showPostponeFields, setShowPostponeFields] = useState(false);
+  const [postponeDate, setPostponeDate] = useState("");
+  const [postponeStart, setPostponeStart] = useState("");
+  const [postponeEnd, setPostponeEnd] = useState("");
+
+  // private, per-occurrence notes (manual save)
+  const [occurrenceNoteText, setOccurrenceNoteText] = useState("");
+  const [occurrenceNoteLoading, setOccurrenceNoteLoading] = useState(false);
+  const [occurrenceNoteSaving, setOccurrenceNoteSaving] = useState(false);
 
   // -------------------------------------------------------
   // FETCH: widget empty-state
@@ -313,7 +360,7 @@ function EventsWidget({
     };
 
     run();
-  }, [email]);
+  }, [email,refreshState]);
 
   // -------------------------------------------------------
   // FETCH: my events + events shared with me + connections
@@ -321,16 +368,18 @@ function EventsWidget({
 
   useEffect(() => {
     if (!email) return;
-    if (initialFetchDone) return;
 
     const run = async () => {
       setLoading(true);
 
       try {
-        const [ownSnap, sharedSnap, connSnap] = await Promise.all([
+        const [ownSnap, sharedSnap, connSnap, teamSnap] = await Promise.all([
           getDocs(collection(db, email, "Events", "Items")),
           getDocs(collection(db, email, "Events", "SharedWithMe")),
           getDocs(collection(db, email, "Connections", "List")).catch(
+            () => ({ docs: [] })
+          ),
+          getDocs(collection(db, email, "TeamMembers", "List")).catch(
             () => ({ docs: [] })
           ),
         ]);
@@ -351,9 +400,15 @@ function EventsWidget({
           ...d.data(),
         }));
 
+        const team = teamSnap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+
         setOwnEvents(own);
         setSharedEvents(shared);
         setConnections(conns);
+        setTeamMembers(team);
         setInitialFetchDone(true);
 
         if (own.length > 0 || shared.length > 0) setIsWidgetEmpty(false);
@@ -372,7 +427,7 @@ function EventsWidget({
     };
 
     run();
-  }, [email, initialFetchDone, setLoading]);
+  }, [email, initialFetchDone, setLoading,refreshState]);
 
   // -------------------------------------------------------
   // Merged event pool, filtered by "who am I looking at"
@@ -382,7 +437,7 @@ function EventsWidget({
     if (scope === "self") return ownEvents;
     if (scope === "others") return sharedEvents;
     return [...ownEvents, ...sharedEvents];
-  }, [ownEvents, sharedEvents, scope]);
+  }, [ownEvents, sharedEvents, scope,refreshState]);
 
   const canEditEvent = (event) =>
     event.ownerEmail === email || event.access === "edit";
@@ -683,6 +738,7 @@ function EventsWidget({
     setFormCategory(category);
     setEditingEvent(null);
     setViewAllPage(false);
+    setOccurrencePage(false);
     setAddEventPage(true);
   };
 
@@ -691,48 +747,84 @@ function EventsWidget({
     setFormCategory(event.category);
     setEditingEvent(event);
     setViewAllPage(false);
+    setOccurrencePage(false);
     setAddEventPage(true);
   };
 
-  const openOccurrenceMenu = (event, occurrence) => {
-    const isRecurring = event.recurrence?.type !== "once";
-    const editable = canEditEvent(event);
+  // -------------------------------------------------------
+  // OCCURRENCE DETAILS PANEL (inline, same pattern as the
+  // create/edit panel - no popup)
+  // -------------------------------------------------------
 
-    setPopupContent(
-      <OccurrenceMenu
-        event={event}
-        occurrence={occurrence}
-        isRecurring={isRecurring}
-        editable={editable}
-        onClose={() => setPopup(false)}
-        onEditSeries={() => openEditPanel(event)}
-        onEditOccurrence={() => openPostponePopup(event, occurrence)}
-        onCancelOccurrence={() => {
-          cancelOccurrence(event, occurrence.originalDate);
-          setPopup(false);
-        }}
-        onCancelSeries={() => {
-          cancelWholeSeries(event);
-          setPopup(false);
-        }}
-      />
-    );
-    setPopup(true);
+  const occurrenceNoteId = (event, occ) =>
+    `${event.ownerEmail}__${event.eventId}__${occ.originalDate}`;
+
+  const openOccurrencePanel = (event, occ) => {
+    setActiveOccurrence({ event, occ });
+    setShowPostponeFields(false);
+    setPostponeDate(occ.date);
+    setPostponeStart(occ.startTime || "");
+    setPostponeEnd(occ.endTime || "");
+    setOccurrenceNoteText("");
+    setViewAllPage(false);
+    setAddEventPage(false);
+    setOccurrencePage(true);
+
+    // load this user's private note for this occurrence
+    setOccurrenceNoteLoading(true);
+    getDoc(doc(db, email, "Events", "OccurrenceNotes", occurrenceNoteId(event, occ)))
+      .then((snap) => {
+        setOccurrenceNoteText(snap.exists() ? snap.data()?.note || "" : "");
+      })
+      .catch((err) => {
+        console.error("Error loading occurrence note:", err);
+      })
+      .finally(() => setOccurrenceNoteLoading(false));
   };
 
-  const openPostponePopup = (event, occurrence) => {
-    setPopupContent(
-      <PostponeForm
-        event={event}
-        occurrence={occurrence}
-        onCancel={() => setPopup(false)}
-        onSubmit={(newDate, newStart, newEnd) => {
-          postponeOccurrence(event, occurrence.originalDate, newDate, newStart, newEnd);
-          setPopup(false);
-        }}
-      />
-    );
-    setPopup(true);
+  const closeOccurrencePanel = () => {
+    setOccurrencePage(false);
+    setActiveOccurrence(null);
+    setShowPostponeFields(false);
+  };
+
+  const saveOccurrenceNote = async () => {
+    if (!activeOccurrence) return;
+    const { event, occ } = activeOccurrence;
+
+    setOccurrenceNoteSaving(true);
+    try {
+      await setDoc(
+        doc(db, email, "Events", "OccurrenceNotes", occurrenceNoteId(event, occ)),
+        { note: occurrenceNoteText, updatedAt: new Date().toISOString() },
+        { merge: true }
+      );
+
+      toast("Note saved.", {
+        duration: 1800,
+        position: "top-center",
+        icon: "✅",
+        style: { backgroundColor: "var(--toast_success)", color: "white" },
+      });
+    } catch (err) {
+      console.error("Error saving occurrence note:", err);
+      toast("Couldn't save your note.", {
+        duration: 2500,
+        position: "top-center",
+        icon: "❌",
+        style: { backgroundColor: "var(--toast_error)", color: "white" },
+      });
+    } finally {
+      setOccurrenceNoteSaving(false);
+    }
+  };
+
+  const submitPostpone = () => {
+    if (!activeOccurrence) return;
+    const { event, occ } = activeOccurrence;
+
+    postponeOccurrence(event, occ.originalDate, postponeDate, postponeStart, postponeEnd);
+    closeOccurrencePanel();
   };
 
   // -------------------------------------------------------
@@ -866,7 +958,7 @@ function EventsWidget({
 
       <i
         className="fa-solid fa-ellipsis-vertical eventKebab"
-        onClick={() => openOccurrenceMenu(event, occ)}
+        onClick={() => openOccurrencePanel(event, occ)}
       ></i>
     </div>
   );
@@ -887,8 +979,11 @@ function EventsWidget({
     <div
       className={`defaultWidgetDiv EventsMain ${
         isMobile ? "mobile" : "desk"
-      } ${viewAllPage ? "viewall" : ""} ${addEventPage ? "add" : ""}`}
+      } ${viewAllPage ? "viewall" : ""} ${addEventPage ? "add" : ""} ${
+        occurrencePage ? "occ" : ""
+      }`}
       style={{ padding: "0 0px 0 10px" }}
+      onContextMenu={handleRightClick} onClick={() => setContextMenu((prev) => ({ ...prev, visible: false }))}
     >
       <div className="EventsScrollArea">
         {isWidgetEmpty ? (
@@ -907,6 +1002,7 @@ function EventsWidget({
               <input
                 type="date"
                 value={selectedDate}
+                style={{width:"auto"}}
                 onChange={(e) => {
                   setSelectedDate(e.target.value);
                   setSelectedMonth(e.target.value.slice(0, 7));
@@ -1139,7 +1235,9 @@ function EventsWidget({
             {[...ownEvents, ...sharedEvents]
               .filter((e) => e.category === viewAllTab)
               .map((event) => (
-                <div key={`${event.ownerEmail}__${event.eventId}`} className="eventCard cardMeeting">
+                <div key={`${event.ownerEmail}__${event.eventId}`} className={`eventCard ${
+                    event.category === "reminder" ? "cardReminder" : "cardMeeting"
+                  }`}>
                   <div className="eventBody">
                     <div className="eventTitle">{event.title}</div>
                     <div className="eventMeta">
@@ -1198,6 +1296,7 @@ function EventsWidget({
               category={formCategory}
               email={email}
               connections={connections}
+              teamMembers={teamMembers}
               initialEvent={editingEvent}
               defaultDate={selectedDate}
               onCancel={() => {
@@ -1213,6 +1312,191 @@ function EventsWidget({
           )}
         </div>
 
+        {/* OCCURRENCE DETAILS PANEL (inline slide-in, no popup) */}
+        <div className="occurrencePanel">
+          <div style={{display:"flex",alignItems:"center"}}>
+            <i
+              className="fa-solid fa-chevron-left"
+              onClick={closeOccurrencePanel}
+            ></i>
+            <h3>Event Details</h3>
+          </div>
+
+          {occurrencePage && activeOccurrence && (() => {
+            const { event, occ } = activeOccurrence;
+            const isRecurring = event.recurrence?.type !== "once";
+            const editable = canEditEvent(event);
+
+            return (
+              <div className="occurrenceDetails">
+                <span
+                  className={`eventTag ${
+                    event.category === "reminder" ? "eventTagReminder" : ""
+                  }`}
+                >
+                  {event.category === "reminder" ? "Reminder" : "Meeting"}
+                </span>
+
+                <h4 className="occDetailsTitle">{occ.title}</h4>
+
+                <div className="occDetailsRow">
+                  <i className="fa-regular fa-calendar"></i>
+                  <span>{formatDayLabel(occ.date)}</span>
+                </div>
+
+                {occ.startTime && (
+                  <div className="occDetailsRow">
+                    <i className="fa-regular fa-clock"></i>
+                    <span>
+                      {formatTime12(occ.startTime)}
+                      {occ.endTime ? ` – ${formatTime12(occ.endTime)}` : ""}
+                    </span>
+                  </div>
+                )}
+
+                {event.location && (
+                  <div className="occDetailsRow">
+                    <i className="fa-solid fa-location-dot"></i>
+                    <span>{event.location}</span>
+                  </div>
+                )}
+
+                {occ.isException && (
+                  <div className="occDetailsRow">
+                    <i className="fa-solid fa-clock-rotate-left"></i>
+                    <span>Postponed from {formatDayLabel(occ.originalDate)}</span>
+                  </div>
+                )}
+
+                <div className="occDetailsRow">
+                  <i className="fa-regular fa-user"></i>
+                  <span>
+                    {event.ownerEmail === email
+                      ? "Created by you"
+                      : `From ${event.ownerName || event.ownerEmail} · ${
+                          event.access === "edit" ? "Edit access" : "View only"
+                        }`}
+                  </span>
+                </div>
+
+                {event.description && (
+                  <>
+                    <span className="fieldLabel">Description</span>
+                    <p className="occDescription">{event.description}</p>
+                  </>
+                )}
+
+                {/* Private notes: always available, never shared with
+                    the owner or other attendees. Manual save only. */}
+                <span className="fieldLabel" style={{marginTop:"30px"}}>Private notes</span>
+                <textarea
+                  className="occNotesArea"
+                  rows={4}
+                  placeholder="Only visible to you..."
+                  value={occurrenceNoteText}
+                  disabled={occurrenceNoteLoading}
+                  onChange={(e) => setOccurrenceNoteText(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="occSaveNoteBtn"
+                  onClick={saveOccurrenceNote}
+                  disabled={occurrenceNoteSaving || occurrenceNoteLoading}
+                >
+                  {occurrenceNoteSaving ? "Saving..." : "Save note"}
+                </button>
+
+                {editable && (
+                  <>
+                    <span className="fieldLabel" style={{marginTop:"10px"}}>Manage</span>
+                    <div className="occManageActions">
+                      {isRecurring && !showPostponeFields && (
+                        <button
+                          className="occOption"
+                          onClick={() => setShowPostponeFields(true)}
+                        >
+                          Postpone / edit this occurrence
+                        </button>
+                      )}
+
+                      {isRecurring && showPostponeFields && (
+                        <div className="postponeInline">
+                          <span className="fieldLabel">New date</span>
+                          <input
+                            type="date"
+                            value={postponeDate}
+                            onChange={(e) => setPostponeDate(e.target.value)}
+                          />
+
+                          {event.category === "meeting" && (
+                            <div className="timeRow">
+                              <div>
+                                <span className="smallLabel">Start</span>
+                                <input
+                                  type="time"
+                                  value={postponeStart}
+                                  onChange={(e) => setPostponeStart(e.target.value)}
+                                />
+                              </div>
+                              <div>
+                                <span className="smallLabel">End (optional)</span>
+                                <input
+                                  type="time"
+                                  value={postponeEnd}
+                                  onChange={(e) => setPostponeEnd(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="formActions">
+                            <button
+                              className="btnGhost"
+                              onClick={() => setShowPostponeFields(false)}
+                            >
+                              Cancel
+                            </button>
+                            <button className="btnPrimary" onClick={submitPostpone}>
+                              Save new date
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      <button className="occOption" onClick={() => openEditPanel(event)}>
+                        {isRecurring ? "Edit whole series" : "Edit"}
+                      </button>
+
+                      {isRecurring && (
+                        <button
+                          className="occOption occOptionDanger"
+                          onClick={() => {
+                            cancelOccurrence(event, occ.originalDate);
+                            closeOccurrencePanel();
+                          }}
+                        >
+                          Cancel this occurrence
+                        </button>
+                      )}
+
+                      <button
+                        className="occOption occOptionDanger"
+                        onClick={() => {
+                          cancelWholeSeries(event);
+                          closeOccurrencePanel();
+                        }}
+                      >
+                        {isRecurring ? "Cancel whole series" : "Cancel / delete"}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+              </div>
+            );
+          })()}
+        </div>
+
         {!isWidgetEmpty && (
           <button
             className="addEventBtn"
@@ -1222,14 +1506,17 @@ function EventsWidget({
           </button>
         )}
       </div>
+
+      <div className="refreshWidget" style={{ display: contextMenu.visible ? "block" : "none",left: contextMenu.x,top: contextMenu.y, cursor:"pointer", width: "auto", overflow: "hidden", padding: "10px", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)", zIndex: 20, position: "fixed", background: "white", borderRadius: "10px", fontSize: "13px" }} onClick={() => setRefreshState(prev => prev + 1)}>Refresh</div>
+
     </div>
   );
 }
 
 // =============================================================
-// POPUP: CREATE / EDIT EVENT FORM
-// Rendered via setPopupContent(...) + setPopup(true) rather than
-// an inline slide-in panel.
+// CREATE / EDIT EVENT FORM
+// Rendered inline inside .addEventPanel (a slide-in panel, same
+// pattern as "View All") - no popup involved.
 // =============================================================
 
 function EventForm({
@@ -1237,6 +1524,7 @@ function EventForm({
   category: initialCategory,
   email,
   connections,
+  teamMembers,
   initialEvent,
   defaultDate,
   onCancel,
@@ -1244,6 +1532,7 @@ function EventForm({
 }) {
   const [category, setCategory] = useState(initialCategory || "meeting");
   const [title, setTitle] = useState(initialEvent?.title || "");
+  const [description, setDescription] = useState(initialEvent?.description || "");
   const [location, setLocation] = useState(initialEvent?.location || "");
   const [startTime, setStartTime] = useState(initialEvent?.startTime || "09:00");
   const [endTime, setEndTime] = useState(initialEvent?.endTime || "");
@@ -1316,6 +1605,29 @@ function EventForm({
 
   const removeAttendee = (idx) =>
     setAttendees((prev) => prev.filter((_, i) => i !== idx));
+
+  // "Share with team" checkbox: on check, adds every team member
+  // (that isn't already an attendee) with view access. Unchecking
+  // does not remove anyone - removal stays a manual per-row action.
+  const [shareWithTeam, setShareWithTeam] = useState(false);
+
+  const toggleShareWithTeam = () => {
+    const next = !shareWithTeam;
+    setShareWithTeam(next);
+
+    if (next) {
+      setAttendees((prev) => {
+        const existing = new Set(
+          prev.map((a) => a.email.trim().toLowerCase()).filter(Boolean)
+        );
+        const additions = (teamMembers || [])
+          .filter((m) => m.email && !existing.has(m.email.toLowerCase()))
+          .map((m) => ({ email: m.email, access: "view" }));
+
+        return [...prev, ...additions];
+      });
+    }
+  };
 
   // Which attendee row (by index) currently has its connections
   // suggestion dropdown open.
@@ -1401,7 +1713,7 @@ function EventForm({
     const formEvent = {
       title: title.trim(),
       category,
-      notes: "",
+      description: description.trim(),
       startTime: category === "meeting" ? startTime : null,
       endTime: category === "meeting" ? endTime || null : null,
       location: category === "meeting" ? location.trim() : "",
@@ -1446,6 +1758,18 @@ function EventForm({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={category === "meeting" ? "Team sync" : "Pay rent"}
+      />
+
+      <span className="fieldLabel">Description (optional)</span>
+      <textarea
+        rows={3}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder={
+          category === "meeting"
+            ? "Agenda, links, context for attendees..."
+            : "Any extra detail for this reminder..."
+        }
       />
 
       {category === "meeting" && (
@@ -1719,6 +2043,20 @@ function EventForm({
         + Add person
       </button>
 
+      {teamMembers && teamMembers.length > 0 && (
+        <label className="shareTeamRow">
+          <input
+            type="checkbox"
+            checked={shareWithTeam}
+            onChange={toggleShareWithTeam}
+          />
+          <span>
+            Share with team ({teamMembers.length} member
+            {teamMembers.length === 1 ? "" : "s"}, view access)
+          </span>
+        </label>
+      )}
+
       <div className="formActions">
         <button type="button" className="btnGhost" onClick={onCancel}>
           Cancel
@@ -1731,108 +2069,5 @@ function EventForm({
   );
 }
 
-// =============================================================
-// POPUP: OCCURRENCE ACTION SHEET
-// =============================================================
-
-function OccurrenceMenu({
-  event,
-  occurrence,
-  isRecurring,
-  editable,
-  onClose,
-  onEditSeries,
-  onEditOccurrence,
-  onCancelOccurrence,
-  onCancelSeries,
-}) {
-  return (
-    <div className="occurrencePopup">
-      <h3>{occurrence.title}</h3>
-      <div className="occSub">{formatDayLabel(occurrence.date)}</div>
-
-      {!editable && (
-        <div className="occSub">You have view-only access to this event.</div>
-      )}
-
-      {editable && (
-        <>
-          {isRecurring && (
-            <button className="occOption" onClick={onEditOccurrence}>
-              Postpone / edit this occurrence
-            </button>
-          )}
-
-          <button className="occOption" onClick={onEditSeries}>
-            {isRecurring ? "Edit whole series" : "Edit"}
-          </button>
-
-          {isRecurring && (
-            <button className="occOption occOptionDanger" onClick={onCancelOccurrence}>
-              Cancel this occurrence
-            </button>
-          )}
-
-          <button className="occOption occOptionDanger" onClick={onCancelSeries}>
-            {isRecurring ? "Cancel whole series" : "Cancel / delete"}
-          </button>
-        </>
-      )}
-
-      <button className="occOption" onClick={onClose} style={{ marginTop: 4 }}>
-        Close
-      </button>
-    </div>
-  );
-}
-
-// =============================================================
-// POPUP: POSTPONE A SINGLE OCCURRENCE
-// =============================================================
-
-function PostponeForm({ event, occurrence, onCancel, onSubmit }) {
-  const [newDate, setNewDate] = useState(occurrence.date);
-  const [newStart, setNewStart] = useState(occurrence.startTime || "");
-  const [newEnd, setNewEnd] = useState(occurrence.endTime || "");
-
-  return (
-    <div className="eventPopupForm" style={{ width: 300 }}>
-      <h3>Postpone occurrence</h3>
-      <div className="occSub">
-        Original: {formatDayLabel(occurrence.date)}
-        {occurrence.startTime ? ` · ${formatTime12(occurrence.startTime)}` : ""}
-      </div>
-
-      <span className="fieldLabel">New date</span>
-      <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
-
-      {event.category === "meeting" && (
-        <div className="timeRow">
-          <div>
-            <span className="smallLabel">Start</span>
-            <input type="time" value={newStart} onChange={(e) => setNewStart(e.target.value)} />
-          </div>
-          <div>
-            <span className="smallLabel">End (optional)</span>
-            <input type="time" value={newEnd} onChange={(e) => setNewEnd(e.target.value)} />
-          </div>
-        </div>
-      )}
-
-      <div className="formActions">
-        <button type="button" className="btnGhost" onClick={onCancel}>
-          Cancel
-        </button>
-        <button
-          type="button"
-          className="btnPrimary"
-          onClick={() => onSubmit(newDate, newStart, newEnd)}
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default EventsWidget;

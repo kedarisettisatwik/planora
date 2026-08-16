@@ -31,6 +31,24 @@ function DailyGoalsWidget({
   signOut,
 }) {
 
+  const [refreshState, setRefreshState] = useState(0);
+
+  const [contextMenu, setContextMenu] = useState({
+      visible: false,
+      x: 0,
+      y: 0,
+  });
+
+  const handleRightClick = (e) => {
+      e.preventDefault();
+
+      setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      });
+  };
+
   const [isWidgetEmpty, setIsWidgetEmpty] = useState(true);
 
   const [addGoalPage, setAddGoalPage] = useState(false);
@@ -201,15 +219,15 @@ function DailyGoalsWidget({
     };
 
     fetchDiary();
-  }, [email, diaryFetched]);
+  }, [email, diaryFetched, refreshState]);
 
   useEffect(() => {
     setNote(diaryData[date]?.note || "");
-  }, [date, diaryData]);
+  }, [date, diaryData,refreshState]);
 
   useEffect(() => {
     setTrackerDrafts({});
-  }, [date]);
+  }, [date,refreshState]);
 
   const saveNote = async (value) => {
     if (!email) return;
@@ -279,7 +297,7 @@ function DailyGoalsWidget({
     };
 
     fetchEmptyState();
-  }, [email]);
+  }, [email,refreshState]);
 
   // ---------------------------------------------------------
   // FETCH GOALS
@@ -336,11 +354,11 @@ function DailyGoalsWidget({
     };
 
     fetchGoals();
-  }, [email, goalsFetched, setLoading]);
+  }, [email, goalsFetched, setLoading,refreshState]);
 
   useEffect(() => {
     console.log("Updated goalsList:", goalsList);
-  }, [goalsList]);
+  }, [goalsList,refreshState]);
 
   // ---------------------------------------------------------
   // CREATE NEW GOAL
@@ -1580,6 +1598,7 @@ function DailyGoalsWidget({
       style={{
         padding: "0 0px 0 10px",
       }}
+      onContextMenu={handleRightClick} onClick={() => setContextMenu((prev) => ({ ...prev, visible: false }))}
     >
       <div className="DailyGoalsScrollArea">
         {isWidgetEmpty ? (
@@ -2654,6 +2673,7 @@ function DailyGoalsWidget({
           Add Goal +
         </button>
       </div>
+      <div className="refreshWidget" style={{ display: contextMenu.visible ? "block" : "none",left: contextMenu.x,top: contextMenu.y, cursor:"pointer", width: "auto", overflow: "hidden", padding: "10px", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)", zIndex: 20, position: "fixed", background: "white", borderRadius: "10px", fontSize: "13px" }} onClick={() => setRefreshState(prev => prev + 1)}>Refresh</div>
     </div>
   );
 }

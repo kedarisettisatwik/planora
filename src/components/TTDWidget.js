@@ -13,6 +13,24 @@ import { auth, db } from "../firebase";
 
 function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, signOut }) {
 
+    const [refreshState, setRefreshState] = useState(0);
+
+    const [contextMenu, setContextMenu] = useState({
+        visible: false,
+        x: 0,
+        y: 0,
+    });
+
+    const handleRightClick = (e) => {
+        e.preventDefault();
+
+        setContextMenu({
+        visible: true,
+        x: e.clientX,
+        y: e.clientY,
+        });
+    };
+
     const [addTaskPage, setAddTaskPage] = useState(false);
     const [viewAllTasksPage, setViewAllTasksPage] = useState(false);
 
@@ -35,6 +53,9 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
 
 
     const [connections, setConnections] = useState([]);
+    const [teamMembers, setTeamMembers] = useState([]);
+    const [assignTeamMembers, setAssignTeamMembers] = useState([]);
+    const [peopleSearch, setPeopleSearch] = useState(""); // filters both connections & team lists below
 
     const [assignSelf, setAssignSelf] = useState(true);
     const [assignConnections, setAssignConnections] = useState([]);
@@ -98,7 +119,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         if (!email) return;
 
         readTasks();
-    }, [email]);
+    }, [email, refreshState]);
 
    useEffect(() => {
         if (!email) return;
@@ -130,15 +151,55 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
             }
         };
 
+        const fetchTeamMembers = async () => {
+            try {
+                const teamRef = collection(db, email, "TeamMembers", "List");
+                const snap = await getDocs(teamRef);
+
+                const data = snap.docs
+                    .map((doc) => doc.data().email)
+                    .filter(Boolean);
+
+                setTeamMembers(data);
+            } catch (err) {
+                console.error("Error fetching team members:", err);
+            }
+        };
+
+        fetchTeamMembers();
+
         fetchConnections();
 
-    }, [email]);
+    }, [email, refreshState]);
 
     const toggleAssignConnection = (conn) => {
         setAssignConnections((prev) =>
             prev.includes(conn) ? prev.filter((c) => c !== conn) : [...prev, conn]
         );
     };
+
+    const toggleAssignTeamMember = (member) => {
+        setAssignTeamMembers((prev) =>
+            prev.includes(member) ? prev.filter((m) => m !== member) : [...prev, member]
+        );
+    };
+
+    // "Assign to team" master checkbox = select-all / deselect-all.
+    // Unchecking one member row afterwards just edits this same array —
+    // it won't re-fight the master checkbox, and the master checkbox
+    // itself will show unchecked again since not everyone is selected.
+    const allTeamSelected = teamMembers.length > 0 && teamMembers.every((m) => assignTeamMembers.includes(m));
+
+    const toggleAssignAllTeam = () => {
+        setAssignTeamMembers(allTeamSelected ? [] : [...teamMembers]);
+    };
+
+    const filteredConnections = connections.filter((c) =>
+        c.toLowerCase().includes(peopleSearch.trim().toLowerCase())
+    );
+    const filteredTeamMembers = teamMembers.filter((m) =>
+        m.toLowerCase().includes(peopleSearch.trim().toLowerCase())
+    );
 
     const addOtherEmailField = () => {
         setShowOthersInputs(true);
@@ -160,10 +221,14 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
     const buildAssignedEmails = () => {
         const emails = [];
 
-        if (assignSelf) emails.push(email); // current user's own email
+        if (assignSelf) emails.push(email);
 
         assignConnections.forEach((conn) => {
             if (!emails.includes(conn)) emails.push(conn);
+        });
+
+        assignTeamMembers.forEach((member) => {
+            if (!emails.includes(member)) emails.push(member);
         });
 
         assignOthers
@@ -185,8 +250,10 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         setEndDate("");
         setAssignSelf(true);
         setAssignConnections([]);
+        setAssignTeamMembers([]);
         setAssignOthers([]);
         setShowOthersInputs(false);
+        setPeopleSearch("");
     };
 
     // Opens the "addNewTask" panel pre-filled with an existing task's data so the user can edit it.
@@ -204,13 +271,18 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
 
         setAssignSelf(assignedEmails.includes(email));
 
+        const assignedTeamMembers = assignedEmails.filter(
+            (mail) => mail !== email && teamMembers.includes(mail)
+        );
+        setAssignTeamMembers(assignedTeamMembers);
+
         const assignedConnections = assignedEmails.filter(
-            (mail) => mail !== email && connections.includes(mail)
+            (mail) => mail !== email && !teamMembers.includes(mail) && connections.includes(mail)
         );
         setAssignConnections(assignedConnections);
 
         const otherEmails = assignedEmails.filter(
-            (mail) => mail !== email && !connections.includes(mail)
+            (mail) => mail !== email && !teamMembers.includes(mail) && !connections.includes(mail)
         );
         setAssignOthers(otherEmails);
         setShowOthersInputs(otherEmails.length > 0);
@@ -695,9 +767,32 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                                         )}
                                     </h3>
 
-                                    <label style={{ fontSize: "13px", opacity: 0.7, marginBottom: "10px", display: "block" }}>Description : </label>
-                                    <p className="descriptionBlock" style={{ fontSize: "13px", padding: "0 10px 10px 10px", minHeight: "30px" }}>{task.description}</p>
+                                    {task.description?.trim().length > 0 && (
+                                        <>
+                                            <label
+                                            style={{
+                                                fontSize: "13px",
+                                                opacity: 0.7,
+                                                marginBottom: "10px",
+                                                display: "block"
+                                            }}
+                                            >
+                                            Description :
+                                            </label>
 
+                                            <p
+                                            className="descriptionBlock"
+                                            style={{
+                                                fontSize: "13px",
+                                                padding: "0 10px 10px 10px",
+                                                minHeight: "30px"
+                                            }}
+                                            >
+                                            {task.description}
+                                            </p>
+                                        </>
+                                        )}
+                                    
                                     {showAssignees && task.assign && typeof task.assign === "object" && (
                                         <ul className="assigneeStatusList">
                                             {Object.values(task.assign).map((a) => {
@@ -930,7 +1025,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
     
 
     return (
-        <div className={`defaultWidgetDiv TTDMain ${isMobile ? 'mobile' : 'desk'} ${addTaskPage ? 'add' : ''} ${viewAllTasksPage ? 'viewall' : ''}`} style={{ padding: "0px 0px 40px 15px" }}>
+        <div className={`defaultWidgetDiv TTDMain ${isMobile ? 'mobile' : 'desk'} ${addTaskPage ? 'add' : ''} ${viewAllTasksPage ? 'viewall' : ''}`} style={{ padding: "0px 0px 40px 15px" }} onContextMenu={handleRightClick} onClick={() => setContextMenu((prev) => ({ ...prev, visible: false }))}>
 
             {
                 <>
@@ -1004,6 +1099,17 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                 <span style={{ display: "block", marginTop: "20px" }}>Assign to : </span>
 
                 <div className="assignTo">
+                    {(connections.length > 0 || teamMembers.length > 0) && (
+                        <input
+                            type="text"
+                            className="assignOtherInput"
+                            placeholder="Search connections or team members..."
+                            value={peopleSearch}
+                            onChange={(e) => setPeopleSearch(e.target.value)}
+                            style={{ width: "100%", boxSizing: "border-box", marginBottom: "14px" }}
+                        />
+                    )}
+
                     <div className="assignRow">
                         <input
                             type="checkbox"
@@ -1013,10 +1119,39 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                         <span>self</span>
                     </div>
 
+                    {Array.isArray(teamMembers) && teamMembers.length > 0 && (
+                        <>
+                            <span className="assignSubLabel">Your team</span>
+                            <div className="assignRow">
+                                <input
+                                    type="checkbox"
+                                    checked={allTeamSelected}
+                                    onChange={toggleAssignAllTeam}
+                                />
+                                <span>Assign to team ({teamMembers.length} members)</span>
+                            </div>
+                            {filteredTeamMembers.map((member) => (
+                                <div className="assignRow assignRowIndented" key={member}>
+                                    <input
+                                        type="checkbox"
+                                        checked={assignTeamMembers.includes(member)}
+                                        onChange={() => toggleAssignTeamMember(member)}
+                                    />
+                                    <span>{member}</span>
+                                </div>
+                            ))}
+                            {filteredTeamMembers.length === 0 && (
+                                <span style={{ fontSize: "12px", opacity: 0.5, textTransform: "none", display: "block" }}>
+                                    No team members match "{peopleSearch}"
+                                </span>
+                            )}
+                        </>
+                    )}
+
                     {Array.isArray(connections) && connections.length > 0 && (
                         <>
                             <span className="assignSubLabel">Your connections</span>
-                            {connections.map((conn) => (
+                            {filteredConnections.map((conn) => (
                                 <div className="assignRow assignRowIndented" key={conn}>
                                     <input
                                         type="checkbox"
@@ -1026,6 +1161,11 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                                     <span>{conn}</span>
                                 </div>
                             ))}
+                            {filteredConnections.length === 0 && (
+                                <span style={{ fontSize: "12px", opacity: 0.5, textTransform: "none", display: "block" }}>
+                                    No connections match "{peopleSearch}"
+                                </span>
+                            )}
                         </>
                     )}
 
@@ -1053,7 +1193,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                 <div style={{ height: "20px" }}></div>
 
             </div>
-
+            <div className="refreshWidget" style={{ display: contextMenu.visible ? "block" : "none",left: contextMenu.x,top: contextMenu.y, cursor:"pointer", width: "auto", overflow: "hidden", padding: "10px", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)", zIndex: 20, position: "fixed", background: "white", borderRadius: "10px", fontSize: "13px" }} onClick={() => setRefreshState(prev => prev + 1)}>Refresh</div>
         </div>
     )
 }

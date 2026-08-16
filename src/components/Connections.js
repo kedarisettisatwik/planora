@@ -32,6 +32,24 @@ function Connections({
   const [addFrndMail, setAddFrndMail] = useState("");
   const [addFrndName, setAddFrndName] = useState("");
 
+  const [refreshState, setRefreshState] = useState(0);
+
+  const [contextMenu, setContextMenu] = useState({
+      visible: false,
+      x: 0,
+      y: 0,
+  });
+
+  const handleRightClick = (e) => {
+      e.preventDefault();
+
+      setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      });
+  };
+
 
   // =========================================================
   // FETCH CONNECTIONS
@@ -76,7 +94,7 @@ function Connections({
 
     fetchConnections();
 
-  }, [email]);
+  }, [email, refreshState]);
 
 
   // =========================================================
@@ -349,6 +367,7 @@ function Connections({
       style={{
         padding: "10px 0 10px 10px"
       }}
+      onContextMenu={handleRightClick} onClick={() => setContextMenu((prev) => ({ ...prev, visible: false }))}
     >
 
       {/* =====================================================
@@ -428,6 +447,7 @@ function Connections({
 
       </ul>
 
+      <div className="refreshWidget" style={{ display: contextMenu.visible ? "block" : "none",left: contextMenu.x,top: contextMenu.y, cursor:"pointer", width: "auto", overflow: "hidden", padding: "10px", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)", zIndex: 20, position: "fixed", background: "white", borderRadius: "10px", fontSize: "13px" }} onClick={() => setRefreshState(prev => prev + 1)}>Refresh</div>
     </div>
 
   );
