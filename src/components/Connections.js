@@ -1,141 +1,438 @@
-import { useState, useEffect, useRef, useCallback, use } from "react";
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { isMobile } from "react-device-detect";
 
-import '../Styles/Home.css'
-import '../Styles/Connections.css'
+import "../Styles/Home.css";
+import "../Styles/Connections.css";
 
-import { doc, getDoc, setDoc, arrayUnion, arrayRemove, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  collection,
+  getDocs,
+  deleteDoc
+} from "firebase/firestore";
+
 import { auth, db } from "../firebase";
 
-function Connections ({ key, email, x, y ,setLoading, setPopup, setPopupContent, signOut}){
 
-    const [connections,setConnections] = useState([]);
-    const [addFrndMail,setAddFrndMail] = useState("");
+function Connections({
+  key,
+  email,
+  x,
+  y,
+  setLoading,
+  setPopup,
+  setPopupContent,
+  signOut
+}) {
+
+  const [connections, setConnections] = useState([]);
+
+  const [addFrndMail, setAddFrndMail] = useState("");
+  const [addFrndName, setAddFrndName] = useState("");
 
 
-    // fetch connections 
-    useEffect(() => {
-      if (!email) return;
-    
-      const fetchConnections = async () => {
-        try {
-          const snap = await getDoc(doc(db, email, "Connections"));
-          const data = snap.exists() ? snap.data().List || [] : [];
-    
-          setConnections(data);
-          console.log(data);
-        } catch (err) {
-          console.error("Error fetching connections:", err);
+  // =========================================================
+  // FETCH CONNECTIONS
+  // =========================================================
+
+  useEffect(() => {
+
+    if (!email) return;
+
+    const fetchConnections = async () => {
+
+      try {
+
+        const connectionsRef = collection(
+          db,
+          email,
+          "Connections",
+          "List"
+        );
+
+        const snap = await getDocs(connectionsRef);
+
+        const data = snap.docs.map((item) => ({
+          id: item.id,
+          ...item.data()
+        }));
+
+        setConnections(data);
+
+        console.log("Connections:", data);
+
+      } catch (err) {
+
+        console.error(
+          "Error fetching connections:",
+          err
+        );
+
+      }
+
+    };
+
+    fetchConnections();
+
+  }, [email]);
+
+
+  // =========================================================
+  // DELETE CONNECTION
+  // =========================================================
+
+  const deleteThisRecord = async (connection) => {
+
+    setLoading(true);
+
+    try {
+
+      const docRef = doc(
+        db,
+        email,
+        "Connections",
+        "List",
+        connection.id
+      );
+
+      await deleteDoc(docRef);
+
+      setConnections((prev) =>
+        prev.filter(
+          (conn) => conn.id !== connection.id
+        )
+      );
+
+      toast("Friend removed.", {
+        duration: 2000,
+        position: "top-center",
+        icon: "✅",
+        style: {
+          backgroundColor: "var(--toast_success)",
+          color: "white"
         }
+      });
+
+    } catch (err) {
+
+      console.error(
+        "Error deleting friend:",
+        err
+      );
+
+      toast(
+        "Something went wrong. Please try again.",
+        {
+          duration: 2000,
+          position: "top-center",
+          icon: "❌",
+          style: {
+            backgroundColor: "var(--toast_error)",
+            color: "white"
+          }
+        }
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+  // =========================================================
+  // ADD CONNECTION
+  // =========================================================
+
+  const addFrndMailtoDB = async () => {
+
+    const trimmedMail =
+      addFrndMail.trim().toLowerCase();
+
+    const trimmedName =
+      addFrndName.trim();
+
+
+    // -------------------------------------------------------
+    // NAME VALIDATION
+    // -------------------------------------------------------
+
+    if (!trimmedName) {
+
+      toast("Please enter a name.", {
+        duration: 2000,
+        position: "top-center",
+        icon: "❌",
+        style: {
+          backgroundColor: "var(--toast_error)",
+          color: "white"
+        }
+      });
+
+      return;
+    }
+
+
+    // -------------------------------------------------------
+    // EMAIL VALIDATION
+    // -------------------------------------------------------
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+    if (
+      !trimmedMail ||
+      !emailRegex.test(trimmedMail)
+    ) {
+
+      toast("Please enter a valid email.", {
+        duration: 2000,
+        position: "top-center",
+        icon: "❌",
+        style: {
+          backgroundColor: "var(--toast_error)",
+          color: "white"
+        }
+      });
+
+      return;
+    }
+
+
+    // -------------------------------------------------------
+    // DUPLICATE CHECK
+    // -------------------------------------------------------
+
+    if (
+      connections.some(
+        (conn) => conn.email === trimmedMail
+      )
+    ) {
+
+      toast("This friend is already added.", {
+        duration: 2000,
+        position: "top-center",
+        icon: "❌",
+        style: {
+          backgroundColor: "var(--toast_error)",
+          color: "white"
+        }
+      });
+
+      return;
+    }
+
+
+    setLoading(true);
+
+
+    try {
+
+      // -----------------------------------------------------
+      // CONNECTIONS SUBCOLLECTION
+      // -----------------------------------------------------
+
+      const connectionsRef = collection(
+        db,
+        email,
+        "Connections",
+        "List"
+      );
+
+
+      // -----------------------------------------------------
+      // CREATE AUTO-GENERATED UUID / DOCUMENT ID
+      // -----------------------------------------------------
+
+      const newConnectionRef =
+        doc(connectionsRef);
+
+
+      // -----------------------------------------------------
+      // CONNECTION DATA
+      // -----------------------------------------------------
+
+      const connectionData = {
+        email: trimmedMail,
+        name: trimmedName
       };
-    
-      fetchConnections();
-    }, [email]); 
 
-    const deleteThisRecord = async (connToDelete) => {
-        setLoading(true);
-        try {
-        const docRef = doc(db, email, "Connections");
-        await updateDoc(docRef, { List: arrayRemove(connToDelete) });
 
-        setConnections((prev) => prev.filter((c) => c !== connToDelete));
+      // -----------------------------------------------------
+      // SAVE TO FIRESTORE
+      // -----------------------------------------------------
 
-        toast('Friend removed.', {
-            duration: 2000,
-            position: 'top-center',
-            icon: '✅',
-            style: {"backgroundColor":"var(--toast_success)","color":"white"}
-        });
-        } catch (err) {
-        console.error("Error deleting friend:", err);
-        toast("Something went wrong. Please try again.", {
-            duration: 2000,
-            position: 'top-center',
-            icon: '❌',
-            style: {"backgroundColor":"var(--toast_error)","color":"white"}
-        });
-        } finally {
-        setLoading(false);
+      await setDoc(
+        newConnectionRef,
+        connectionData
+      );
+
+
+      // -----------------------------------------------------
+      // UPDATE LOCAL STATE
+      // -----------------------------------------------------
+
+      setConnections((prev) => [
+        ...prev,
+        {
+          id: newConnectionRef.id,
+          ...connectionData
         }
-    };
-
-    const addFrndMailtoDB = async () => {
-        const trimmedMail = addFrndMail.trim().toLowerCase();
-
-        // basic email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!trimmedMail || !emailRegex.test(trimmedMail)) {
-            toast("Please enter a valid email.", {
-                duration: 2000,
-                position: 'top-center',
-                icon: '❌',
-                style: {"backgroundColor":"var(--toast_error)","color":"white"}
-            });
-            return;
-            }
-
-            if (connections.includes(trimmedMail)) {
-            toast("This friend is already added.", {
-                duration: 2000,
-                position: 'top-center',
-                icon: '❌',
-                style: {"backgroundColor":"var(--toast_error)","color":"white"}
-            });
-            return;
-            }
-
-            setLoading(true);
-            try {
-            const docRef = doc(db, email, "Connections");
-            await setDoc(docRef, { List: arrayUnion(trimmedMail) }, { merge: true });
-
-            setConnections((prev) => [...prev, trimmedMail]);
-            setAddFrndMail("");
-
-            toast('Friend added !!', {
-                duration: 2000,
-                position: 'top-center',
-                icon: '✅',
-                style: {"backgroundColor":"var(--toast_success)","color":"white"}
-            });
-            } catch (err) {
-            console.error("Error adding friend:", err);
-            toast("Something went wrong. Please try again.", {
-                duration: 2000,
-                position: 'top-center',
-                icon: '❌',
-                style: {"backgroundColor":"var(--toast_error)","color":"white"}
-            });
-            } finally {
-            setLoading(false);
-            }
-    };
+      ]);
 
 
-    return (
-        <div className='defaultWidgetDiv connections' style={{padding:"10px 0 10px 10px"}}>
-            <div className="addFrnd">
-                <input
-                  type="email"
-                  placeholder="friend@gmail.com"
-                  autoComplete="off"
-                  value={addFrndMail}
-                  onChange={(e) => setAddFrndMail(e.target.value)}
-                />
-                <i onClick={addFrndMailtoDB}>Add +</i>
-              </div>
-            <ul style={{ marginBottom: "0px" }} className="List">
-              {Array.isArray(connections) &&
-                connections.map((conn, index) => (
-                  <li key={index}>
-                    <span>{conn} </span>
-                    <i className="fa-solid fa-trash" onClick={() => deleteThisRecord(conn)}></i>
-                  </li>
-                ))}
-            </ul>
-        </div>
-    )
+      // -----------------------------------------------------
+      // CLEAR INPUTS
+      // -----------------------------------------------------
+
+      setAddFrndMail("");
+      setAddFrndName("");
+
+
+      // -----------------------------------------------------
+      // SUCCESS MESSAGE
+      // -----------------------------------------------------
+
+      toast("Friend added !!", {
+        duration: 2000,
+        position: "top-center",
+        icon: "✅",
+        style: {
+          backgroundColor: "var(--toast_success)",
+          color: "white"
+        }
+      });
+
+
+    } catch (err) {
+
+      console.error(
+        "Error adding friend:",
+        err
+      );
+
+      toast(
+        "Something went wrong. Please try again.",
+        {
+          duration: 2000,
+          position: "top-center",
+          icon: "❌",
+          style: {
+            backgroundColor: "var(--toast_error)",
+            color: "white"
+          }
+        }
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+  // =========================================================
+  // UI
+  // =========================================================
+
+  return (
+
+    <div
+      className="defaultWidgetDiv connections"
+      style={{
+        padding: "10px 0 10px 10px"
+      }}
+    >
+
+      {/* =====================================================
+          ADD FRIEND
+      ====================================================== */}
+
+      <div className="addFrnd">
+
+        {/* NAME */}
+
+        <input
+          type="text"
+          placeholder="Friend name"
+          autoComplete="off"
+          value={addFrndName}
+          onChange={(e) =>
+            setAddFrndName(e.target.value)
+          }
+        />
+
+
+        {/* EMAIL */}
+
+        <input
+          type="email"
+          placeholder="friend@gmail.com"
+          autoComplete="off"
+          value={addFrndMail}
+          onChange={(e) =>
+            setAddFrndMail(e.target.value)
+          }
+        />
+
+
+        {/* ADD BUTTON */}
+
+        <i onClick={addFrndMailtoDB}>
+          Add +
+        </i>
+
+      </div>
+
+
+      {/* =====================================================
+          CONNECTION LIST
+      ====================================================== */}
+
+      <ul
+        style={{
+          marginBottom: "0px"
+        }}
+        className="List"
+      >
+
+        {Array.isArray(connections) &&
+          connections.map((conn) => (
+
+            <li key={conn.id}>
+
+              <span>
+
+                {conn.name} <br></br><label style={{opacity:"0.6",marginTop:"10px",display:"inline-block"}}>{conn.email}</label>
+
+              </span>
+
+
+              <i
+                className="fa-solid fa-trash"
+                onClick={() =>
+                  deleteThisRecord(conn)
+                }
+              ></i>
+
+            </li>
+
+          ))}
+
+      </ul>
+
+    </div>
+
+  );
+
 }
+
 
 export default Connections;

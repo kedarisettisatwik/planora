@@ -10,7 +10,6 @@ import EventsWidget from "../components/EventsWidget";
 import BookmarksWidget from "../components/BookmarksWidget";
 import BookWidget from "../components/BookWidget";
 import TrackProjectWidget from "../components/TrackProjectWidget";
-import TeamsWidget from "../components/TeamsWidget";
 import FormsWidget from '../components/FormsWidget';
 import SchedulesWidget from '../components/SchedulesWidget';
 import Connections from '../components/Connections';
@@ -26,7 +25,6 @@ const WIDGET_COMPONENTS = {
   Bookmarks: BookmarksWidget,
   Book: BookWidget,
   TrackProject: TrackProjectWidget,
-  Teams: TeamsWidget,
   Forms:FormsWidget,
   Schedules: SchedulesWidget,
   Connections:Connections
@@ -36,11 +34,10 @@ const WIDGET_DISPLAY_NAMES = {
   DailyGoals: "Daily Goals",
   TTD: "Things to do",
   Notes: "Notes",
-  Events: "Events / Meetings",
+  Events: "Reminders",
   Bookmarks: "Bookmarks",
   Book: "Books",
   TrackProject: "Workflows",
-  Teams: "Teams",
   Forms:"Forms",
   Schedules:"Schedules",
   Connections:"Connections",
@@ -195,7 +192,7 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
 
             <nav className="DesktopNav open mobile">
                 <div className="menuDetails">
-                    <h3>Planora</h3>
+                    <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 1.0</span></h3>
 
                     <span style={{ margin: "0px 0 10px 0",fontSize: "17px",width:"100%", paddingTop:"20px"}}>Add Widgets </span>
 

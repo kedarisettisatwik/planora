@@ -1,0 +1,935 @@
+.EventsMain.desk{
+    width: 370px;
+    height: 500px;
+    max-height: calc(100vh - 120px);
+    position: relative;
+}
+.EventsMain.mobile{
+    width: 100%;
+    height:100%;
+    position: relative;
+}
+.EventsMain{
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.EventsScrollArea::-webkit-scrollbar, .EventsMain::-webkit-scrollbar{
+    width: 5px;
+}
+.EventsScrollArea::-webkit-scrollbar-track, .EventsMain::-webkit-scrollbar-track {
+    background: white;
+    border-radius: 6px;
+}
+.EventsScrollArea::-webkit-scrollbar-thumb, .EventsMain::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+.EventsScrollArea {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  padding-bottom: 20px;
+  padding-right: 15px;
+}
+
+.EventsMain .emptyWidgetAdd{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 12px;
+}
+.EventsMain .emptyWidgetAdd button{
+    cursor: pointer;
+    padding: 10px;
+    background: var(--base_color);
+    outline: none;
+    border: none;
+    color: wheat;
+    border-radius: 10px;
+    margin: 20px auto;
+}
+
+/* ===== Header ===== */
+
+.EventsMain .eventsHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 5px;
+  gap: 8px;
+}
+
+.EventsMain .eventsHeader input[type="date"]{
+  outline: none;
+  border: none;
+  padding: 0 5px;
+  cursor: pointer;
+  opacity: 0.7;
+  font-weight: bold;
+  background: none;
+}
+
+.EventsMain .eventsMoreBtn{
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.6;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+/* view segment (Day / 7 Days / Month) */
+
+.EventsMain .viewSegment{
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 6px;
+}
+
+.EventsMain .viewSegBtn{
+  flex: 1;
+  font-size: 12px;
+  padding: 8px 6px;
+  border-radius: 999px;
+  border: 1px solid #DEDCD2;
+  background: #fff;
+  color: #4B5058;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.EventsMain .viewSegBtn:hover{
+  border-color: #C7C4B6;
+}
+
+.EventsMain .viewSegBtnActive{
+  background: var(--base_color);
+  border-color: var(--base_color);
+  color: #fff;
+}
+
+/* scope chips (Me / connection / All) */
+
+.EventsMain .scopeRow{
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.EventsMain .scopeChip{
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid #DEDCD2;
+  background: #F7F6F1;
+  color: #4B5058;
+  cursor: pointer;
+}
+
+.EventsMain .scopeChipActive{
+  background: var(--base_color);
+  border-color: var(--base_color);
+  color: #fff;
+}
+
+/* ===== Agenda / day list ===== */
+
+.EventsMain .agendaSection{
+  margin: 10px 0 4px;
+}
+
+.EventsMain .agendaSectionTitle{
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7A8177;
+  margin: 12px 0 6px 2px;
+}
+
+.EventsMain .eventCard{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #DEDCD2;
+  border-radius: 10px;
+  background: #fff;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.EventsMain .eventCard.cardReminder{
+  border-left: 4px solid #C79A3B;
+}
+.EventsMain .eventCard.cardMeeting{
+  border-left: 4px solid var(--base_color);
+}
+.EventsMain .eventCard.cardMoved{
+  opacity: 0.85;
+}
+
+.EventsMain .eventTime{
+  font-size: 12px;
+  font-weight: 700;
+  color: #4B5058;
+  min-width: 46px;
+  padding-top: 2px;
+}
+
+.EventsMain .eventBody{
+  flex: 1;
+  min-width: 0;
+}
+
+.EventsMain .eventTitle{
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #1C2620;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.EventsMain .eventMeta{
+  font-size: 11px;
+  color: #7A8177;
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.EventsMain .eventTag{
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #F7F6F1;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.EventsMain .eventOwnerTag{
+  font-size: 10.5px;
+  opacity: 0.6;
+}
+
+.EventsMain .eventKebab{
+  cursor: pointer;
+  padding: 4px 6px;
+  color: #7A8177;
+  font-size: 14px;
+}
+.EventsMain .eventKebab:hover{
+  color: var(--base_color);
+}
+
+.EventsMain .noEventsMsg{
+  font-size: 14px;
+  text-align: center;
+  margin: 60px 20px;
+  opacity: 0.55;
+}
+
+/* ===== 7-day list ===== */
+
+.EventsMain .sevenDayGroup{
+  margin-bottom: 6px;
+}
+.EventsMain .sevenDayDate{
+  font-size: 11px;
+  font-weight: 700;
+  color: #7A8177;
+  margin: 12px 0 6px 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ===== Month grid ===== */
+
+.EventsMain .monthNav{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0 10px;
+}
+.EventsMain .monthNav i{
+  cursor: pointer;
+  padding: 6px 10px;
+  opacity: 0.7;
+}
+.EventsMain .monthNav i:hover{
+  opacity: 1;
+}
+.EventsMain .monthNavLabel{
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.EventsMain .monthGrid{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.EventsMain .monthGridHeadCell{
+  font-size: 10px;
+  text-align: center;
+  color: #7A8177;
+  font-weight: 700;
+  padding-bottom: 4px;
+}
+
+.EventsMain .monthDayCell{
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  border: 1px solid #EDEBE3;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4px 2px;
+  cursor: pointer;
+  position: relative;
+  font-size: 11px;
+}
+
+.EventsMain .monthDayCell:hover{
+  border-color: #C7C4B6;
+}
+
+.EventsMain .monthDayCellOutside{
+  opacity: 0.3;
+}
+
+.EventsMain .monthDayCellSelected{
+  background: var(--base_color);
+  border-color: var(--base_color);
+  color: #fff;
+}
+
+.EventsMain .monthDayCellToday{
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.EventsMain .monthDayDots{
+  display: flex;
+  gap: 2px;
+  margin-top: 3px;
+}
+.EventsMain .monthDayDot{
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--base_color);
+}
+.EventsMain .monthDayDot.dotReminder{
+  background: #C79A3B;
+}
+.EventsMain .monthDayCellSelected .monthDayDot{
+  background: #fff;
+}
+
+.EventsMain .monthDayAgenda{
+  margin-top: 14px;
+}
+
+/* ===== More options dropdown ===== */
+
+.EventsMain .moreOptionsMenu{
+  padding: 6px;
+  position: absolute;
+  right: 15px;
+  top: 40px;
+  background: white;
+  box-shadow: 0 0 10px rgb(0,0,0,0.12);
+  border-radius: 10px;
+  z-index: 20;
+  min-width: 140px;
+}
+.EventsMain .moreOptionsMenu span{
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.7;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  padding: 10px;
+  border-radius: 8px;
+}
+.EventsMain .moreOptionsMenu span:hover{
+  background: #F7F6F1;
+  opacity: 1;
+}
+
+/* ===== Add button ===== */
+
+.EventsMain .addEventBtn{
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: var(--base_color);
+  color: white;
+  border-radius: 10px;
+  z-index: 6;
+  font-size: 13px;
+}
+
+/* ===== View All slide panel ===== */
+
+.EventsMain .viewAllEvents{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width:100%;
+    height:100%;
+    background-color:white;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: 0.3s;
+    padding: 10px 20px;
+    z-index: 15;
+    display: none;
+}
+.EventsMain.viewall .viewAllEvents{
+    transform: translateX(0);
+    opacity: 1;
+    display: block;
+}
+.EventsMain .viewAllEvents .fa-chevron-left {
+  font-size: 15px;
+  cursor: pointer;
+  margin-right: 12px;
+  vertical-align: middle;
+  padding: 10px;
+}
+.EventsMain .viewAllEvents h3 {
+  font-weight: 500;
+  font-size: 20px;
+  margin: 0;
+  font-family: "Englebert";
+  vertical-align: middle;
+  opacity:0.8;
+  display: inline-block;
+}
+
+.EventsMain .viewAllTabs{
+  display: flex;
+  gap: 6px;
+  margin: 16px 0 10px;
+}
+
+/* ===== Add / Edit panel (inline slide-in, same pattern as View All) ===== */
+
+.EventsMain .addEventPanel{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width:100%;
+    height:100%;
+    background-color:white;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: 0.3s;
+    padding: 10px 20px;
+    z-index: 16;
+    display: none;
+    box-sizing: border-box;
+}
+.EventsMain.add .addEventPanel{
+    transform: translateX(0);
+    opacity: 1;
+    display: block;
+}
+.EventsMain .addEventPanel .fa-chevron-left {
+  font-size: 15px;
+  cursor: pointer;
+  margin-right: 12px;
+  vertical-align: middle;
+  padding: 10px;
+}
+.EventsMain .addEventPanel h3 {
+  font-weight: 500;
+  font-size: 20px;
+  margin: 0;
+  font-family: "Englebert";
+  vertical-align: middle;
+  opacity:0.8;
+  display: inline-block;
+}
+
+/* ============================================================
+   SHARED FORM STYLING
+   .eventForm  -> used inline inside .addEventPanel
+   .eventPopupForm -> still used by the small action-sheet
+   popups (occurrence menu / postpone), which stay as popups
+   ============================================================ */
+
+.eventForm,
+.eventPopupForm{
+  padding: 6px 2px;
+}
+
+.eventPopupForm{
+  width: 320px;
+  max-width: 88vw;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.eventForm h3,
+.eventPopupForm h3{
+  font-weight: 500;
+  font-size: 19px;
+  margin: 0 0 14px;
+  font-family: "Englebert";
+  opacity: 0.85;
+}
+
+.eventForm > label,
+.eventForm .fieldLabel,
+.eventPopupForm > label,
+.eventPopupForm .fieldLabel{
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7A8177;
+  display: block;
+  margin: 12px 0 6px;
+}
+
+.eventForm input[type="text"],
+.eventForm input[type="date"],
+.eventForm input[type="time"],
+.eventForm input[type="number"],
+.eventForm input[type="email"],
+.eventForm select,
+.eventForm textarea{
+  font-size: 15px;
+  border: 1px solid #DEDCD2;
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 9px 11px;
+  color: #1C2620;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.eventForm input:focus,
+.eventForm select:focus,
+.eventForm textarea:focus{
+  border-color: var(--base_color);
+  box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
+}
+
+.eventForm .repeatSegment{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.eventForm .repeatSegBtn{
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid #DEDCD2;
+  background: #fff;
+  color: #4B5058;
+  cursor: pointer;
+}
+.eventForm .repeatSegBtnActive{
+  background: var(--base_color);
+  border-color: var(--base_color);
+  color: #fff;
+}
+
+.eventForm .angWeekdays{
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.eventForm .repeatDayDot{
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #DEDCD2;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4B5058;
+  cursor: pointer;
+}
+.eventForm .repeatDayDotActive{
+  background: var(--base_color);
+  border-color: var(--base_color);
+  color: #fff;
+}
+
+.eventForm .timeRow,
+.eventForm .rangeRow{
+  display: flex;
+  gap: 10px;
+}
+.eventForm .timeRow > div,
+.eventForm .rangeRow > div{
+  flex: 1;
+}
+.eventForm .smallLabel{
+  font-size: 11px;
+  color: #7A8177;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.eventForm .datesList{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.eventForm .datesRow{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.eventForm .datesRow input{
+  flex: 1;
+}
+.eventForm .removeDateBtn{
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid #DEDCD2;
+  background: #fff;
+  color: #7A8177;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.eventForm .addDateBtn{
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--base_color);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.eventForm .attendeeRow{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.eventForm .attendeeRow input{
+  flex: 1;
+}
+.eventForm .attendeeRow select{
+  width: 90px;
+  flex-shrink: 0;
+}
+
+/* connections suggestion dropdown */
+.eventForm .attendeeInputWrap{
+  position: relative;
+  flex: 1;
+}
+.eventForm .attendeeInputWrap input{
+  width: 100%;
+}
+.eventForm .suggestDropdown{
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #DEDCD2;
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  z-index: 30;
+  max-height: 170px;
+  overflow-y: auto;
+}
+.eventForm .suggestItem{
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.eventForm .suggestItem:hover{
+  background: #F7F6F1;
+}
+.eventForm .suggestName{
+  font-size: 13px;
+  font-weight: 600;
+  color: #1C2620;
+}
+.eventForm .suggestEmail{
+  font-size: 11px;
+  color: #7A8177;
+}
+.eventForm .noConnectionsHint{
+  font-size: 12px;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+
+.eventForm .formActions{
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding-top: 10px;
+}
+
+.eventForm .formActions button{
+  flex: 1;
+  padding: 11px;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.eventForm .btnPrimary{
+  background-color: var(--base_color);
+  color: white;
+}
+.eventForm .btnGhost{
+  background-color: #F0EFE9;
+  color: #4B5058;
+}
+.eventForm .btnDanger{
+  background-color: #C24545;
+  color: white;
+}
+
+.eventPopupForm input[type="text"],
+.eventPopupForm input[type="date"],
+.eventPopupForm input[type="time"],
+.eventPopupForm input[type="number"],
+.eventPopupForm input[type="email"],
+.eventPopupForm select,
+.eventPopupForm textarea{
+  font-size: 15px;
+  border: 1px solid #DEDCD2;
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 9px 11px;
+  color: #1C2620;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.eventPopupForm input:focus,
+.eventPopupForm select:focus,
+.eventPopupForm textarea:focus{
+  border-color: var(--base_color);
+  box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
+}
+
+.eventPopupForm .repeatSegment{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.eventPopupForm .repeatSegBtn{
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid #DEDCD2;
+  background: #fff;
+  color: #4B5058;
+  cursor: pointer;
+}
+.eventPopupForm .repeatSegBtnActive{
+  background: var(--base_color);
+  border-color: var(--base_color);
+  color: #fff;
+}
+
+.eventPopupForm .angWeekdays{
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.eventPopupForm .repeatDayDot{
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #DEDCD2;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4B5058;
+  cursor: pointer;
+}
+.eventPopupForm .repeatDayDotActive{
+  background: var(--base_color);
+  border-color: var(--base_color);
+  color: #fff;
+}
+
+.eventPopupForm .timeRow,
+.eventPopupForm .rangeRow{
+  display: flex;
+  gap: 10px;
+}
+.eventPopupForm .timeRow > div,
+.eventPopupForm .rangeRow > div{
+  flex: 1;
+}
+.eventPopupForm .smallLabel{
+  font-size: 11px;
+  color: #7A8177;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.eventPopupForm .datesList{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.eventPopupForm .datesRow{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.eventPopupForm .datesRow input{
+  flex: 1;
+}
+.eventPopupForm .removeDateBtn{
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid #DEDCD2;
+  background: #fff;
+  color: #7A8177;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.eventPopupForm .addDateBtn{
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--base_color);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.eventPopupForm .attendeeRow{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.eventPopupForm .attendeeRow input{
+  flex: 1;
+}
+.eventPopupForm .attendeeRow select{
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.eventPopupForm .formActions{
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding-top: 10px;
+}
+
+.eventPopupForm .formActions button{
+  flex: 1;
+  padding: 11px;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.eventPopupForm .btnPrimary{
+  background-color: var(--base_color);
+  color: white;
+}
+.eventPopupForm .btnGhost{
+  background-color: #F0EFE9;
+  color: #4B5058;
+}
+.eventPopupForm .btnDanger{
+  background-color: #C24545;
+  color: white;
+}
+
+/* Occurrence action-sheet popup */
+.occurrencePopup{
+  width: 280px;
+  max-width: 85vw;
+  padding: 6px 2px;
+}
+.occurrencePopup h3{
+  font-weight: 500;
+  font-size: 17px;
+  margin: 0 0 6px;
+  font-family: "Englebert";
+  opacity: 0.85;
+}
+.occurrencePopup .occSub{
+  font-size: 12px;
+  opacity: 0.6;
+  margin-bottom: 14px;
+}
+.occurrencePopup .occOption{
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  border: 1px solid #DEDCD2;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: #1C2620;
+}
+.occurrencePopup .occOption:hover{
+  border-color: var(--base_color);
+}
+.occurrencePopup .occOptionDanger{
+  color: #C24545;
+  border-color: #F1D4D4;
+}

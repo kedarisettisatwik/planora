@@ -100,22 +100,38 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         readTasks();
     }, [email]);
 
-    useEffect(() => {
+   useEffect(() => {
         if (!email) return;
 
         const fetchConnections = async () => {
             try {
-                const snap = await getDoc(doc(db, email, "Connections"));
-                const data = snap.exists() ? snap.data().List || [] : [];
+                const connectionsRef = collection(
+                    db,
+                    email,
+                    "Connections",
+                    "List"
+                );
+
+                const snap = await getDocs(connectionsRef);
+
+                const data = snap.docs
+                    .map((doc) => doc.data().email)
+                    .filter(Boolean);
 
                 setConnections(data);
+
                 console.log(data);
+
             } catch (err) {
-                console.error("Error fetching connections:", err);
+                console.error(
+                    "Error fetching connections:",
+                    err
+                );
             }
         };
 
         fetchConnections();
+
     }, [email]);
 
     const toggleAssignConnection = (conn) => {
