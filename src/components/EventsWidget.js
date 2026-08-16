@@ -379,7 +379,7 @@ function EventsWidget({
           getDocs(collection(db, email, "Connections", "List")).catch(
             () => ({ docs: [] })
           ),
-          getDocs(collection(db, email, "TeamMembers", "List")).catch(
+          getDocs(collection(db, email, "TeamsWidget", "List")).catch(
             () => ({ docs: [] })
           ),
         ]);

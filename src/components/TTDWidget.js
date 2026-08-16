@@ -153,7 +153,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
 
         const fetchTeamMembers = async () => {
             try {
-                const teamRef = collection(db, email, "TeamMembers", "List");
+                const teamRef = collection(db, email, "TeamsWidget", "List");
                 const snap = await getDocs(teamRef);
 
                 const data = snap.docs

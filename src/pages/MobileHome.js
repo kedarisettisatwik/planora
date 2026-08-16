@@ -3,6 +3,10 @@ import toast from 'react-hot-toast';
 
 import '../Styles/MobileHome.css'
 
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase";
+
+
 import DailyGoalsWidget from "../components/DailyGoalsWidget";
 import TTDWidget from "../components/TTDWidget";
 import NotesWidget from "../components/NotesWidget";
@@ -11,11 +15,8 @@ import BookmarksWidget from "../components/BookmarksWidget";
 import BookWidget from "../components/BookWidget";
 import TrackProjectWidget from "../components/TrackProjectWidget";
 import FormsWidget from '../components/FormsWidget';
-import SchedulesWidget from '../components/SchedulesWidget';
-import Connections from '../components/Connections';
-
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import Connections from "../components/Connections";
+import TeamsWidget from "../components/TeamsWidget";
 
 const WIDGET_COMPONENTS = {
   DailyGoals: DailyGoalsWidget,
@@ -26,8 +27,8 @@ const WIDGET_COMPONENTS = {
   Book: BookWidget,
   TrackProject: TrackProjectWidget,
   Forms:FormsWidget,
-  Schedules: SchedulesWidget,
-  Connections:Connections
+  Connections:Connections,
+  TeamsWidget:TeamsWidget
 };
 
 const WIDGET_DISPLAY_NAMES = {
@@ -39,9 +40,8 @@ const WIDGET_DISPLAY_NAMES = {
   Book: "Books",
   TrackProject: "Workflows",
   Forms:"Forms",
-  Schedules:"Schedules",
-  Connections:"Connections",
-  Tracker:"Tracker"
+  TeamsWidget:"Team",
+  Connections:"Connections"
 };
 
 function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
@@ -192,7 +192,7 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
 
             <nav className="DesktopNav open mobile">
                 <div className="menuDetails">
-                    <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 2.0</span></h3>
+                    <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 3.0</span></h3>
 
                     <span style={{ margin: "0px 0 10px 0",fontSize: "17px",width:"100%", paddingTop:"20px"}}>Add Widgets </span>
 

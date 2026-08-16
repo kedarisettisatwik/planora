@@ -14,8 +14,8 @@ import BookmarksWidget from "../components/BookmarksWidget";
 import BookWidget from "../components/BookWidget";
 import TrackProjectWidget from "../components/TrackProjectWidget";
 import FormsWidget from '../components/FormsWidget';
-import SchedulesWidget from '../components/SchedulesWidget';
 import Connections from "../components/Connections";
+import TeamsWidget from "../components/TeamsWidget";
 
 const WIDGET_COMPONENTS = {
   DailyGoals: DailyGoalsWidget,
@@ -27,7 +27,7 @@ const WIDGET_COMPONENTS = {
   TrackProject: TrackProjectWidget,
   Forms:FormsWidget,
   Connections:Connections,
-  Schedules: SchedulesWidget
+  TeamsWidget:TeamsWidget
 };
 
 const WIDGET_DISPLAY_NAMES = {
@@ -39,7 +39,7 @@ const WIDGET_DISPLAY_NAMES = {
   Book: "Books",
   TrackProject: "Workflows",
   Forms:"Forms",
-  Schedules:"Schedules",
+  TeamsWidget:"Team",
   Connections:"Connections"
 };
 
@@ -329,7 +329,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
       }}
       className="boardDesktop"
     >
-      <div style={{ position: "relative", height: `calc(${boardHeight*1.5}px)`,width: `calc(${boardWidth-10}px)`}}>
+      <div style={{ position: "relative", height: `calc(${boardHeight*2}px)`,width: `calc(${boardWidth-10}px)`}}>
 
         {Object.entries(widgets).map(([type, pos]) => {
           const WidgetComponent = WIDGET_COMPONENTS[type];
@@ -414,7 +414,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
       <nav className={`DesktopNav desk ${navOpen ? 'open' : ''}`}>
 
           <div className="menuDetails">
-              <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 2.0</span></h3>
+              <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 3.0</span></h3>
               <span style={{ margin: "30px 0 10px 0",fontSize: "17px"}}>
                 Active Widgets
               </span>
