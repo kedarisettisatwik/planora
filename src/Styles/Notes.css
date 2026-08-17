@@ -138,13 +138,16 @@
 }
 .notesWidget .todoAddRow button{
     padding: 5px;
-    background: none;
+    background: var(--base_color);
     outline: none;
-    border: 1px solid var(--base_color);
     border-radius: 5px;
     cursor: pointer;
-    color: var(--base_color);
+    color: white;
     font-size: 12px;
+    position: absolute;
+    right: 5px;
+    border: none;
+    bottom: 5px;
 }
 .notesWidget .todoAddRow input{
     padding: 5px;
@@ -152,6 +155,18 @@
 }
 .notesWidget .todoAddRow{
     margin: 10px 0;
+    border: 1px solid rgb(0, 0, 0, 0.1);
+    padding: 5px;
+    border-radius: 5px;
+    position: relative;
+}
+.notesWidget .todoAddRow input.NoFocus{
+    width: calc(100% - 100px);
+    border: none;
+}
+.notesWidget .todoAddRow input.NoFocus:focus{
+    border-color: transparent;
+    box-shadow: none;
 }
 .notesWidget .todoItemsList{
     border-top: 1px dashed rgb(0, 0, 0, 0.1);
@@ -163,14 +178,17 @@
     overflow-y: auto;
 }
 .notesWidget .todoItem{
-    margin: 5px 0;
+    margin: 8px 0;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     padding: 10px 20px 10px 10px;
-    background: #f9f9f9;
     border-radius: 10px;
+    border: 1px solid rgb(0, 0, 0, 0.1);
+    box-shadow: 0 0 5px rgb(0, 0, 0, 0.1);
+    max-width: 300px;
+    font-size: 15px;
 }
 .notesWidget .todoItem input{
     cursor: pointer;

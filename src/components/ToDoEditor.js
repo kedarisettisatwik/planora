@@ -30,12 +30,14 @@ function ToDoEditor({ items, onChange }) {
     return (
         <div className="todoEditor">
             <div className="todoAddRow">
+                <i className="fas fa-list" style={{margin:"0 10px 0 5px",opacity:"0.5"}}></i>
                 <input
                     type="text"
                     value={newItemText}
                     onChange={(e) => setNewItemText(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Add an item..."
+                    className="NoFocus"
                 />
                 <button type="button" onClick={addItem}>Add</button>
             </div>

@@ -380,7 +380,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                             overflow:"hidden"
                         }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <button onClick={closeEditor} style={{ padding: "5px 10px", cursor: "pointer", outline: "none", border: "none", background: "rgb(182 184 189)", borderRadius: "5px"}}>← Back</button>
+                                <button onClick={closeEditor} style={{ padding: "5px 10px", cursor: "pointer", outline: "none", border: "none", background: "rgb(64 123 255 / 35%)", borderRadius: "5px",fontWeight:"500"}}>← Back</button>
                                 <button onClick={() => deleteNote(selectedNoteId)} style={{ padding: "5px 10px", cursor: "pointer", outline: "none", borderRadius: "5px", border: "1px solid red", background: "white", color: "red",marginLeft:"20px" }}>Delete</button>
                                 {isDirty && (
                                     <button onClick={saveNote} style={{ padding: "5px 10px", cursor: "pointer", outline: "none", border: "none", background: "var(--base_color)", color: "white", borderRadius: "5px",marginLeft:"auto" }}>
@@ -398,7 +398,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                             />
 
                             {/* ---- Labels ---- */}
-                            <div className="labelsEditor">
+                            <div className="labelsEditor" style={{position:"relative"}}>
                                 <div
                                     style={{
                                     display: "flex",
@@ -446,9 +446,11 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                                     padding: "10px",
                                     fontSize: "0.85em",
                                     display: "block",
-                                    width:"100%"
+                                    width:"100%",
+                                    paddingLeft:"40px"
                                     }}
                                 />
+                                <i className="fas fa-tag" style={{ position: "absolute", bottom: "7px", left: "10px", opacity: 0.6, transform: "scaleX(-1)", fontSize: "20px" }}></i>
                                 </div>
 
                             <div>
