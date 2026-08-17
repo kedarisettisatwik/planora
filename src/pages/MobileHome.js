@@ -192,7 +192,7 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
 
             <nav className="DesktopNav open mobile">
                 <div className="menuDetails">
-                    <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 3.3</span></h3>
+                    <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 3.4</span></h3>
 
                     <span style={{ margin: "0px 0 10px 0",fontSize: "17px",width:"100%", paddingTop:"20px"}}>Add Widgets </span>
 
