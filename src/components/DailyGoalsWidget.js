@@ -32,6 +32,10 @@ import goalIcon23 from "../assests/iconsGoal/icon23.png";
 import goalIcon24 from "../assests/iconsGoal/icon24.png";
 import goalIcon25 from "../assests/iconsGoal/icon25.png";
 import goalIcon26 from "../assests/iconsGoal/icon26.png";
+import goalIcon27 from "../assests/iconsGoal/icon27.png";
+import goalIcon28 from "../assests/iconsGoal/icon28.png";
+import goalIcon29 from "../assests/iconsGoal/icon29.png";
+import goalIcon30 from "../assests/iconsGoal/icon30.png";
 
 import ReportsMain from "./ReportsMain";
 
@@ -122,7 +126,11 @@ function DailyGoalsWidget({
     { id: "icon23", value: "icon23", src: goalIcon23 },
     { id: "icon24", value: "icon24", src: goalIcon24 },
     { id: "icon25", value: "icon25", src: goalIcon25 },
-    { id: "icon26", value: "icon26", src: goalIcon26 }
+    { id: "icon26", value: "icon26", src: goalIcon26 },
+    { id: "icon27", value: "icon27", src: goalIcon27 },
+    { id: "icon28", value: "icon28", src: goalIcon28 },
+    { id: "icon29", value: "icon29", src: goalIcon29 },
+    { id: "icon30", value: "icon30", src: goalIcon30 }
   ];
 
   const [MoreOptions, SetMoreOptions] = useState(false);
@@ -2019,7 +2027,7 @@ function DailyGoalsWidget({
 
                               if (goal.icon) {
                                 return (
-                                  <span className="goalIconEmoji">{goal.icon}</span>
+                                  <span className="goalIconEmoji" style={{ margin: "0 10px 0 0", fontSize: "20px", transform: "scale(1.4)" }}>{goal.icon}</span>
                                 );
                               }
 
@@ -2071,7 +2079,7 @@ function DailyGoalsWidget({
 
                               if (goal.icon) {
                                 return (
-                                  <span className="goalIconEmoji">{goal.icon}</span>
+                                  <span className="goalIconEmoji" style={{ margin: "0 10px 0 0", fontSize: "20px", transform: "scale(1.4)" }}>{goal.icon}</span>
                                 );
                               }
 
@@ -3002,7 +3010,7 @@ function DailyGoalsWidget({
 
                         if (goal.icon) {
                           return (
-                            <span className="goalIconEmoji">{goal.icon}</span>
+                            <i className="goalIconEmoji" style={{ margin: "0 13px 0 0", fontSize: "20px", transform: "scale(1.4)",fontStyle:"normal" }}>{goal.icon}</i>
                           );
                         }
 

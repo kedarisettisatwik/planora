@@ -587,6 +587,12 @@
   border-radius: 8px;
   cursor: pointer;
   border: 2px solid transparent;
+  transition: 0.4s;
+  background: white;
+}
+.iconGridItem:hover{
+  transform: scale(3);
+  box-shadow: 0 0 10px rgb(0,0,0,0.1);
 }
 
 .iconGridItemActive {
