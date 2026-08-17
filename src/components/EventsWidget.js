@@ -2018,6 +2018,7 @@ function EventForm({
             <select
               value={a.access}
               onChange={(e) => updateAttendee(idx, "access", e.target.value)}
+              style={{transform:"scale(0.9)"}}
             >
               <option value="view">View</option>
               <option value="edit">Edit</option>

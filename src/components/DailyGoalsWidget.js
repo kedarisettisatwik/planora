@@ -6,6 +6,33 @@ import * as XLSX from "xlsx";
 import "../Styles/Home.css";
 import "../Styles/DailyGoals.css";
 
+import goalIcon1 from "../assests/iconsGoal/icon1.png";
+import goalIcon2 from "../assests/iconsGoal/icon2.png";
+import goalIcon3 from "../assests/iconsGoal/icon3.png";
+import goalIcon4 from "../assests/iconsGoal/icon4.png";
+import goalIcon5 from "../assests/iconsGoal/icon5.png";
+import goalIcon6 from "../assests/iconsGoal/icon6.png";
+import goalIcon7 from "../assests/iconsGoal/icon7.png";
+import goalIcon8 from "../assests/iconsGoal/icon8.png";
+import goalIcon9 from "../assests/iconsGoal/icon9.png";
+import goalIcon10 from "../assests/iconsGoal/icon10.png";
+import goalIcon11 from "../assests/iconsGoal/icon11.png";
+import goalIcon12 from "../assests/iconsGoal/icon12.png";
+import goalIcon13 from "../assests/iconsGoal/icon13.png";
+import goalIcon14 from "../assests/iconsGoal/icon14.png";
+import goalIcon15 from "../assests/iconsGoal/icon15.png";
+import goalIcon16 from "../assests/iconsGoal/icon16.png";
+import goalIcon17 from "../assests/iconsGoal/icon17.png";
+import goalIcon18 from "../assests/iconsGoal/icon18.png";
+import goalIcon19 from "../assests/iconsGoal/icon19.png";
+import goalIcon20 from "../assests/iconsGoal/icon20.png";
+import goalIcon21 from "../assests/iconsGoal/icon21.png";
+import goalIcon22 from "../assests/iconsGoal/icon22.png";
+import goalIcon23 from "../assests/iconsGoal/icon23.png";
+import goalIcon24 from "../assests/iconsGoal/icon24.png";
+import goalIcon25 from "../assests/iconsGoal/icon25.png";
+import goalIcon26 from "../assests/iconsGoal/icon26.png";
+
 import ReportsMain from "./ReportsMain";
 
 import {
@@ -59,6 +86,45 @@ function DailyGoalsWidget({
   const [newGoalType, setNewGoalType] = useState("checklist");
   const [newGoalTrackerUnit, setNewGoalTrackerUnit] = useState("count");
 
+  // ---------------------------------------------------------
+  // GOAL ICON
+  // ---------------------------------------------------------
+  // iconMode: "none" | "select" | "emoji"
+  const [newGoalIconMode, setNewGoalIconMode] = useState("none");
+  const [newGoalSelectedIcon, setNewGoalSelectedIcon] = useState("");
+  const [newGoalCustomEmoji, setNewGoalCustomEmoji] = useState("");
+
+  const ICON_OPTIONS = [
+    // Replace these with your actual 12 icon file names/paths.
+    // "value" is what gets stored in the DB, "src" is what gets rendered.
+    { id: "icon1", value: "icon1", src: goalIcon1 },
+    { id: "icon2", value: "icon2", src: goalIcon2 },
+    { id: "icon3", value: "icon3", src: goalIcon3 },
+    { id: "icon4", value: "icon4", src: goalIcon4 },
+    { id: "icon5", value: "icon5", src: goalIcon5 },
+    { id: "icon6", value: "icon6", src: goalIcon6 },
+    { id: "icon7", value: "icon7", src: goalIcon7 },
+    { id: "icon8", value: "icon8", src: goalIcon8 },
+    { id: "icon9", value: "icon9", src: goalIcon9},
+    { id: "icon10", value: "icon10", src: goalIcon10 },
+    { id: "icon11", value: "icon11", src: goalIcon11 },
+    { id: "icon12", value: "icon12", src: goalIcon12 },
+    { id: "icon13", value: "icon13", src: goalIcon13 },
+    { id: "icon14", value: "icon14", src: goalIcon14 },
+    { id: "icon15", value: "icon15", src: goalIcon15 },
+    { id: "icon16", value: "icon16", src: goalIcon16 },
+    { id: "icon17", value: "icon17", src: goalIcon17 },
+    { id: "icon18", value: "icon18", src: goalIcon18 },
+    { id: "icon19", value: "icon19", src: goalIcon19 },
+    { id: "icon20", value: "icon20", src: goalIcon20 },
+    { id: "icon21", value: "icon21", src: goalIcon21 },
+    { id: "icon22", value: "icon22", src: goalIcon22 },
+    { id: "icon23", value: "icon23", src: goalIcon23 },
+    { id: "icon24", value: "icon24", src: goalIcon24 },
+    { id: "icon25", value: "icon25", src: goalIcon25 },
+    { id: "icon26", value: "icon26", src: goalIcon26 }
+  ];
+
   const [MoreOptions, SetMoreOptions] = useState(false);
   const [importingExcel, setImportingExcel] =  useState(false);
 
@@ -101,6 +167,8 @@ function DailyGoalsWidget({
 
   const [goalsList, setGoalsList] = useState([]);
   const [editingGoalId, setEditingGoalId] = useState(null);
+  // iconMode used while editing an existing goal: "none" | "select" | "emoji"
+  const [editIconMode, setEditIconMode] = useState("none");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [goalsFetched, setGoalsFetched] = useState(false);
 
@@ -426,6 +494,43 @@ function DailyGoalsWidget({
       return;
     }
 
+    // Icon validation
+    if (newGoalIconMode === "select" && !newGoalSelectedIcon) {
+      toast("Please select an icon.", {
+        duration: 2000,
+        position: "top-center",
+        icon: "❌",
+        style: {
+          backgroundColor: "var(--toast_error)",
+          color: "white",
+        },
+      });
+
+      return;
+    }
+
+    if (newGoalIconMode === "emoji" && !newGoalCustomEmoji.trim()) {
+      toast("Please enter an emoji.", {
+        duration: 2000,
+        position: "top-center",
+        icon: "❌",
+        style: {
+          backgroundColor: "var(--toast_error)",
+          color: "white",
+        },
+      });
+
+      return;
+    }
+
+    // Resolve final icon value to store in DB
+    const icon =
+      newGoalIconMode === "select"
+        ? newGoalSelectedIcon
+        : newGoalIconMode === "emoji"
+        ? newGoalCustomEmoji.trim()
+        : "";
+
     // Build schedule
     let schedule = {
       type: scheduleType,
@@ -453,6 +558,7 @@ function DailyGoalsWidget({
     const newGoal = {
       id: goalId,
       title: newGoalTitle.trim(),
+      icon,
       schedule,
       goalType: newGoalType,
       createdAt: new Date().toISOString(),
@@ -514,6 +620,10 @@ function DailyGoalsWidget({
       setNewGoalTitle("");
       setNewGoalType("checklist");
       setNewGoalTrackerUnit("count");
+
+      setNewGoalIconMode("none");
+      setNewGoalSelectedIcon("");
+      setNewGoalCustomEmoji("");
 
       setScheduleType("everyday");
       setActiveDays([1, 2, 3, 4, 5]);
@@ -648,6 +758,26 @@ function DailyGoalsWidget({
       ...g,
       title: value,
     }));
+  };
+
+  const setGoalIcon = (goalId, value) => {
+    updateGoalField(goalId, (g) => ({
+      ...g,
+      icon: value,
+    }));
+  };
+
+  // Figures out which icon mode a goal's current icon value belongs to,
+  // so the edit form opens on the right option ("no icon" / "select" / "your own emoji").
+  const getIconModeForValue = (iconValue) => {
+    if (!iconValue) return "none";
+
+    return ICON_OPTIONS.some((o) => o.value === iconValue) ? "select" : "emoji";
+  };
+
+  const startEditingGoal = (goal) => {
+    setEditIconMode(getIconModeForValue(goal.icon));
+    setEditingGoalId(goal.id);
   };
 
   // ---------------------------------------------------------
@@ -1026,10 +1156,19 @@ function DailyGoalsWidget({
 
   const sortedGoalsForSelectedDate = useMemo(() => {
     return [...goalsForSelectedDate].sort((a, b) => {
-      const aDone = isGoalCompletedOnDate(a, date);
-      const bDone = isGoalCompletedOnDate(b, date);
+      const aType = a.goalType || "checklist";
+      const bType = b.goalType || "checklist";
 
-      return aDone === bDone ? 0 : aDone ? 1 : -1;
+      const aCompleted = isGoalCompletedOnDate(a, date);
+      const bCompleted = isGoalCompletedOnDate(b, date);
+
+      const getPriority = (goalType, completed) => {
+        if (goalType === "tracker") return 1;
+        if (!completed) return 2; // active checklist
+        return 3; // completed checklist
+      };
+
+      return getPriority(aType, aCompleted) - getPriority(bType, bCompleted);
     });
   }, [goalsForSelectedDate, date]);
 
@@ -1815,9 +1954,11 @@ function DailyGoalsWidget({
                   <li
                     key={goal.id}
                     className={
-                      isGoalCompletedOnDate(goal, date)
-                        ? "goalDone goalListItem"
-                        : "goalListItem"
+                      goal.goalType === "tracker"
+                        ? "goalListItem"
+                        : isGoalCompletedOnDate(goal, date)
+                          ? "goalDone goalListItem"
+                          : "goalListItem"
                     }
                   >
                     {/* =========================================
@@ -1859,13 +2000,35 @@ function DailyGoalsWidget({
                           }}
                         />
 
-                        <span>
-                          {goal.title}
+                        <div style={{display:"flex",gap:"10px",marginLeft:"15px",alignItems:"center",fontSize:"14px"}}>
+                            {(() => {
+                              const iconOpt = ICON_OPTIONS.find((o) => o.value === goal.icon);
 
-                          {goal.trackerUnit === "time"
-                            ? " (mins)"
-                            : ""}
-                        </span>
+                              console.log(iconOpt);
+                              console.log(goal.icon);
+                              if (iconOpt) {
+                                return (
+                                  <img
+                                    src={iconOpt.src}
+                                    alt=""
+                                    className="goalIconDisplay"
+                                    width="30px"
+                                  />
+                                );
+                              }
+
+                              if (goal.icon) {
+                                return (
+                                  <span className="goalIconEmoji">{goal.icon}</span>
+                                );
+                              }
+
+                              return null;
+                            })()}
+
+                            {goal.title}
+
+                        </div>
                       </>
                     ) : (
                       // =========================================
@@ -1889,9 +2052,38 @@ function DailyGoalsWidget({
                           }}
                         />
 
-                        <span>
-                          {goal.title}
-                        </span>
+                        <div style={{display:"flex",gap:"10px",marginLeft:"15px",alignItems:"center",fontSize:"14px"}}>
+                            {(() => {
+                              const iconOpt = ICON_OPTIONS.find((o) => o.value === goal.icon);
+
+                              console.log(iconOpt);
+                              console.log(goal.icon);
+                              if (iconOpt) {
+                                return (
+                                  <img
+                                    src={iconOpt.src}
+                                    alt=""
+                                    className="goalIconDisplay"
+                                    width="30px"
+                                  />
+                                );
+                              }
+
+                              if (goal.icon) {
+                                return (
+                                  <span className="goalIconEmoji">{goal.icon}</span>
+                                );
+                              }
+
+                              return null;
+                            })()}
+
+                            {goal.title}
+
+                            {goal.trackerUnit === "time"
+                              ? " (mins)"
+                              : ""}
+                        </div>
                       </>
                     )}
                   </li>
@@ -2090,6 +2282,103 @@ function DailyGoalsWidget({
             setNewGoalTitle(e.target.value)
           }
         />
+
+        {/* =================================================
+            ICON
+        ================================================= */}
+
+        <div className="repeats" style={{marginBottom:"10px"}}>
+          <span
+            className="repeatLabel"
+            style={{
+              display: "block",
+            }}
+          >
+            Icon :
+          </span>
+
+          <div className="iconModeOptions">
+            <label style={{display:"flex", gap:"10px"}}>
+              <input
+                type="radio"
+                name="iconMode"
+                value="none"
+                checked={newGoalIconMode === "none"}
+                onChange={() => {
+                  setNewGoalIconMode("none");
+                  setNewGoalSelectedIcon("");
+                  setNewGoalCustomEmoji("");
+                }}
+              />
+              No icon
+            </label>
+
+            <label style={{display:"flex", gap:"10px"}}>
+              <input
+                type="radio"
+                name="iconMode"
+                value="select"
+                checked={newGoalIconMode === "select"}
+                onChange={() => {
+                  setNewGoalIconMode("select");
+                  setNewGoalCustomEmoji("");
+                }}
+              />
+              Select from icons
+            </label>
+
+            <label style={{display:"flex", gap:"10px"}}>
+              <input
+                type="radio"
+                name="iconMode"
+                value="emoji"
+                checked={newGoalIconMode === "emoji"}
+                onChange={() => {
+                  setNewGoalIconMode("emoji");
+                  setNewGoalSelectedIcon("");
+                }}
+              />
+              Your own emoji
+            </label>
+          </div>
+
+          {/* ICON GRID */}
+
+          {newGoalIconMode === "select" && (
+            <div className="iconGrid">
+              {ICON_OPTIONS.map((opt) => (
+                <img
+                  key={opt.id}
+                  src={opt.src}
+                  alt={opt.id}
+                  className={`iconGridItem ${
+                    newGoalSelectedIcon === opt.value
+                      ? "iconGridItemActive"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setNewGoalSelectedIcon(opt.value)
+                  }
+                />
+              ))}
+            </div>
+          )}
+
+          {/* CUSTOM EMOJI */}
+
+          {newGoalIconMode === "emoji" && (
+            <input
+              className="emojiInput"
+              value={newGoalCustomEmoji}
+              placeholder=""
+              maxLength={4}
+              onChange={(e) =>
+                setNewGoalCustomEmoji(e.target.value)
+              }
+              style={{outline:"none",border:"1px solid rgb(0,0,0,0.1)",borderRadius:"10px",padding:"5px 0"}}
+            />
+          )}
+        </div>
 
         {/* =================================================
             GOAL TYPE
@@ -2406,6 +2695,102 @@ function DailyGoalsWidget({
                     }
                   />
 
+                  {/* =================================================
+                      ICON
+                  ================================================= */}
+
+                  <div className="repeats" style={{marginBottom:"10px"}}>
+                    <span
+                      className="repeatLabel"
+                      style={{
+                        display: "block",
+                      }}
+                    >
+                      Icon :
+                    </span>
+
+                    <div className="iconModeOptions">
+                      <label style={{display:"flex", gap:"10px"}}>
+                        <input
+                          type="radio"
+                          name={`editIconMode-${goal.id}`}
+                          value="none"
+                          checked={editIconMode === "none"}
+                          onChange={() => {
+                            setEditIconMode("none");
+                            setGoalIcon(goal.id, "");
+                          }}
+                        />
+                        No icon
+                      </label>
+
+                      <label style={{display:"flex", gap:"10px"}}>
+                        <input
+                          type="radio"
+                          name={`editIconMode-${goal.id}`}
+                          value="select"
+                          checked={editIconMode === "select"}
+                          onChange={() => {
+                            setEditIconMode("select");
+                            setGoalIcon(goal.id, "");
+                          }}
+                        />
+                        Select from icons
+                      </label>
+
+                      <label style={{display:"flex", gap:"10px"}}>
+                        <input
+                          type="radio"
+                          name={`editIconMode-${goal.id}`}
+                          value="emoji"
+                          checked={editIconMode === "emoji"}
+                          onChange={() => {
+                            setEditIconMode("emoji");
+                            setGoalIcon(goal.id, "");
+                          }}
+                        />
+                        Your own emoji
+                      </label>
+                    </div>
+
+                    {/* ICON GRID */}
+
+                    {editIconMode === "select" && (
+                      <div className="iconGrid">
+                        {ICON_OPTIONS.map((opt) => (
+                          <img
+                            key={opt.id}
+                            src={opt.src}
+                            alt={opt.id}
+                            className={`iconGridItem ${
+                              goal.icon === opt.value
+                                ? "iconGridItemActive"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              setGoalIcon(goal.id, opt.value)
+                            }
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* CUSTOM EMOJI */}
+
+                    {editIconMode === "emoji" && (
+                      <input
+                        className="emojiInput"
+                        value={goal.icon || ""}
+                        placeholder=""
+                        maxLength={4}
+                        onChange={(e) =>
+                          setGoalIcon(goal.id, e.target.value)
+                        }
+                        style={{outline:"none",border:"1px solid rgb(0,0,0,0.1)",borderRadius:"10px",padding:"5px 0"}}
+                      />
+                    )}
+                  </div>
+
                   {/* SCHEDULE TYPE */}
 
                   <div
@@ -2598,9 +2983,34 @@ function DailyGoalsWidget({
                 // DISPLAY GOAL
                 // =================================================
                 <div className="goalDisplay">
-                  <span>
-                    {goal.title}
-                  </span>
+                  
+                    <span>
+                      {(() => {
+                        const iconOpt = ICON_OPTIONS.find((o) => o.value === goal.icon);
+
+                        if (iconOpt) {
+                          return (
+                            <img
+                              src={iconOpt.src}
+                              alt=""
+                              className="goalIconDisplay"
+                              width="30px"
+                              style={{marginRight:"10px"}}
+                            />
+                          );
+                        }
+
+                        if (goal.icon) {
+                          return (
+                            <span className="goalIconEmoji">{goal.icon}</span>
+                          );
+                        }
+
+                        return null;
+                      })()}
+
+                      {goal.title}
+                    </span>
 
                   <span className="goalSchedulePreview">
                     {goal.schedule.type}
@@ -2622,9 +3032,7 @@ function DailyGoalsWidget({
                   <i
                     className="fa-solid fa-pen"
                     onClick={() =>
-                      setEditingGoalId(
-                        goal.id
-                      )
+                      startEditingGoal(goal)
                     }
                   ></i>
 

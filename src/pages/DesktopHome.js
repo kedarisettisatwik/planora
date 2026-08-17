@@ -414,7 +414,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
       <nav className={`DesktopNav desk ${navOpen ? 'open' : ''}`}>
 
           <div className="menuDetails">
-              <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 3.1</span></h3>
+              <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 3.2</span></h3>
               <span style={{ margin: "30px 0 10px 0",fontSize: "17px"}}>
                 Active Widgets
               </span>

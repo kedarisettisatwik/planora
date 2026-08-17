@@ -372,13 +372,16 @@
 }
 
 .DailyGoalsMain .viewAllGoals .goalDisplay span:first-child {
-  flex: 1;
-  font-size: 15px;
+  flex: 1 1;
+  font-size: 14px;
   font-weight: 500;
   color: #1C2620;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  height: 35px;
+  align-items: center;
+  display: flex;
 }
 .DailyGoalsMain .viewAllGoals .goalTypePreview{
   font-size: 12px;
@@ -502,12 +505,19 @@
 }
 .DailyGoalsMain .goalListItem{
     margin: 10px 0;
-    padding: 5px;
     position: relative;
     font-size: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row-reverse;
+    border: 1px solid rgb(0, 0, 0, 0.05);
+    padding: 12px 12px 12px 0;
+    border-radius: 10px;
 }
 .DailyGoalsMain .goalListItem span{
     margin-left: 15px;
+    font-size: 14px;
 }
 .DailyGoalsMain .goalListItem.goalDone{
   opacity: 0.6;
@@ -555,4 +565,36 @@
   font-family: "Englebert";
   vertical-align: middle;
   opacity:0.8;
+}
+.iconModeOptions {
+  display: flex;
+  gap: 16px;
+  margin: 6px 0 10px;
+  font-size: 13px;
+}
+
+.iconGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.iconGridItem {
+  width: 36px;
+  height: 36px;
+  padding: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.iconGridItemActive {
+  border-color: var(--base_color);
+}
+
+.emojiInput {
+  width: 60px;
+  text-align: center;
+  font-size: 20px;
 }
