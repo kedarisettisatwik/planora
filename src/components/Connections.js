@@ -363,7 +363,7 @@ function Connections({
   return (
 
     <div
-      className="defaultWidgetDiv connections"
+      className={`defaultWidgetDiv connections ${isMobile ? 'mobile' : ''}`}
       style={{
         padding: "10px 0 10px 10px"
       }}

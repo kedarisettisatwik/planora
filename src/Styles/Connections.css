@@ -8,6 +8,10 @@
     padding-right: 10px;
     overflow-y: auto;
 }
+.connections.mobile ul{
+    max-height: calc(100vh - 300px);
+    height: calc(100vh - 300px);
+}
 .connections  ul::-webkit-scrollbar{
     width: 5px;
 }
