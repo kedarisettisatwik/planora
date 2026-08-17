@@ -1,17 +1,20 @@
 {
   "files": {
-    "main.css": "/planora/static/css/main.2928b92a.css",
-    "main.js": "/planora/static/js/main.59e84e80.js",
-    "static/js/453.23351945.chunk.js": "/planora/static/js/453.23351945.chunk.js",
+    "main.css": "/planora/static/css/main.40d57db0.css",
+    "main.js": "/planora/static/js/main.c5d5dd06.js",
+    "static/js/453.b20d44a8.chunk.js": "/planora/static/js/453.b20d44a8.chunk.js",
     "static/media/reset_password.png": "/planora/static/media/reset_password.7052e9f4207258cb8b60.png",
     "static/media/login.png": "/planora/static/media/login.4c0df477c8396e6e2a4a.png",
     "static/media/signup.png": "/planora/static/media/signup.d91d8a660d858ca67e57.png",
+    "static/media/icon30.png": "/planora/static/media/icon30.e4eefc85ce0d2e698204.png",
     "static/media/icon20.png": "/planora/static/media/icon20.a70b556beec330a78ca7.png",
     "static/media/icon9.png": "/planora/static/media/icon9.68327c7a3f3dc5ad759f.png",
     "static/media/eye_hide.png": "/planora/static/media/eye_hide.1d9cf9c0592a2c77563a.png",
     "static/media/eye_show.png": "/planora/static/media/eye_show.63ce6c8f56c8bb86429f.png",
     "static/media/icon1.png": "/planora/static/media/icon1.dbe0158f7a32d8ecc155.png",
+    "static/media/icon28.png": "/planora/static/media/icon28.1161dbdc4cdbdddcdc32.png",
     "static/media/icon5.png": "/planora/static/media/icon5.d4f51796ee8b9b966919.png",
+    "static/media/icon29.png": "/planora/static/media/icon29.17b70f037cc2636c85c8.png",
     "static/media/icon24.png": "/planora/static/media/icon24.47fc6daa1fe9b5c406ee.png",
     "static/media/icon15.png": "/planora/static/media/icon15.043ebb5a5efb617704b2.png",
     "static/media/icon18.png": "/planora/static/media/icon18.77cb52be0d0b1ef6edc0.png",
@@ -29,17 +32,18 @@
     "static/media/icon6.png": "/planora/static/media/icon6.24df22bbc62a9ff64868.png",
     "static/media/icon22.png": "/planora/static/media/icon22.e2d6dfb6159f014f6527.png",
     "static/media/icon3.png": "/planora/static/media/icon3.3181206597850aec05cb.png",
+    "static/media/icon27.png": "/planora/static/media/icon27.99755f33d54100361e94.png",
     "static/media/icon25.png": "/planora/static/media/icon25.f3c0a730ad23fa9dac0c.png",
     "static/media/icon10.png": "/planora/static/media/icon10.e538cd0fd2470fd2306d.png",
     "static/media/icon12.png": "/planora/static/media/icon12.863fe3bf59d1829582ed.png",
     "static/media/icon21.png": "/planora/static/media/icon21.a7e61bad807f438cffd3.png",
     "index.html": "/planora/index.html",
-    "main.2928b92a.css.map": "/planora/static/css/main.2928b92a.css.map",
-    "main.59e84e80.js.map": "/planora/static/js/main.59e84e80.js.map",
-    "453.23351945.chunk.js.map": "/planora/static/js/453.23351945.chunk.js.map"
+    "main.40d57db0.css.map": "/planora/static/css/main.40d57db0.css.map",
+    "main.c5d5dd06.js.map": "/planora/static/js/main.c5d5dd06.js.map",
+    "453.b20d44a8.chunk.js.map": "/planora/static/js/453.b20d44a8.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.2928b92a.css",
-    "static/js/main.59e84e80.js"
+    "static/css/main.40d57db0.css",
+    "static/js/main.c5d5dd06.js"
   ]
 }
