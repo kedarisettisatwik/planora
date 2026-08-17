@@ -144,10 +144,7 @@
     cursor: pointer;
     color: white;
     font-size: 12px;
-    position: absolute;
-    right: 5px;
     border: none;
-    bottom: 5px;
 }
 .notesWidget .todoAddRow input{
     padding: 5px;
@@ -159,12 +156,21 @@
     padding: 5px;
     border-radius: 5px;
     position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
-.notesWidget .todoAddRow input.NoFocus{
-    width: calc(100% - 100px);
+.notesWidget .todoAddRow textarea.NoFocus{
+    width: calc(100% - 80px);
     border: none;
+    outline: none;
+    resize: vertical;
+    height: 30px;
+    max-height: 200px;
+    min-height: 30px;
+    padding: 6px 0 0 10px;
 }
-.notesWidget .todoAddRow input.NoFocus:focus{
+.notesWidget .todoAddRow textarea.NoFocus:focus{
     border-color: transparent;
     box-shadow: none;
 }
@@ -186,13 +192,23 @@
     padding: 10px 20px 10px 10px;
     border-radius: 10px;
     border: 1px solid rgb(0, 0, 0, 0.1);
-    box-shadow: 0 0 5px rgb(0, 0, 0, 0.1);
-    max-width: 300px;
     font-size: 15px;
+    border-left: 10px solid rgb(0,0,0,0.2);
+}
+.notesWidget .todoItem.todoInActive{
+    border-left: 10px solid var(--base_color);
 }
 .notesWidget .todoItem input{
     cursor: pointer;
     margin-right: 10px;
+}
+.notesWidget .todoItem input:focus{
+    box-shadow: none;
+}
+.notesWidget .todoItem span{
+    display: block;
+    white-space:break-spaces;
+    margin-left: 10px;
 }
 .notesWidget .todoItem .todoDeleteBtn{
     cursor: pointer;

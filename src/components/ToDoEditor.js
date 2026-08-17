@@ -20,22 +20,14 @@ function ToDoEditor({ items, onChange }) {
         onChange(items.filter(item => item.id !== id));
     };
 
-    const handleKeyDown = (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            addItem();
-        }
-    };
-
     return (
         <div className="todoEditor">
             <div className="todoAddRow">
                 <i className="fas fa-list" style={{margin:"0 10px 0 5px",opacity:"0.5"}}></i>
-                <input
+                <textarea
                     type="text"
                     value={newItemText}
                     onChange={(e) => setNewItemText(e.target.value)}
-                    onKeyDown={handleKeyDown}
                     placeholder="Add an item..."
                     className="NoFocus"
                 />
@@ -49,8 +41,8 @@ function ToDoEditor({ items, onChange }) {
                     </p>
                 ) : (
                     items.map(item => (
-                        <div key={item.id} className="todoItem">
-                            <div>
+                        <div key={item.id} className={item.completed ? "todoInActive todoItem" : "todoItem"}>
+                            <div style={{display:"flex"}}>
                                 <input
                                     type="checkbox"
                                     checked={item.completed}

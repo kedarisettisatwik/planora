@@ -55,12 +55,11 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
     const [connections, setConnections] = useState([]);
     const [teamMembers, setTeamMembers] = useState([]);
     const [assignTeamMembers, setAssignTeamMembers] = useState([]);
-    const [peopleSearch, setPeopleSearch] = useState(""); // filters both connections & team lists below
+    const [peopleSearch, setPeopleSearch] = useState(""); // filters the team members list below
 
     const [assignSelf, setAssignSelf] = useState(true);
-    const [assignConnections, setAssignConnections] = useState([]);
-    const [assignOthers, setAssignOthers] = useState([]);
-    const [showOthersInputs, setShowOthersInputs] = useState(false);
+    const [assignAttendees, setAssignAttendees] = useState([]); // [{ email, included }] - people added via search/connections or a typed email
+    const [suggestOpenIdx, setSuggestOpenIdx] = useState(null); // which attendee row currently has its connections suggestion dropdown open
 
     const [selectedFilters, setSelectedFilters] = useState(["viewAll"]);
 
@@ -172,12 +171,6 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
 
     }, [email, refreshState]);
 
-    const toggleAssignConnection = (conn) => {
-        setAssignConnections((prev) =>
-            prev.includes(conn) ? prev.filter((c) => c !== conn) : [...prev, conn]
-        );
-    };
-
     const toggleAssignTeamMember = (member) => {
         setAssignTeamMembers((prev) =>
             prev.includes(member) ? prev.filter((m) => m !== member) : [...prev, member]
@@ -194,28 +187,35 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         setAssignTeamMembers(allTeamSelected ? [] : [...teamMembers]);
     };
 
-    const filteredConnections = connections.filter((c) =>
-        c.toLowerCase().includes(peopleSearch.trim().toLowerCase())
-    );
     const filteredTeamMembers = teamMembers.filter((m) =>
         m.toLowerCase().includes(peopleSearch.trim().toLowerCase())
     );
 
-    const addOtherEmailField = () => {
-        setShowOthersInputs(true);
-        setAssignOthers((prev) => [...prev, ""]);
+    const addAttendeeRow = () =>
+        setAssignAttendees((prev) => [...prev, { email: "", included: true }]);
+
+    const updateAttendee = (idx, field, value) =>
+        setAssignAttendees((prev) =>
+            prev.map((a, i) => (i === idx ? { ...a, [field]: value } : a))
+        );
+
+    const removeAttendeeRow = (idx) => {
+        setAssignAttendees((prev) => prev.filter((_, i) => i !== idx));
+        setSuggestOpenIdx((cur) => (cur === idx ? null : cur));
     };
 
-    const updateOtherEmail = (idx, value) => {
-        setAssignOthers((prev) => {
-            const updated = [...prev];
-            updated[idx] = value;
-            return updated;
-        });
-    };
+    // Suggestions for an attendee row's search box: saved connections that
+    // aren't already added as an attendee row, filtered by the typed query.
+    const suggestionsFor = (query) => {
+        const q = (query || "").trim().toLowerCase();
+        const alreadyAdded = new Set(
+            assignAttendees.map((a) => a.email.trim().toLowerCase()).filter(Boolean)
+        );
 
-    const removeOtherEmail = (idx) => {
-        setAssignOthers((prev) => prev.filter((_, i) => i !== idx));
+        return (connections || [])
+            .filter((c) => c && !alreadyAdded.has(c.toLowerCase()))
+            .filter((c) => !q || c.toLowerCase().includes(q))
+            .slice(0, 6);
     };
 
     const buildAssignedEmails = () => {
@@ -223,16 +223,13 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
 
         if (assignSelf) emails.push(email);
 
-        assignConnections.forEach((conn) => {
-            if (!emails.includes(conn)) emails.push(conn);
-        });
-
         assignTeamMembers.forEach((member) => {
             if (!emails.includes(member)) emails.push(member);
         });
 
-        assignOthers
-            .map((m) => m.trim().toLowerCase())
+        assignAttendees
+            .filter((a) => a.included)
+            .map((a) => a.email.trim().toLowerCase())
             .filter(Boolean)
             .forEach((mail) => {
                 if (!emails.includes(mail)) emails.push(mail);
@@ -246,13 +243,12 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         setEditingOriginalTask(null);
         setNewTaskTitle("");
         setNewTaskDesc("");
-        setStartDate("");
+        setStartDate(today());
         setEndDate("");
         setAssignSelf(true);
-        setAssignConnections([]);
+        setAssignAttendees([]);
         setAssignTeamMembers([]);
-        setAssignOthers([]);
-        setShowOthersInputs(false);
+        setSuggestOpenIdx(null);
         setPeopleSearch("");
     };
 
@@ -262,7 +258,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
 
         setNewTaskTitle(task.title || "");
         setNewTaskDesc(task.description || "");
-        setStartDate(task.startDate || "");
+        setStartDate(task.startDate || today());
         setEndDate(task.endDate || "");
 
         const assignedEmails = task.assign && typeof task.assign === "object"
@@ -276,16 +272,13 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         );
         setAssignTeamMembers(assignedTeamMembers);
 
-        const assignedConnections = assignedEmails.filter(
-            (mail) => mail !== email && !teamMembers.includes(mail) && connections.includes(mail)
-        );
-        setAssignConnections(assignedConnections);
-
+        // everyone else (saved connection or freely typed email) becomes an
+        // attendee row, pre-checked as included
         const otherEmails = assignedEmails.filter(
-            (mail) => mail !== email && !teamMembers.includes(mail) && !connections.includes(mail)
+            (mail) => mail !== email && !teamMembers.includes(mail)
         );
-        setAssignOthers(otherEmails);
-        setShowOthersInputs(otherEmails.length > 0);
+        setAssignAttendees(otherEmails.map((mail) => ({ email: mail, included: true })));
+        setSuggestOpenIdx(null);
 
         setAddTaskPage(true);
     };
@@ -506,6 +499,54 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
             updateTaskDB();
         } else {
             createTaskDB();
+        }
+    };
+
+    // Deletes the task entirely - removes its doc copy from every person it's
+    // shared with (every assignee) plus the creator's own copy (covers the
+    // IsRequested case where the creator isn't an assignee). Only the
+    // creator is ever offered this option (enforced in the UI below).
+    const deleteTaskDB = async () => {
+        if (!editingOriginalTask) return;
+
+        const confirmed = window.confirm(
+            `Delete "${editingOriginalTask.title}"? This removes it for everyone it's shared with and cannot be undone.`
+        );
+        if (!confirmed) return;
+
+        const targets = new Set(
+            editingOriginalTask.assign && typeof editingOriginalTask.assign === "object"
+                ? Object.keys(editingOriginalTask.assign)
+                : []
+        );
+        if (editingOriginalTask.createdBy) targets.add(editingOriginalTask.createdBy);
+
+        setLoading(true);
+        try {
+            for (const targetEmail of targets) {
+                await deleteDoc(doc(db, targetEmail, "TTD", "List", editingOriginalTask.id));
+            }
+
+            resetTaskForm();
+
+            await readTasks();
+
+            toast('Task deleted !!', {
+                duration: 2000,
+                position: 'top-center',
+                icon: '🗑️',
+                style: { "backgroundColor": "var(--toast_success)", "color": "white" }
+            });
+        } catch (err) {
+            console.error("Error deleting task:", err);
+            toast("Something went wrong while deleting the task. Please try again.", {
+                duration: 2000,
+                position: 'top-center',
+                icon: '❌',
+                style: { "backgroundColor": "var(--toast_error)", "color": "white" }
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -1099,11 +1140,11 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                 <span style={{ display: "block", marginTop: "20px" }}>Assign to : </span>
 
                 <div className="assignTo">
-                    {(connections.length > 0 || teamMembers.length > 0) && (
+                    {teamMembers.length > 0 && (
                         <input
                             type="text"
                             className="assignOtherInput"
-                            placeholder="Search connections or team members..."
+                            placeholder="Search team members..."
                             value={peopleSearch}
                             onChange={(e) => setPeopleSearch(e.target.value)}
                             style={{ width: "100%", boxSizing: "border-box", marginBottom: "14px" }}
@@ -1148,47 +1189,86 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                         </>
                     )}
 
-                    {Array.isArray(connections) && connections.length > 0 && (
-                        <>
-                            <span className="assignSubLabel">Your connections</span>
-                            {filteredConnections.map((conn) => (
-                                <div className="assignRow assignRowIndented" key={conn}>
+                    <span className="assignSubLabel" style={{marginBottom:"10px"}}>Share with</span>
+                    {assignAttendees.map((a, idx) => {
+                        const suggestions = suggestionsFor(a.email);
+
+                        return (
+                            <div className="attendeeRow" key={idx}>
+                                <input
+                                    type="checkbox"
+                                    checked={a.included}
+                                    onChange={(e) => updateAttendee(idx, "included", e.target.checked)}
+                                />
+
+                                <div className="attendeeInputWrap">
                                     <input
-                                        type="checkbox"
-                                        checked={assignConnections.includes(conn)}
-                                        onChange={() => toggleAssignConnection(conn)}
+                                        type="text"
+                                        placeholder="Search your connections or type an email"
+                                        value={a.email}
+                                        autoComplete="new-password"
+                                        onChange={(e) => updateAttendee(idx, "email", e.target.value)}
+                                        onFocus={() => setSuggestOpenIdx(idx)}
+                                        onBlur={() =>
+                                            setTimeout(() => setSuggestOpenIdx((cur) => (cur === idx ? null : cur)), 150)
+                                        }
                                     />
-                                    <span>{conn}</span>
+
+                                    {suggestOpenIdx === idx && suggestions.length > 0 && (
+                                        <div className="suggestDropdown">
+                                            {suggestions.map((c) => (
+                                                <div
+                                                    key={c}
+                                                    className="suggestItem"
+                                                    onMouseDown={() => {
+                                                        updateAttendee(idx, "email", c);
+                                                        setSuggestOpenIdx(null);
+                                                    }}
+                                                >
+                                                    <span className="suggestName">{c}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                            ))}
-                            {filteredConnections.length === 0 && (
-                                <span style={{ fontSize: "12px", opacity: 0.5, textTransform: "none", display: "block" }}>
-                                    No connections match "{peopleSearch}"
-                                </span>
-                            )}
-                        </>
+
+                                <button
+                                    type="button"
+                                    className="removeDateBtn"
+                                    onClick={() => removeAttendeeRow(idx)}
+                                    style={{ width: "20px", cursor: "pointer", background: "none", outline: "none", border: "none", fontSize: "20px" }}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        );
+                    })}
+
+                    {connections.length === 0 && (
+                        <div className="noConnectionsHint">
+                            No saved connections found — you can still type any email address.
+                        </div>
                     )}
 
-                    <span className="assignSubLabel">Others :</span>
-                    {assignOthers.map((mail, idx) => (
-                        <div className="assignRow assignRowIndented" key={idx}>
-                            <input
-                                type="email"
-                                className="assignOtherInput"
-                                placeholder="friend@gmail.com"
-                                value={mail}
-                                onChange={(e) => updateOtherEmail(idx, e.target.value)}
-                            />
-                            <button type="button" className="repeatRemoveDate" onClick={() => removeOtherEmail(idx)}>×</button>
-                        </div>
-                    ))}
-                    <button type="button" className="repeatAddDate" onClick={addOtherEmailField} style={{ padding: "10px", cursor: "pointer", borderRadius: "10px", border: "none" }}>
-                        + Add email
+                    <button type="button" className="addDateBtn" onClick={addAttendeeRow}>
+                        + Add person
                     </button>
                 </div>
 
 
                 <button className="saveNewTaskBtn" onClick={saveTask}>{editingOriginalTask ? "Update" : "Save"}</button>
+
+                {editingOriginalTask && editingOriginalTask.createdBy === email && (
+                    <button
+                        type="button"
+                        className="deleteTaskBtn"
+                        onClick={deleteTaskDB}
+                        style={{ padding: "10px", cursor: "pointer", background: "var(--toast_error)", color: "white", borderWidth: "medium", borderStyle: "none", borderColor: "currentColor", borderImage: "none", borderRadius: "10px" }}
+                    >
+                        <i className="fa-solid fa-trash" style={{ marginRight: "8px" }}></i>
+                        Delete Task
+                    </button>
+                )}
 
                 <div style={{ height: "20px" }}></div>
 
