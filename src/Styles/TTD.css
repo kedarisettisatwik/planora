@@ -79,7 +79,6 @@
 .TTDMain .notesBlock textarea{
     width: 100%;
     resize:vertical;
-    min-height: 100px;
     max-height: 200px;
     padding: 10px;
     font-size: 13px;
@@ -87,6 +86,7 @@
     outline: none;
     border: 1px solid rgb(0,0,0,0.1);
     border-radius: 10px;
+    height: 30px;
 }
 
 .TTDMain .addNewTask{
@@ -194,21 +194,7 @@
     font-weight: 400;
 }
 .TTDMain .addNewTask .assignRowIndented {
-  padding-left: 8px;
-}
-
-.TTDMain .addNewTask .assignRow input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 2px solid #959595;
-  border-radius: 5px;
-  background: #fff;
-  cursor: pointer;
-  flex-shrink: 0;
-  position: relative;
-  transition: all 0.15s ease;
+  padding-left: 30px;
 }
 
 .TTDMain .addNewTask .assignRow input[type="checkbox"]:hover {
@@ -233,11 +219,12 @@
 }
 
 .TTDMain .addNewTask .assignRow span {
-  font-size: 14px;
+  font-size: 13px;
   color: #1C2620;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-bottom: 0;
 }
 
 .TTDMain .addNewTask .assignOtherInput {
@@ -453,7 +440,7 @@
     display: none;
 }
 .TTDMain .taskblock .shared, .TTDMain .taskblock .request,.TTDMain .taskblock .assign{
-    font-size: 12px;
+    font-size: 10px;
     background: #dfdfdf;
     padding: 5px 10px;
     border-radius: 10px;
@@ -504,14 +491,14 @@
     gap: 10px;
 }
 .TTDMain .taskblock .TaskDates p{
-    font-size: 12px;
+    font-size: 10px;
     background: white;
     border-radius: 10px;
     border: 1px solid rgb(0, 0, 0, 0.2);
     padding: 5px;
 }
 .TTDMain .taskblock .TaskDates p span{
-    font-size: 14px;
+    font-size: 12px;
 }
 .TTDMain .taskblock.futureTask .TaskDates .TaskStartDate{
     background-color: #b1fdb1;

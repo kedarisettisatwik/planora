@@ -119,17 +119,15 @@ function NoWidgets({ setWidgetsCount, Signout, email, setLoading }) {
       <ul>
         <li onClick={() => addFirstWidget("DailyGoals")}>Daily Goals</li>
         <li onClick={() => addFirstWidget("TTD")}>Things to Do</li>
-        <li onClick={() => addFirstWidget("Dairy")}>Dairy</li>
-        <li onClick={() => addFirstWidget("Notes")}>Sticky Notes</li>
-        <li onClick={() => addFirstWidget("Meetings")}>Meetings</li>
+        <li onClick={() => addFirstWidget("Notes")}>Notes</li>
         <li onClick={() => addFirstWidget("Events")}>Events / Reminder</li>
         <li onClick={() => addFirstWidget("Bookmarks")}>Bookmarks</li>
-        <li onClick={() => addFirstWidget("TrackExpenses")}>Track Expenses</li>
-        <li onClick={() => addFirstWidget("Book")}>Book Library</li>
+        {/* <li onClick={() => addFirstWidget("TrackExpenses")}>Track Expenses</li> */}
+        <li onClick={() => addFirstWidget("Book")}>Books Library</li>
         <li onClick={() => addFirstWidget("Forms")}>Forms</li>
-        <li onClick={() => addFirstWidget("Schedules")}>Schedules</li>
         <li onClick={() => addFirstWidget("TrackProject")}>Track Project</li>
         <li onClick={() => addFirstWidget("Teams")}>Teams</li>
+        <li onClick={() => addFirstWidget("Connections")}>Connections</li>
       </ul>
 
       <button onClick={Signout} className="exit">Log Out</button>
