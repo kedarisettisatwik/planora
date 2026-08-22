@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { isMobile } from "react-device-detect";
 import toast from 'react-hot-toast';
 
@@ -32,8 +32,12 @@ const requestNotificationPermission = async () => {
   }
 };
 
+// change this to whatever your actual Home route path is
+const HOME_ROUTE = "/home";
+
 function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState("");
 
@@ -45,12 +49,24 @@ function Home() {
 
   const [popupContent, setPopupContent] = useState(null);
 
+  // Track whether we're currently on the Home route, via ref so the
+  // Firestore listener's closure always reads the latest value.
+  const isOnHomeRef = useRef(false);
+
+  // Queue of toasts that arrived while the tab was hidden/backgrounded,
+  // flushed once the tab becomes visible again.
+  const pendingNotificationsRef = useRef([]);
+
   useEffect(() => {
     requestNotificationPermission(); // ask once when Home mounts
   }, []);
 
   useEffect(() => {
-    
+    isOnHomeRef.current = location.pathname === HOME_ROUTE;
+  }, [location]);
+
+  useEffect(() => {
+
     const fetchUserData = async () => {
       const currentUser = auth.currentUser;
       if (!currentUser) {
@@ -139,7 +155,7 @@ function Home() {
                 border: "none",
                 borderRadius: "4px",
                 padding: "4px 10px",
-                fontSize: "13px",
+                fontSize: "12px",
                 fontWeight: "bold",
                 cursor: "pointer",
               }}
@@ -148,7 +164,7 @@ function Home() {
             </button>
 
             <button
-              onClick={() => toast.dismiss(t.id)}
+              onClick={() => {toast.dismiss(t.id);}}
               style={{
                 background: "transparent",
                 color: "white",
@@ -164,12 +180,27 @@ function Home() {
         </div>
       ),
       {
-        duration: 4000,
+        duration: 2000,
         position: "top-center",
       }
     );
   };
 
+  // Flush any queued toasts once the tab becomes visible again.
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && isOnHomeRef.current) {
+        pendingNotificationsRef.current.forEach(({ title, description, onOpen }) => {
+          showNotificationToast(title, description, onOpen);
+        });
+        pendingNotificationsRef.current = [];
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!email) return;
@@ -192,8 +223,7 @@ function Home() {
           const notTitle = notData.title || "New Notification";
           const notBody = notData.description || "";
 
-          // custom in-page toast with Open button
-          showNotificationToast(notData.title, notData.description, () => {
+          const onOpen = () => {
             setPopup(true);
             setPopupContent(
               <Notifications
@@ -203,9 +233,26 @@ function Home() {
                 signOut={Signout}
               />
             );
-          });
+          };
 
-          // browser notification
+          // Only show the in-page toast right away if we're on this page
+          // AND the tab is actually visible/focused right now.
+          // Otherwise queue it to be shown when the tab regains visibility.
+          const canShowNow =
+            isOnHomeRef.current && document.visibilityState === "visible";
+
+          if (canShowNow) {
+            showNotificationToast(notData.title, notData.description, onOpen);
+          } else {
+            pendingNotificationsRef.current.push({
+              title: notData.title,
+              description: notData.description,
+              onOpen,
+            });
+          }
+
+          // browser notification still fires regardless — that's its whole
+          // job, to reach the user when they're not looking at the tab
           if (Notification.permission === "granted") {
             const notif = new Notification(notTitle, {
               body: notBody,
@@ -214,15 +261,7 @@ function Home() {
 
             notif.onclick = () => {
               window.focus();
-              setPopup(true);
-              setPopupContent(
-                <Notifications
-                  email={email}
-                  setPopup={setPopup}
-                  setPopupContent={setPopupContent}
-                  signOut={Signout}
-                />
-              );
+              onOpen();
               notif.close();
             };
           } else {
@@ -244,12 +283,12 @@ function Home() {
 
   return (
       <section className={`Home ${loading ? 'loading' : ''} ${popup ? 'popup' : ''}`}>
-      { 
+      {
         widgetsCount == 0 ?
         (<NoWidgets setWidgetsCount={setWidgetsCount} Signout={Signout} email={email} setLoading={setLoading}/>)
         :
         (
-          isMobile 
+          isMobile
             ? <MobileHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={Signout} />
             : <DesktopHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={Signout}/>
         )

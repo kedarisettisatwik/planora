@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { v4 as uuidv4 } from 'uuid';
 import toast from "react-hot-toast";
 import { isMobile } from "react-device-detect";
 
@@ -340,6 +341,31 @@ function EventsWidget({
   const [occurrenceNoteLoading, setOccurrenceNoteLoading] = useState(false);
   const [occurrenceNoteSaving, setOccurrenceNoteSaving] = useState(false);
 
+
+  // queues a "New notification" write for every attendee (excluding the acting user)
+// into an already-open writeBatch, so it commits atomically with the event change itself
+  const addNotificationsToBatch = (batch, attendeeEmails, eventData, description,notId) => {
+    attendeeEmails
+      .filter((attendeeEmail) => attendeeEmail !== email) // don't notify yourself
+      .forEach((attendeeEmail) => {
+        const notifRef = doc(
+          db,
+          attendeeEmail,
+          "Notifications",
+          "List",
+          notId
+        );
+        batch.set(notifRef, {
+          id: notId,
+          title: eventData.title,
+          description,
+          createdBy: email,
+          DD: new Date(),
+          type: eventData.category === "meeting" ? "meeting" : "reminder",
+        });
+      });
+  };
+
   // -------------------------------------------------------
   // FETCH: widget empty-state
   // -------------------------------------------------------
@@ -446,7 +472,7 @@ function EventsWidget({
   // CRUD
   // -------------------------------------------------------
 
-  const persistEventEverywhere = async (eventData, previousAttendeeEmails = []) => {
+  const persistEventEverywhere = async (eventData, previousAttendeeEmails = [],notifDescription = null) => {
     const batch = writeBatch(db);
 
     const ownerRef = doc(db, eventData.ownerEmail, "Events", "Items", eventData.eventId);
@@ -470,6 +496,8 @@ function EventsWidget({
         batch.delete(ref);
       });
 
+    addNotificationsToBatch(batch, nextAttendeeEmails, eventData,notifDescription,uuidv4());
+
     await batch.commit();
   };
 
@@ -489,7 +517,7 @@ function EventsWidget({
         seriesCancelled: false,
       };
 
-      await persistEventEverywhere(eventData, []);
+      await persistEventEverywhere(eventData, [],eventData.category === "meeting" ? "New meeting scheduled" : "New reminder set");
 
       await updateDoc(doc(db, email, "widgets"), {
         "Events.empty": false,
@@ -542,7 +570,7 @@ function EventsWidget({
         seriesCancelled: false,
       };
 
-      await persistEventEverywhere(eventData, previousAttendeeEmails);
+      await persistEventEverywhere(eventData, previousAttendeeEmails,eventData.category === "meeting" ? "Meeting details updated" : "Reminder details updated");
 
       if (eventData.ownerEmail === email) {
         setOwnEvents((prev) =>
@@ -581,7 +609,7 @@ function EventsWidget({
     }
   };
 
-  const applyExceptionEverywhere = async (event, occurrenceDate, exceptionValue) => {
+  const applyExceptionEverywhere = async (event, occurrenceDate, exceptionValue, notifDescription = null) => {
     const attendeeEmails = Object.keys(event.attendees || {});
     const pointerId = `${event.ownerEmail}__${event.eventId}`;
     const fieldPath = `exceptions.${occurrenceDate}`;
@@ -600,6 +628,10 @@ function EventsWidget({
       });
     });
 
+    if (notifDescription) {
+      addNotificationsToBatch(batch, attendeeEmails, event, notifDescription,uuidv4());
+    }
+
     await batch.commit();
   };
 
@@ -607,7 +639,7 @@ function EventsWidget({
     setLoading(true);
 
     try {
-      await applyExceptionEverywhere(event, occurrenceDate, { cancelled: true });
+      await applyExceptionEverywhere(event, occurrenceDate, { cancelled: true },`Occurrence on ${occurrenceDate} was cancelled`);
 
       const patch = (e) => ({
         ...e,
@@ -646,7 +678,7 @@ function EventsWidget({
         newEndTime: newEndTime || null,
       };
 
-      await applyExceptionEverywhere(event, occurrenceDate, exceptionValue);
+      await applyExceptionEverywhere(event, occurrenceDate, exceptionValue,`Occurrence on ${occurrenceDate} was postponed to ${newDate}`);
 
       const patch = (e) => ({
         ...e,
@@ -688,7 +720,17 @@ function EventsWidget({
         batch.delete(doc(db, attendeeEmail, "Events", "SharedWithMe", pointerId));
       });
 
+      addNotificationsToBatch(
+        batch,
+        attendeeEmails,
+        event,
+        event.category === "meeting" ? "Meeting was cancelled" : "Reminder was cancelled",
+        uuidv4()
+      );
+
       await batch.commit();
+
+      // ...rest unchanged
 
       if (event.ownerEmail === email) {
         setOwnEvents((prev) => prev.filter((e) => e.eventId !== event.eventId));
