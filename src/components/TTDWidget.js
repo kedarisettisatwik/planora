@@ -332,7 +332,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         };
 
         const baseNotif = {
-            id: taskId,
+            id: uuidv4(),
             title: newTaskTitle.trim(),
             description: "New Task Assigned",
             createdBy: email,
@@ -349,7 +349,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                 );
                 if (assignedEmail !== email){
                     await setDoc(
-                        doc(db, assignedEmail, "Notifications", "List",taskId),
+                        doc(db, assignedEmail, "Notifications", "List",baseNotif.id),
                         baseNotif
                     );
                 }
@@ -1081,8 +1081,10 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                 new FieldPath("assign", assigneeEmail, "completionDate"), completionDate
             );
 
+            const UUUUUid = uuidv4();
+
              await setDoc(
-                doc(db, assigneeEmail, "Notifications", "List", task.id + "_" + email + "_" + Date.now()),
+                doc(db, assigneeEmail, "Notifications", "List", UUUUUid),
                 {
                     id: task.id,
                     title: task.title,
