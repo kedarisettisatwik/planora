@@ -157,7 +157,7 @@
   padding: 10px;
   border: 1px solid #DEDCD2;
   border-radius: 10px;
-  background: #fff;
+  background: #ffe7b0;
   margin-bottom: 8px;
   position: relative;
 }
@@ -167,6 +167,7 @@
 }
 .EventsMain .eventCard.cardMeeting{
   border-left: 4px solid var(--base_color);
+  background: #a9d2f5;
 }
 .EventsMain .eventCard.cardMoved{
   opacity: 0.85;

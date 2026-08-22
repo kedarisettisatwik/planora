@@ -331,6 +331,15 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
             hasOtherAssignees: hasOtherAssignees
         };
 
+        const baseNotif = {
+            id: taskId,
+            title: newTaskTitle.trim(),
+            description: "New Task Assigned",
+            createdBy: email,
+            DD: new Date(),
+            type:"task"
+        };
+
         setLoading(true);
         try {
             for (const assignedEmail of assignedEmails) {
@@ -338,6 +347,12 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                     doc(db, assignedEmail, "TTD", "List", taskId),
                     baseTaskData
                 );
+                if (assignedEmail !== email){
+                    await setDoc(
+                        doc(db, assignedEmail, "Notifications", "List",taskId),
+                        baseNotif
+                    );
+                }
             }
 
             if (!selfSelected) {
@@ -438,6 +453,15 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
             hasOtherAssignees: hasOtherAssignees
         };
 
+        const baseNotif = {
+            id: uuidv4(),
+            title: newTaskTitle.trim(),
+            description: "Existing Task updated",
+            createdBy: email,
+            DD: new Date(),
+            type:"task"
+        };
+
         setLoading(true);
         try {
             // delete every existing copy of the old task first
@@ -451,6 +475,14 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                     doc(db, assignedEmail, "TTD", "List", newTaskId),
                     baseTaskData
                 );
+
+                if (assignedEmail !== email){
+                    await setDoc(
+                        doc(db, assignedEmail, "Notifications", "List",baseNotif.id),
+                        baseNotif
+                    );
+                }
+
             }
 
             if (!selfSelected) {
@@ -521,10 +553,25 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
         );
         if (editingOriginalTask.createdBy) targets.add(editingOriginalTask.createdBy);
 
+        const baseNotif = {
+            id: uuidv4(),
+            title: editingOriginalTask.title,
+            description: "Deleted Task",
+            createdBy: email,
+            DD: new Date(),
+            type:"task"
+        };
+
         setLoading(true);
         try {
             for (const targetEmail of targets) {
                 await deleteDoc(doc(db, targetEmail, "TTD", "List", editingOriginalTask.id));
+                if (targetEmail !== email){
+                    await setDoc(
+                        doc(db, targetEmail, "Notifications", "List",baseNotif.id),
+                        baseNotif
+                    );
+                }
             }
 
             resetTaskForm();
@@ -964,6 +1011,21 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                     new FieldPath("assign", email, "done"), doneValue,
                     new FieldPath("assign", email, "completionDate"), completionDate
                 );
+                const uuuuid = uuidv4();
+                await setDoc(
+                    doc(db, task.createdBy, "Notifications", "List", uuuuid),
+                    {
+                        id: uuuuid,
+                        title: task.title,
+                        description: doneValue
+                            ? `${email} marked their part as done`
+                            : `${email} moved their part back to pending`,
+                        createdBy: email,
+                        DD: new Date(),
+                        type: "task"
+                    }
+                );
+                
             }
 
             await readTasks();
@@ -1017,6 +1079,20 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
                 "completionDate", completionDate,
                 new FieldPath("assign", assigneeEmail, "done"), doneValue,
                 new FieldPath("assign", assigneeEmail, "completionDate"), completionDate
+            );
+
+             await setDoc(
+                doc(db, assigneeEmail, "Notifications", "List", task.id + "_" + email + "_" + Date.now()),
+                {
+                    id: task.id,
+                    title: task.title,
+                    description: doneValue
+                        ? `${email} marked your part as done`
+                        : `${email} moved your part back to pending`,
+                    createdBy: email,
+                    DD: new Date(),
+                    type: "task"
+                }
             );
 
             await readTasks();

@@ -12,11 +12,11 @@ import TTDWidget from "../components/TTDWidget";
 import NotesWidget from "../components/NotesWidget";
 import EventsWidget from "../components/EventsWidget";
 import BookmarksWidget from "../components/BookmarksWidget";
-import BookWidget from "../components/BookWidget";
 import TrackProjectWidget from "../components/TrackProjectWidget";
 import FormsWidget from '../components/FormsWidget';
 import Connections from "../components/Connections";
 import TeamsWidget from "../components/TeamsWidget";
+import Notifications from '../components/Notifications';
 
 const WIDGET_COMPONENTS = {
   DailyGoals: DailyGoalsWidget,
@@ -24,7 +24,6 @@ const WIDGET_COMPONENTS = {
   Notes: NotesWidget,
   Events: EventsWidget,
   Bookmarks: BookmarksWidget,
-  Book: BookWidget,
   TrackProject: TrackProjectWidget,
   Forms:FormsWidget,
   Connections:Connections,
@@ -37,7 +36,6 @@ const WIDGET_DISPLAY_NAMES = {
   Notes: "Notes",
   Events: "Reminders",
   Bookmarks: "Bookmarks",
-  Book: "Books",
   TrackProject: "Workflows",
   Forms:"Forms",
   TeamsWidget:"Team",
@@ -192,7 +190,11 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
 
             <nav className="DesktopNav open mobile">
                 <div className="menuDetails">
-                    <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 3.7</span></h3>
+                    <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 4.1</span></h3>
+
+                    <div style={{margin:"30px 0 0 0",letterSpacing:"1px",fontWeight:"bold",cursor:"pointer"}} onClick={() => {setPopup(true);setPopupContent(<Notifications setPopupContent={setPopupContent} setPopup={setPopup} email={email}/>)}}>
+                        <span style={{display:"inline-block"}}>Notifications</span> <i className="fa-regular fa-bell" style={{display:"inline-block",marginLeft:"10px"}}></i>
+                    </div>
 
                     <span style={{ margin: "0px 0 10px 0",fontSize: "17px",width:"100%", paddingTop:"20px"}}>Add Widgets </span>
 

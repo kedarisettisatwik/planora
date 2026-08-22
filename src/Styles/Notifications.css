@@ -1,0 +1,78 @@
+.notifications{
+    width: 100vw;
+    max-width: 700px;
+    background: white;
+    box-shadow: 0 0 20px rgb(0, 0, 0, 0.1);
+    border-radius: 10px;
+    height: calc(100vh - 120px);
+    overflow: hidden;
+    position: relative;
+}
+.notifications .NotiList{
+    width: 100%;
+    height: calc(100% - 100px);
+    overflow: hidden;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+.notifications .NotiList::-webkit-scrollbar{
+    width: 5px;
+}
+.notifications .NotiList::-webkit-scrollbar-track {
+    background: white; 
+    border-radius: 6px;
+}
+.notifications .NotiList::-webkit-scrollbar-thumb {
+    background: rgb(0,0,0,0.4);
+    border-radius: 6px;
+}
+.notifications .notificationItem {
+    padding: 10px;
+    padding-left: 15px;
+    border-bottom: 1px solid rgb(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    position: relative;
+}
+.notifications .notificationItem::before{
+    content: '';
+    position: absolute;
+    left: 0px;
+    top: 10px;
+    width: 5px;
+    height: calc(100% - 20px);
+}
+.notifications .notificationItem.meeting::before{
+    background-color: var(--base_color);
+}
+.notifications .notificationItem.task::before{
+    background-color: #ff4063;
+}
+.notifications .notificationItem.reminder::before{
+    background-color: #C79A3B;
+}
+.notifications .notificationItem.info::before{
+    background-color: #1c8012;
+}
+.notifications button{
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: red;
+    border: none;
+    outline: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: white;
+    letter-spacing: 1px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.notifications .notificationItem i {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-style: normal;
+    cursor: pointer;
+    font-size: 14px;
+}

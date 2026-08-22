@@ -122,10 +122,8 @@ function NoWidgets({ setWidgetsCount, Signout, email, setLoading }) {
         <li onClick={() => addFirstWidget("Notes")}>Notes</li>
         <li onClick={() => addFirstWidget("Events")}>Events / Reminder</li>
         <li onClick={() => addFirstWidget("Bookmarks")}>Bookmarks</li>
-        {/* <li onClick={() => addFirstWidget("TrackExpenses")}>Track Expenses</li> */}
-        <li onClick={() => addFirstWidget("Book")}>Books Library</li>
         <li onClick={() => addFirstWidget("Forms")}>Forms</li>
-        <li onClick={() => addFirstWidget("TrackProject")}>Track Project</li>
+        <li onClick={() => addFirstWidget("TrackProject")}>Workflows</li>
         <li onClick={() => addFirstWidget("Teams")}>Teams</li>
         <li onClick={() => addFirstWidget("Connections")}>Connections</li>
       </ul>
