@@ -1086,7 +1086,7 @@ function TTDWidget({ key, email, x, y, setLoading, setPopup, setPopupContent, si
              await setDoc(
                 doc(db, assigneeEmail, "Notifications", "List", UUUUUid),
                 {
-                    id: task.id,
+                    id: UUUUUid,
                     title: task.title,
                     description: doneValue
                         ? `${email} marked your part as done`

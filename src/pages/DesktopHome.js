@@ -413,7 +413,7 @@ function DesktopHome({ setLoading, email, setPopup, setPopupContent, signOut }) 
       <nav className={`DesktopNav desk ${navOpen ? 'open' : ''}`}>
 
           <div className="menuDetails">
-              <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 4.1</span></h3>
+              <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 4.3</span></h3>
 
               <div style={{margin:"30px 0 0 0",letterSpacing:"1px",fontWeight:"bold",cursor:"pointer"}} onClick={() => {setPopup(true);setPopupContent(<Notifications setPopup={setPopup} setPopupContent={setPopupContent} email={email} />)}}>
                 <span style={{display:"inline-block"}}>Notifications</span> <i className="fa-regular fa-bell" style={{display:"inline-block",marginLeft:"10px"}}></i>
