@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { isMobile } from "react-device-detect";
 import RichEditor from "./RichEditor";
 import ToDoEditor from "./ToDoEditor";
@@ -79,7 +79,12 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
         }
     };
 
+    const creatingRef = useRef(false);
+
     const createNewItem = async (type) => {
+        if (creatingRef.current) return;
+        creatingRef.current = true;
+
         const now = Date.now();
         const newId = `${now}_${crypto.randomUUID()}`;
         const newNote = {
@@ -106,6 +111,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
             }
         } finally {
             setLoading && setLoading(false);
+            creatingRef.current = false;
         }
     };
 
@@ -234,7 +240,7 @@ function NotesWidget ({ email, x, y, setLoading, setPopup, setPopupContent, sign
                     gap: "12px"
                 }}>
                     <p style={{opacity:"0.7"}}>No Notes created</p>
-                    <button onClick={createNewItem("note")} style={{ padding: "10px", cursor: "pointer", outline: "none", border: "none", background: "var(--base_color)", color: "white", borderRadius: "10px" }} >New Note +</button>
+                    <button onClick={() => createNewItem("note")} style={{ padding: "10px", cursor: "pointer", outline: "none", border: "none", background: "var(--base_color)", color: "white", borderRadius: "10px" }} >New Note +</button>
                 </div>
             ) : (
                 <div className="notesWidgetLayout" style={{

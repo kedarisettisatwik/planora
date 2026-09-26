@@ -1,7 +1,7 @@
 .TTDMain.desk{
     width: 370px;
     height: calc(100vh - 120px);
-    max-height: 600px;
+    max-height: 500px;
     position: relative;
 }
 .TTDMain.mobile{
