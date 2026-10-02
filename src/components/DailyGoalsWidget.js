@@ -180,6 +180,8 @@ function DailyGoalsWidget({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [goalsFetched, setGoalsFetched] = useState(false);
   const [goalCelebration, setGoalCelebration] = useState(null);
+  const [mobileSortSnapshot, setMobileSortSnapshot] = useState(null);
+  const mobileSortTimeoutRef = useRef(null);
 
   // The empty state now comes only from email > DailyGoals > ListGoals:
   // once the goals have loaded, an empty collection means "no goals yet".
@@ -439,6 +441,34 @@ function DailyGoalsWidget({
   // email / DailyGoals / ListGoals. Show those goals whenever the
   // collection contains documents, regardless of the selected date's schedule.
   const goalsForSelectedDate = useMemo(() => goalsList, [goalsList]);
+
+  const holdMobileSortForAnimation = (dateStr) => {
+    if (!isMobile) return;
+
+    if (mobileSortTimeoutRef.current) {
+      window.clearTimeout(mobileSortTimeoutRef.current);
+    }
+
+    const completionById = Object.fromEntries(
+      goalsList.map((goal) => [
+        goal.id,
+        isGoalCompletedOnDate(goal, dateStr),
+      ])
+    );
+    setMobileSortSnapshot({ date: dateStr, completionById });
+
+    // The reward animation lasts 2.2s; keep the old order for one extra second.
+    mobileSortTimeoutRef.current = window.setTimeout(() => {
+      setMobileSortSnapshot(null);
+      mobileSortTimeoutRef.current = null;
+    }, 3200);
+  };
+
+  useEffect(() => () => {
+    if (mobileSortTimeoutRef.current) {
+      window.clearTimeout(mobileSortTimeoutRef.current);
+    }
+  }, []);
 
   const getPointsToReverse = (goalId, dateStr) => {
     const goal = goalsList.find((item) => item.id === goalId);
@@ -1124,7 +1154,9 @@ function DailyGoalsWidget({
       ? completedDates.filter((d) => d !== dateStr)
       : [...completedDates, dateStr];
 
-    // Start the feedback immediately; Firestore saves continue below.
+    // Start feedback immediately and postpone mobile completion sorting until
+    // the animation ends, plus one second.
+    holdMobileSortForAnimation(dateStr);
     if (alreadyDone) {
       const pointsToRemove = getPointsToReverse(goalId, dateStr);
       setGoalCelebration({ goalId, points: pointsToRemove, reversed: true });
@@ -1215,6 +1247,9 @@ function DailyGoalsWidget({
 
     const wasCompleted = Number(previousTrackerValues[dateStr]) > 0;
     const willBeCompleted = rawValue !== "" && Number(rawValue) > 0;
+    if (wasCompleted !== willBeCompleted) {
+      holdMobileSortForAnimation(dateStr);
+    }
     if (!wasCompleted && willBeCompleted) {
       const isLastGoal = goalsForSelectedDate.length > 0 &&
         goalsForSelectedDate.every(
@@ -1364,8 +1399,14 @@ function DailyGoalsWidget({
       }
 
       // On mobile, keep active checklist goals ahead of completed ones.
-      const aCompleted = isGoalCompletedOnDate(a, date);
-      const bCompleted = isGoalCompletedOnDate(b, date);
+      const useSnapshot =
+        mobileSortSnapshot && mobileSortSnapshot.date === date;
+      const aCompleted = useSnapshot
+        ? mobileSortSnapshot.completionById[a.id] ?? isGoalCompletedOnDate(a, date)
+        : isGoalCompletedOnDate(a, date);
+      const bCompleted = useSnapshot
+        ? mobileSortSnapshot.completionById[b.id] ?? isGoalCompletedOnDate(b, date)
+        : isGoalCompletedOnDate(b, date);
 
       const getPriority = (goalType, completed) => {
         if (goalType === "tracker") return 1;
@@ -1375,7 +1416,7 @@ function DailyGoalsWidget({
 
       return getPriority(aType, aCompleted) - getPriority(bType, bCompleted);
     });
-  }, [goalsForSelectedDate, date]);
+  }, [goalsForSelectedDate, date, mobileSortSnapshot]);
 
   // ---------------------------------------------------------
   // GOAL COUNTS
