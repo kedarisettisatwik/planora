@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { isMobile } from "react-device-detect";
 import toast from 'react-hot-toast';
@@ -29,6 +29,8 @@ function Home() {
 
   const [popupContent, setPopupContent] = useState(null);
 
+  const [goalPoints, setGoalPoints] = useState(0);
+
 
   useEffect(() => {
 
@@ -46,6 +48,7 @@ function Home() {
         if (userSnap.exists()) {
           const data = userSnap.data();
           setWidgetsCount(data.widgetsCount || 0);
+          setGoalPoints(Number(data.goalPoints) || 0);
         } else {
           setWidgetsCount(0);
         }
@@ -79,8 +82,8 @@ function Home() {
       {
         (
           isMobile
-            ? <MobileHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={Signout} />
-            : <DesktopHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={Signout}/>
+            ? <MobileHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={Signout} goalPoints={goalPoints} setGoalPoints={setGoalPoints} />
+            : <DesktopHome setLoading={setLoading} email={email} setPopup={setPopup} setPopupContent={setPopupContent} signOut={Signout} goalPoints={goalPoints} setGoalPoints={setGoalPoints}/>
         )
       }
       <div style={style1} className="loadingModal"><LoadingBtn /></div>

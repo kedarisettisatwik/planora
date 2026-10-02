@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 
 import '../Styles/DesktopNav.css';
 
@@ -31,6 +31,8 @@ function DesktopHome({
   widgets = WIDGET_COMPONENTS,   // pass the real ones from parent if you have them
   homeWidget = "DailyGoals",
   changeHomeWidget = () => {},
+  goalPoints = 0,
+  setGoalPoints = () => {}
 }) {
   const [activeTab, setActiveTab] = useState(homeWidget);
   const [navOpen, setNavOpen] = useState(false);
@@ -52,7 +54,7 @@ function DesktopHome({
               </li>
             ))}
             <li onClick={() => setNavOpen(true)}>Settings</li>
-            <li className="points">20 points</li>
+            <li className="points">{goalPoints} points</li>
           </ul>
         </nav>
 
@@ -63,6 +65,8 @@ function DesktopHome({
             setPopup={setPopup}
             setPopupContent={setPopupContent}
             signOut={signOut}
+            goalPoints={goalPoints}
+            setGoalpoints={setGoalPoints}
           />
         </div>
 

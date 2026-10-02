@@ -632,7 +632,6 @@ function TTDWidget({ email, setLoading }) {
                     margin: 0,
                     borderRadius: "14px",
                     border: overdue ? "2px solid #d9534f" : "1px solid rgba(0,0,0,0.08)",
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
                     overflow: "hidden",
                     display: "flex",
                     flexDirection: "column",

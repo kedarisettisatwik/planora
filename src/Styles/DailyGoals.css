@@ -650,3 +650,66 @@
   text-align: center;
   font-size: 20px;
 }
+
+
+/* Goal completion reward animation */
+.DailyGoalsMain .goalListItem {
+  position: relative;
+}
+
+.goalPointsCelebration {
+  position: absolute;
+  z-index: 30;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.75);
+  padding: 9px 14px;
+  border-radius: 14px;
+  color: #245332;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 8px 24px rgba(20, 70, 35, 0.2);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: goalRewardPop 2.2s ease both;
+}
+
+.goalConfetti {
+  position: absolute;
+  inset: -22px -26px;
+  pointer-events: none;
+}
+
+.goalConfetti span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 10px;
+  border-radius: 1px;
+  background: #ff6b6b;
+  animation: goalPaperBurst 850ms ease-out both;
+}
+
+.goalConfetti span:nth-child(1) { background: #ff6b6b; --dx: -42px; --dy: -28px; }
+.goalConfetti span:nth-child(2) { background: #ffd166; --dx: -25px; --dy: -43px; }
+.goalConfetti span:nth-child(3) { background: #06d6a0; --dx: 2px; --dy: -48px; }
+.goalConfetti span:nth-child(4) { background: #4cc9f0; --dx: 32px; --dy: -37px; }
+.goalConfetti span:nth-child(5) { background: #b388eb; --dx: 47px; --dy: -12px; }
+.goalConfetti span:nth-child(6) { background: #f72585; --dx: -46px; --dy: 10px; }
+.goalConfetti span:nth-child(7) { background: #fb8500; --dx: -31px; --dy: 35px; }
+.goalConfetti span:nth-child(8) { background: #80ed99; --dx: 0px; --dy: 43px; }
+.goalConfetti span:nth-child(9) { background: #4895ef; --dx: 31px; --dy: 33px; }
+.goalConfetti span:nth-child(10) { background: #f4a261; --dx: 45px; --dy: 8px; }
+
+@keyframes goalRewardPop {
+  0% { opacity: 0; transform: translate(-50%, -35%) scale(0.65); }
+  15%, 75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -65%) scale(0.9); }
+}
+
+@keyframes goalPaperBurst {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.6); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(300deg) scale(1); }
+}
+

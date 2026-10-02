@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+﻿import { useState, useEffect, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import { isMobile } from "react-device-detect";
 import * as XLSX from "xlsx";
@@ -47,6 +47,7 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  runTransaction,
 } from "firebase/firestore";
 
 import { auth, db } from "../firebase";
@@ -60,6 +61,7 @@ function DailyGoalsWidget({
   setPopup,
   setPopupContent,
   signOut,
+  setGoalpoints = () => {},
 }) {
 
   const [refreshState, setRefreshState] = useState(0);
@@ -177,6 +179,7 @@ function DailyGoalsWidget({
   const [editIconMode, setEditIconMode] = useState("none");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [goalsFetched, setGoalsFetched] = useState(false);
+  const [goalCelebration, setGoalCelebration] = useState(null);
 
   // The empty state now comes only from email > DailyGoals > ListGoals:
   // once the goals have loaded, an empty collection means "no goals yet".
@@ -262,10 +265,192 @@ function DailyGoalsWidget({
     return (goal.completedDates || []).includes(dateStr);
   };
 
+  const awardGoalPoints = async (goalId, dateStr) => {
+    const goalRef = doc(db, email, "DailyGoals", "ListGoals", goalId);
+    const detailsRef = doc(db, email, "generalDetails");
+    const dayGoalRefs = goalsList.map((goal) =>
+      doc(db, email, "DailyGoals", "ListGoals", goal.id)
+    );
+
+    try {
+      const award = await runTransaction(db, async (transaction) => {
+        // Read all goal documents so the final-goal bonus reflects the latest
+        // saved completion state, including concurrent updates.
+        const [goalSnapshots, detailsSnapshot] = await Promise.all([
+          Promise.all(dayGoalRefs.map((ref) => transaction.get(ref))),
+          transaction.get(detailsRef),
+        ]);
+        const completedGoalSnapshot = goalSnapshots.find(
+          (snapshot) => snapshot.id === goalId
+        );
+
+        if (!completedGoalSnapshot?.exists()) return null;
+
+        const completedGoalData = completedGoalSnapshot.data();
+        const rewardedDates = completedGoalData.rewardedDates || [];
+        const rewardHistory = completedGoalData.rewardHistory || {};
+        if (Number(rewardHistory[dateStr]) > 0 || rewardedDates.includes(dateStr)) {
+          return null;
+        }
+
+        const isComplete = (goalData) => {
+          if ((goalData.goalType || "checklist") === "tracker") {
+            return Number((goalData.trackerValues || {})[dateStr]) > 0;
+          }
+          return (goalData.completedDates || []).includes(dateStr);
+        };
+
+        // The points award is only valid after the completion was saved.
+        if (!isComplete(completedGoalData)) return null;
+
+        const allGoalsComplete =
+          goalSnapshots.length > 0 &&
+          goalSnapshots.every(
+            (snapshot) => snapshot.exists() && isComplete(snapshot.data())
+          );
+        const bonusPoints = allGoalsComplete ? goalSnapshots.length : 0;
+        const earnedPoints = 1 + bonusPoints;
+        const currentPoints = Number(
+          detailsSnapshot.exists()
+            ? detailsSnapshot.data().goalPoints || 0
+            : 0
+        );
+        const totalPoints = currentPoints + earnedPoints;
+
+        transaction.update(goalRef, {
+          rewardedDates: [...rewardedDates, dateStr],
+          rewardHistory: {
+            ...rewardHistory,
+            [dateStr]: earnedPoints,
+          },
+        });
+        transaction.set(
+          detailsRef,
+          { goalPoints: totalPoints },
+          { merge: true }
+        );
+
+        return { earnedPoints, totalPoints };
+      });
+
+      if (award) {
+        setGoalpoints(award.totalPoints);
+      }
+    } catch (err) {
+      console.error("Error awarding goal points:", err);
+      toast("Couldn't save your points. Please try again.", {
+        duration: 2000,
+        position: "top-center",
+        icon: "❌",
+        style: {
+          backgroundColor: "var(--toast_error)",
+          color: "white",
+        },
+      });
+    }
+  };
+
+  const reverseGoalPoints = async (goalId, dateStr) => {
+    const goalRef = doc(db, email, "DailyGoals", "ListGoals", goalId);
+    const detailsRef = doc(db, email, "generalDetails");
+    const dayGoalRefs = goalsList.map((goal) =>
+      doc(db, email, "DailyGoals", "ListGoals", goal.id)
+    );
+
+    try {
+      const reversal = await runTransaction(db, async (transaction) => {
+        const [goalSnapshots, detailsSnapshot] = await Promise.all([
+          Promise.all(dayGoalRefs.map((ref) => transaction.get(ref))),
+          transaction.get(detailsRef),
+        ]);
+        const goalSnapshot = goalSnapshots.find(
+          (snapshot) => snapshot.id === goalId
+        );
+        if (!goalSnapshot?.exists()) return null;
+
+        const goalData = goalSnapshot.data();
+        const rewardedDates = goalData.rewardedDates || [];
+        const rewardHistory = goalData.rewardHistory || {};
+        let pointsToRemove = Number(rewardHistory[dateStr]) || 0;
+
+        // Support rewards recorded by the earlier version, which kept only dates.
+        if (!pointsToRemove && rewardedDates.includes(dateStr)) {
+          const isComplete = (data) => {
+            if ((data.goalType || "checklist") === "tracker") {
+              return Number((data.trackerValues || {})[dateStr]) > 0;
+            }
+            return (data.completedDates || []).includes(dateStr);
+          };
+          const otherGoalsComplete = goalSnapshots
+            .filter((snapshot) => snapshot.id !== goalId)
+            .every((snapshot) => snapshot.exists() && isComplete(snapshot.data()));
+          pointsToRemove = 1 + (otherGoalsComplete ? goalSnapshots.length : 0);
+        }
+
+        if (pointsToRemove <= 0) return null;
+
+        const nextRewardHistory = { ...rewardHistory };
+        delete nextRewardHistory[dateStr];
+        transaction.update(goalRef, {
+          rewardedDates: rewardedDates.filter((rewardedDate) => rewardedDate !== dateStr),
+          rewardHistory: nextRewardHistory,
+        });
+
+        const currentPoints = Number(
+          detailsSnapshot.exists()
+            ? detailsSnapshot.data().goalPoints || 0
+            : 0
+        );
+        const totalPoints = Math.max(0, currentPoints - pointsToRemove);
+        transaction.set(
+          detailsRef,
+          { goalPoints: totalPoints },
+          { merge: true }
+        );
+
+        return { pointsToRemove, totalPoints };
+      });
+
+      if (reversal) {
+        setGoalpoints(reversal.totalPoints);
+      }
+    } catch (err) {
+      console.error("Error reversing goal points:", err);
+      toast("Couldn't update your points. Please try again.", {
+        duration: 2000,
+        position: "top-center",
+        icon: "❌",
+        style: {
+          backgroundColor: "var(--toast_error)",
+          color: "white",
+        },
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!goalCelebration) return undefined;
+
+    const timeout = window.setTimeout(() => setGoalCelebration(null), 2200);
+    return () => window.clearTimeout(timeout);
+  }, [goalCelebration]);
+
   // The widget's goal list reflects the documents in
   // email / DailyGoals / ListGoals. Show those goals whenever the
   // collection contains documents, regardless of the selected date's schedule.
   const goalsForSelectedDate = useMemo(() => goalsList, [goalsList]);
+
+  const getPointsToReverse = (goalId, dateStr) => {
+    const goal = goalsList.find((item) => item.id === goalId);
+    const recordedPoints = Number(goal?.rewardHistory?.[dateStr]) || 0;
+    if (recordedPoints > 0) return recordedPoints;
+    if (!(goal?.rewardedDates || []).includes(dateStr)) return 0;
+
+    const allOtherGoalsComplete = goalsForSelectedDate
+      .filter((item) => item.id !== goalId)
+      .every((item) => isGoalCompletedOnDate(item, dateStr));
+    return 1 + (allOtherGoalsComplete ? goalsForSelectedDate.length : 0);
+  };
 
   // ---------------------------------------------------------
   // DIARY
@@ -939,6 +1124,19 @@ function DailyGoalsWidget({
       ? completedDates.filter((d) => d !== dateStr)
       : [...completedDates, dateStr];
 
+    // Start the feedback immediately; Firestore saves continue below.
+    if (alreadyDone) {
+      const pointsToRemove = getPointsToReverse(goalId, dateStr);
+      setGoalCelebration({ goalId, points: pointsToRemove, reversed: true });
+    } else {
+      const isLastGoal = goalsForSelectedDate.length > 0 &&
+        goalsForSelectedDate.every(
+          (item) => item.id === goalId || isGoalCompletedOnDate(item, dateStr)
+        );
+      const pointsToShow = 1 + (isLastGoal ? goalsForSelectedDate.length : 0);
+      setGoalCelebration({ goalId, points: pointsToShow, reversed: false });
+    }
+
     // Optimistic UI update
     setGoalsList((prev) =>
       prev.map((g) =>
@@ -963,6 +1161,12 @@ function DailyGoalsWidget({
       await updateDoc(goalRef, {
         completedDates: updatedCompletedDates,
       });
+
+      if (!alreadyDone) {
+        await awardGoalPoints(goalId, dateStr);
+      } else {
+        await reverseGoalPoints(goalId, dateStr);
+      }
     } catch (err) {
       console.error("Error updating goal completion:", err);
 
@@ -1009,6 +1213,23 @@ function DailyGoalsWidget({
       ...(goal.trackerValues || {}),
     };
 
+    const wasCompleted = Number(previousTrackerValues[dateStr]) > 0;
+    const willBeCompleted = rawValue !== "" && Number(rawValue) > 0;
+    if (!wasCompleted && willBeCompleted) {
+      const isLastGoal = goalsForSelectedDate.length > 0 &&
+        goalsForSelectedDate.every(
+          (item) => item.id === goalId || isGoalCompletedOnDate(item, dateStr)
+        );
+      setGoalCelebration({
+        goalId,
+        points: 1 + (isLastGoal ? goalsForSelectedDate.length : 0),
+        reversed: false,
+      });
+    } else if (wasCompleted && !willBeCompleted) {
+      const pointsToRemove = getPointsToReverse(goalId, dateStr);
+      setGoalCelebration({ goalId, points: pointsToRemove, reversed: true });
+    }
+
     const trackerValues = {
       ...previousTrackerValues,
     };
@@ -1048,6 +1269,13 @@ function DailyGoalsWidget({
       await updateDoc(goalRef, {
         trackerValues,
       });
+
+      const isNowCompleted = Number(trackerValues[dateStr]) > 0;
+      if (!wasCompleted && isNowCompleted) {
+        await awardGoalPoints(goalId, dateStr);
+      } else if (wasCompleted && !isNowCompleted) {
+        await reverseGoalPoints(goalId, dateStr);
+      }
     } catch (err) {
       console.error("Error updating tracker value:", err);
 
@@ -1127,13 +1355,22 @@ function DailyGoalsWidget({
       const aType = a.goalType || "checklist";
       const bType = b.goalType || "checklist";
 
+      // Desktop keeps a fixed grouping and preserves the saved order within
+      // each group, so completing a goal never moves it.
+      if (!isMobile) {
+        const aPriority = aType === "tracker" ? 1 : 2;
+        const bPriority = bType === "tracker" ? 1 : 2;
+        return aPriority - bPriority;
+      }
+
+      // On mobile, keep active checklist goals ahead of completed ones.
       const aCompleted = isGoalCompletedOnDate(a, date);
       const bCompleted = isGoalCompletedOnDate(b, date);
 
       const getPriority = (goalType, completed) => {
         if (goalType === "tracker") return 1;
-        if (!completed) return 2; // active checklist
-        return 3; // completed checklist
+        if (!completed) return 2;
+        return 3;
       };
 
       return getPriority(aType, aCompleted) - getPriority(bType, bCompleted);
@@ -1976,6 +2213,24 @@ function DailyGoalsWidget({
                           : "goalListItem"
                     }
                   >
+                    {goalCelebration?.goalId === goal.id && (
+                      <div className="goalPointsCelebration" role="status" aria-live="polite">
+                        {!goalCelebration.reversed && (
+                          <div className="goalConfetti" aria-hidden="true">
+                            {Array.from({ length: 10 }, (_, index) => (
+                              <span key={index} />
+                            ))}
+                          </div>
+                        )}
+                        <strong>
+                          {goalCelebration.reversed
+                            ? goalCelebration.points > 0
+                              ? "−" + goalCelebration.points + " " + (goalCelebration.points === 1 ? "point" : "points")
+                              : "Goal updated"
+                            : "🎉 You earned " + goalCelebration.points + " " + (goalCelebration.points === 1 ? "point" : "points") + "!"}
+                        </strong>
+                      </div>
+                    )}
                     {/* =========================================
                         TRACKER GOAL
                     ========================================= */}
