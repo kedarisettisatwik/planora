@@ -4,21 +4,25 @@ import '../Styles/DesktopNav.css';
 
 import DailyGoalsWidget from "../components/DailyGoalsWidget";
 import TTDWidget from "../components/TTDWidget";
+import NotesWidget from "../components/NotesWidget";
 
 const WIDGET_COMPONENTS = {
   DailyGoals: DailyGoalsWidget,
   TTD: TTDWidget,
+  Notes: NotesWidget,
 };
 
 const WIDGET_DISPLAY_NAMES = {
   DailyGoals: "Daily Goals",
   TTD: "Things to do",
+  Notes: "Notes",
 };
 
 // label shown in nav -> widget key
 const TABS = [
   { label: "Goals",  widget: "DailyGoals" },
-  { label: "Tasks",  widget: "TTD" }
+  { label: "Tasks",  widget: "TTD" },
+  { label: "Notes",  widget: "Notes" }
 ];
 
 function DesktopHome({

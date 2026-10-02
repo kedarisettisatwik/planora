@@ -80,8 +80,6 @@ function DailyGoalsWidget({
       });
   };
 
-  const [isWidgetEmpty, setIsWidgetEmpty] = useState(true);
-
   const [addGoalPage, setAddGoalPage] = useState(false);
   const [viewAllGoalsPage, setViewAllGoalsPage] = useState(false);
   const [viewReports, setViewReports] = useState(false);
@@ -180,6 +178,10 @@ function DailyGoalsWidget({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [goalsFetched, setGoalsFetched] = useState(false);
 
+  // The empty state now comes only from email > DailyGoals > ListGoals:
+  // once the goals have loaded, an empty collection means "no goals yet".
+  const isWidgetEmpty = goalsFetched && goalsList.length === 0;
+
   // Holds tracker input values while user is typing
   const [trackerDrafts, setTrackerDrafts] = useState({});
 
@@ -260,10 +262,10 @@ function DailyGoalsWidget({
     return (goal.completedDates || []).includes(dateStr);
   };
 
-  const goalsForSelectedDate = useMemo(
-    () => goalsList.filter((g) => isGoalOnDate(g, date)),
-    [goalsList, date]
-  );
+  // The widget's goal list reflects the documents in
+  // email / DailyGoals / ListGoals. Show those goals whenever the
+  // collection contains documents, regardless of the selected date's schedule.
+  const goalsForSelectedDate = useMemo(() => goalsList, [goalsList]);
 
   // ---------------------------------------------------------
   // DIARY
@@ -348,37 +350,9 @@ function DailyGoalsWidget({
   };
 
   // ---------------------------------------------------------
-  // WIDGET EMPTY STATE
-  // ---------------------------------------------------------
-
-  useEffect(() => {
-    if (!email) return;
-
-    const fetchEmptyState = async () => {
-      try {
-        const snap = await getDoc(doc(db, email, "widgets"));
-
-        if (snap.exists()) {
-          const data = snap.data();
-
-          const empty = data?.DailyGoals?.empty;
-
-          if (empty !== undefined) {
-            setIsWidgetEmpty(empty);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching DailyGoals empty state:", err);
-      }
-    };
-
-    fetchEmptyState();
-  }, [email,refreshState]);
-
-  // ---------------------------------------------------------
   // FETCH GOALS
   //
-  // NEW STRUCTURE:
+  // STRUCTURE:
   //
   // email
   //   └── DailyGoals
@@ -386,11 +360,12 @@ function DailyGoalsWidget({
   //             ├── UUID-1
   //             ├── UUID-2
   //             └── UUID-3
+  //
+  // Re-runs when refreshState changes (right-click > Refresh).
   // ---------------------------------------------------------
 
   useEffect(() => {
     if (!email) return;
-    if (goalsFetched) return;
 
     const fetchGoals = async () => {
       setLoading(true);
@@ -430,7 +405,7 @@ function DailyGoalsWidget({
     };
 
     fetchGoals();
-  }, [email, goalsFetched, setLoading,refreshState]);
+  }, [email, setLoading, refreshState]);
 
   useEffect(() => {
     console.log("Updated goalsList:", goalsList);
@@ -587,8 +562,6 @@ function DailyGoalsWidget({
   // ---------------------------------------------------------
   // SAVE NEW GOAL
   //
-  // NEW:
-  //
   // DailyGoals
   //   └── ListGoals
   //        └── goal UUID
@@ -613,16 +586,11 @@ function DailyGoalsWidget({
 
       await setDoc(goalRef, goalDataWithoutId);
 
-      // Update widget empty state
-      await updateDoc(doc(db, email, "widgets"), {
-        "DailyGoals.empty": false,
-      });
-
       // Optimistic/local UI update
+      // (isWidgetEmpty updates automatically because goalsList is no longer empty)
       setGoalsList((prev) => [...prev, goalData]);
 
       // Reset form
-      setIsWidgetEmpty(false);
       setAddGoalPage(false);
 
       setNewGoalTitle("");
@@ -791,7 +759,6 @@ function DailyGoalsWidget({
   // ---------------------------------------------------------
   // SAVE ALL EDITED GOALS
   //
-  // NEW:
   // Instead of saving one big array,
   // update each individual goal document.
   // ---------------------------------------------------------
@@ -934,14 +901,7 @@ function DailyGoalsWidget({
 
       await deleteDoc(goalRef);
 
-      // If this was the last goal
-      if (previousGoals.length === 1) {
-        await updateDoc(doc(db, email, "widgets"), {
-          "DailyGoals.empty": true,
-        });
-
-        setIsWidgetEmpty(true);
-      }
+     
     } catch (err) {
       console.error("Error deleting goal:", err);
 

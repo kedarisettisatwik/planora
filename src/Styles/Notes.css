@@ -1,256 +1,398 @@
-.notesWidget{
-    width: 700px;
-}
-@media (max-width: 700px) {
-  .notesWidget {
+/* ---------- widget + cards ---------- */
+
+.NotesMain {
+    position: relative;
     width: 100%;
-    max-width: 100%;
-  }
-}
-.notesWidget.desk .notesWidgetLayout{
-    height: 500px;
-}
-.notesWidget.mobile .notesWidgetLayout{
-    height: calc(100vh - 150px);
-}
-.notesWidget .notesWidgetLayout .notesListPanel::-webkit-scrollbar{
-    width: 5px;
-}
-.notesWidget .notesWidgetLayout .notesListPanel::-webkit-scrollbar-track {
-    background: white; 
-    border-radius: 6px;
-}
-.notesWidget .notesWidgetLayout .notesListPanel::-webkit-scrollbar-thumb {
-    background: rgb(0,0,0,0.4);
-    border-radius: 6px;
-}
-.notesWidget .notesListPanel button{
-    padding: 10px;
-    outline: none;
-    border: none;
-    background: var(--base_color);
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-}
-.notesWidget .notesListPanel input{
-    padding: 6px;
-    border-radius: 5px;
-    outline: none;
-    border: 1px solid rgb(0, 0, 0, 0.2);
-    margin: 10px 0;
-    margin-top: 0;
-}
-.notesWidget .richTextEditor::-webkit-scrollbar, .notesWidget .todoItemsList::-webkit-scrollbar {
-    width: 5px;
-}
-.notesWidget .richTextEditor::-webkit-scrollbar-track, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-track, .notesWidget .todoItemsList::-webkit-scrollbar-track {
-    background: white; 
-    border-radius: 6px;
-}
-.notesWidget .richTextEditor::-webkit-scrollbar-thumb, .notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar-thumb, .notesWidget .todoItemsList::-webkit-scrollbar-thumb{
-    background: rgb(0,0,0,0.4);
-    border-radius: 6px;
-}
-.notesWidget .notesEditorPanel input{
-    outline: none;
-    border: 1px solid rgb(0,0,0,0.1);
-    border-radius: 5px;
-}
-.notesWidget .notesEditorPanel .labelsScroll::-webkit-scrollbar{
-    height: 5px;
+    height: 100%;
 }
 
-.notesWidget .notesEditorPanel input:focus {
-  border-color: var(--base_color);
-  box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.16);
+.notes-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 10px 15px 90px 0;
 }
-.notesWidget .richTextEditor{
+
+.notes-card {
+    width: 200px;
+    height: 200px;
+    box-sizing: border-box;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 350px;
-    border: 1px solid rgb(0,0,0,0.2);
-    border-radius: 10px;
+    gap: 8px;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.notes-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.notes-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.notes-card-head h4 {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.3;
+    word-break: break-word;
     overflow: hidden;
-    overflow-y: scroll;
-    font-size: 0.83em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
-.notesWidget.mobile .richTextEditor{
-    height: calc(100vh - 300px);
+
+.notes-card-head i {
+    opacity: 0.5;
+    font-size: 13px;
+    margin-top: 3px;
 }
-.notesWidget .editorToolbar{
+
+.notes-card-preview {
+    flex: 1;
+    overflow: hidden;
+    font-size: 12.5px;
+    line-height: 1.45;
+    opacity: 0.75;
+    word-break: break-word;
+}
+
+.notes-card-preview.text {
+    display: -webkit-box;
+    -webkit-line-clamp: 7;
+    -webkit-box-orient: vertical;
+}
+
+.notes-card-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notes-card-line.done {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.notes-empty {
+    opacity: 0.55;
+    padding: 20px 0;
+}
+
+/* ---------- modal ---------- */
+
+.notes-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.notes-modal {
+    width: min(640px, 100%);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.notes-modal-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 16px;
+}
+
+.notes-modal-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.notes-btn {
+    border: none;
+    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: inherit;
+    background: rgba(128, 128, 128, 0.2);
+}
+
+.notes-btn.primary {
+    background: var(--base_color, #333);
+    color: #fff;
+}
+
+.notes-btn.danger {
+    background: var(--toast_error, #d9534f);
+    color: #fff;
+}
+
+.notes-title-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 16px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: inherit;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.notes-title-input::placeholder {
+    color: inherit;
+    opacity: 0.45;
+}
+
+/* ---------- type chooser ---------- */
+
+.notes-choose {
+    padding-bottom: 20px;
+}
+
+.notes-choose h3 {
+    margin: 0;
+    padding: 0 20px 14px;
+}
+
+.notes-choose-options {
+    display: flex;
+    gap: 14px;
+    padding: 0 20px;
+}
+
+.notes-choose-options button {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    background: #fafafa;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.notes-choose-options button:hover {
+    background: #f0f0f0;
+}
+
+.notes-choose-options i {
+    font-size: 20px;
+}
+
+.notes-choose-options span {
+    font-size: 12.5px;
+    opacity: 0.65;
+}
+
+/* ---------- rich text editor ---------- */
+
+.notes-toolbar {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-    padding: 8px;
-    border-bottom: 1px solid rgb(0,0,0,0.1);
-    background: rgb(0,0,0,0.02);
+    padding: 6px 16px;
 }
 
-.notesWidget .editorToolbar button{
-    padding: 5px 9px;
-    outline: none;
-    border: 1px solid rgb(0,0,0,0.15);
-    background: white;
-    color: black;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.85em;
-    line-height: 1;
-}
-
-.notesWidget .editorToolbar button:hover{
-    background: rgb(0,0,0,0.05);
-}
-
-.notesWidget .editorToolbar button.active{
-    background: var(--base_color);
-    color: white;
-    border-color: var(--base_color);
-}
-
-.notesWidget .richTextEditor .ProseMirror{
-    flex: 1;
-    padding: 12px;
-    outline: none;
-    overflow-y: auto;
-}
-
-.notesWidget .richTextEditor .ProseMirror p{
-    margin: 0 0 8px 0;
-}
-
-.notesWidget .richTextEditor .ProseMirror ul,
-.notesWidget .richTextEditor .ProseMirror ol{
-    padding-left: 20px;
-    margin: 0 0 8px 0;
-}
-
-.notesWidget .richTextEditor .ProseMirror blockquote{
-    border-left: 3px solid var(--base_color);
-    margin: 0 0 8px 0;
-    padding-left: 10px;
-    opacity: 0.8;
-}
-
-.notesWidget .richTextEditor .ProseMirror h2{
-    margin: 10px 0 6px 0;
-}
-.notesWidget .todoAddRow button{
-    padding: 5px;
-    background: var(--base_color);
-    outline: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-    font-size: 12px;
+.notes-tool {
+    width: 34px;
+    height: 34px;
     border: none;
-}
-.notesWidget .todoAddRow input{
-    padding: 5px;
-    margin-right: 10px;
-}
-.notesWidget .todoAddRow{
-    margin: 10px 0;
-    border: 1px solid rgb(0, 0, 0, 0.1);
-    padding: 5px;
-    border-radius: 5px;
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.notesWidget .todoAddRow textarea.NoFocus{
-    width: calc(100% - 80px);
-    border: none;
-    outline: none;
-    resize: vertical;
-    height: 30px;
-    max-height: 200px;
-    min-height: 30px;
-    padding: 6px 0 0 10px;
-}
-.notesWidget .todoAddRow textarea.NoFocus:focus{
-    border-color: transparent;
-    box-shadow: none;
-}
-.notesWidget .todoItemsList{
-    border-top: 1px dashed rgb(0, 0, 0, 0.1);
-    margin-top: 20px;
-    padding-top: 10px;
-    max-height: 300px;
-    overflow: hidden;
-    padding-right: 10px;
-    overflow-y: auto;
-}
-.notesWidget .todoItem{
-    margin: 8px 0;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px 10px 10px;
-    border-radius: 10px;
-    border: 1px solid rgb(0, 0, 0, 0.1);
-    font-size: 15px;
-    border-left: 10px solid rgb(0,0,0,0.2);
-}
-.notesWidget .todoItem.todoInActive{
-    border-left: 10px solid var(--base_color);
-}
-.notesWidget .todoItem input{
-    cursor: pointer;
-    margin-right: 10px;
-}
-.notesWidget .todoItem input:focus{
-    box-shadow: none;
-}
-.notesWidget .todoItem span{
-    display: block;
-    white-space:break-spaces;
-    margin-left: 10px;
-}
-.notesWidget .todoItem .todoDeleteBtn{
-    cursor: pointer;
-}
-.notesWidget .todoItem .todoDeleteBtn:hover{
-    color: red;
-}
-.notesWidget .createBtns{
-    display: flex;
-    justify-content: flex-end;
-    position: relative;
-}
-.notesWidget .createBtns span{
-    padding: 0 10px;
-    cursor: pointer;
-    background: var(--base_color);
-    height: 30px;
-    display: inline-block;
-    line-height: 30px;
+    border-radius: 8px;
+    background: rgba(128, 128, 128, 0.18);
+    color: inherit;
     font-size: 14px;
-    text-align: center;
-    color: white;
-    border-radius: 5px;
+    cursor: pointer;
 }
-.notesWidget .createBtns .addOptions{
-    z-index: 10;
-    position: absolute;
-    bottom: 0px;
-    padding: 0 5px 0 20px;
-    background: white;
-    min-height: 80px;
-    transform: translateY(calc(100% + 10px));
+
+.notes-tool.active {
+    background: rgba(128, 128, 128, 0.55);
+}
+
+.notes-editor {
+    flex: 1;
+    min-height: 220px;
+    overflow-y: auto;
+    padding: 10px 16px 16px;
+    outline: none;
+    font-size: 15px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.notes-editor:empty::before {
+    content: attr(data-placeholder);
+    opacity: 0.45;
+}
+
+/* global resets often remove list bullets, so set them again here */
+.notes-editor ul {
+    list-style: disc;
+    padding-left: 24px;
+    margin: 4px 0;
+}
+
+.notes-editor ol {
+    list-style: decimal;
+    padding-left: 24px;
+    margin: 4px 0;
+}
+
+.notes-editor li {
+    display: list-item;
+}
+
+/* ---------- list ---------- */
+
+.notes-list-body {
+    flex: 1;
+    min-height: 220px;
+    overflow-y: auto;
+    padding: 6px 16px 16px;
+}
+
+.notes-add-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.notes-add-row textarea {
+    flex: 1;
+    resize: none;
+    min-height: 38px;
+    padding: 9px 10px;
+    box-sizing: border-box;
+    border: 1px solid rgba(128, 128, 128, 0.45);
     border-radius: 10px;
-    box-shadow: 0 0px 15px rgb(0, 0, 0, 0.2);
+    outline: none;
+    background: rgba(255, 255, 255, 0.55);
+    color: #1f1f1f;
+    font-size: 14px;
+    font-family: inherit;
 }
-.notesWidget .createBtns .addOptions button{
-    display: block;
-    width: 100%;
-    text-align: right;
-    margin: 5px 0;
+
+.notes-items {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+}
+
+.notes-items li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.notes-items li span {
+    flex: 1;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 15px;
+}
+
+.notes-items li.done span {
+    text-decoration: line-through;
+    opacity: 0.55;
+}
+
+.notes-items li button {
+    border: none;
+    background: transparent;
+    color: inherit;
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.notes-items li button:hover {
+    opacity: 1;
+}
+
+.notes-empty-hint {
+    opacity: 0.55;
+    margin: 14px 0 0;
+    font-size: 14px;
+}
+
+/* ---------- colour picker ---------- */
+
+.notes-colors {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid rgba(128, 128, 128, 0.3);
+    font-size: 13px;
+}
+
+.notes-swatch {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.notes-swatch.selected {
+    border-color: #000;
+    box-shadow: 0 0 0 2px #fff inset;
+}
+
+.notes-custom-color input {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
     background: none;
-    color: black;
-    font-weight: bold;
-    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 600px) {
+    .notes-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .notes-modal {
+        width: 100%;
+        max-height: 95vh;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .notes-choose-options {
+        flex-direction: column;
+    }
+
+    .notes-grid {
+        gap: 12px;
+    }
 }

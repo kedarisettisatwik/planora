@@ -18,9 +18,51 @@ const COLUMNS = [
 
 const STATUS_RANK = { inprogress: 0, pending: 1, completed: 2 };
 
-// width share of each column on desktop (2fr : 1fr : 1fr)
-const COLUMN_WEIGHTS = { inprogress: 2, pending: 1, completed: 1 };
-const EMPTY_COLUMN_WIDTH = "150px";
+// theme (background colour) choices for a task card
+const TASK_COLORS = [
+    "#fff8b8", // yellow
+    "#d7f5d3", // green
+    "#d3ebfa", // blue
+    "#fbd5e5", // pink
+    "#e5dcfa", // purple
+    "#ffe0c2", // orange
+    "#e8e8e8", // grey
+    "#ffffff", // white
+];
+const DEFAULT_TASK_COLOR = TASK_COLORS[0];
+
+// dark text on light backgrounds, white text on dark ones (for custom colours)
+const getTextColor = (hex) => {
+    const m = /^#([0-9a-f]{6})$/i.exec(hex || "");
+    if (!m) return "#1f1f1f";
+    const n = parseInt(m[1], 16);
+    const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55 ? "#1f1f1f" : "#ffffff";
+};
+
+// shared inline styles for the edit modal
+const fieldStyle = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "9px 10px",
+    border: "1px solid rgba(128,128,128,0.45)",
+    borderRadius: "10px",
+    outline: "none",
+    background: "rgba(255,255,255,0.6)",
+    color: "#1f1f1f",
+    fontSize: "14px",
+    fontFamily: "inherit",
+};
+const labelStyle = { display: "block", fontSize: "13px", opacity: 0.75, margin: "14px 0 4px" };
+const modalBtnStyle = {
+    border: "none",
+    cursor: "pointer",
+    padding: "8px 14px",
+    borderRadius: "10px",
+    fontSize: "14px",
+    color: "inherit",
+    background: "rgba(128,128,128,0.2)",
+};
 
 function TTDWidget({ email, setLoading }) {
 
@@ -33,13 +75,17 @@ function TTDWidget({ email, setLoading }) {
         setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
     };
 
+    // "New Task" panel (create)
     const [addTaskPage, setAddTaskPage] = useState(false);
 
-    // when non-null, the "addNewTask" panel is in edit mode for this task instead of create mode
+    // when non-null, the edit modal is open for this task
     const [editingOriginalTask, setEditingOriginalTask] = useState(null);
 
+    // form fields (shared by the create panel and the edit modal)
     const [newTaskTitle, setNewTaskTitle] = useState("");
     const [desc, setNewTaskDesc] = useState("");
+    const [newTaskNotes, setNewTaskNotes] = useState("");
+    const [taskColor, setTaskColor] = useState(DEFAULT_TASK_COLOR);
 
     const getLocalISODate = (d = new Date()) => {
         const offsetMs = d.getTimezoneOffset() * 60000;
@@ -107,23 +153,57 @@ function TTDWidget({ email, setLoading }) {
 
     /* ---------------- form helpers ---------------- */
 
+    const getTaskNotes = (task) => task?.assign?.[email]?.privateNotes || "";
+
+    // closes both the create panel and the edit modal
     const resetTaskForm = () => {
         setAddTaskPage(false);
         setEditingOriginalTask(null);
         setNewTaskTitle("");
         setNewTaskDesc("");
+        setNewTaskNotes("");
+        setTaskColor(DEFAULT_TASK_COLOR);
         setStartDate(getLocalISODate());
         setEndDate("");
     };
 
+    // opens the edit modal, pre-filled
     const openEditTask = (task) => {
-        setEditingOriginalTask(task);
+        setAddTaskPage(false);
         setNewTaskTitle(task.title || "");
         setNewTaskDesc(task.description || "");
+        setNewTaskNotes(getTaskNotes(task));
+        setTaskColor(task.color || DEFAULT_TASK_COLOR);
         setStartDate(task.startDate || getLocalISODate());
         setEndDate(task.endDate || "");
-        setAddTaskPage(true);
+        setEditingOriginalTask(task);
     };
+
+    const isEditDirty = () => {
+        const t = editingOriginalTask;
+        if (!t) return false;
+        return (
+            newTaskTitle !== (t.title || "") ||
+            desc !== (t.description || "") ||
+            newTaskNotes !== getTaskNotes(t) ||
+            startDate !== (t.startDate || getLocalISODate()) ||
+            endDate !== (t.endDate || "") ||
+            taskColor !== (t.color || DEFAULT_TASK_COLOR)
+        );
+    };
+
+    const handleModalBack = () => {
+        if (isEditDirty() && !window.confirm("Discard your unsaved changes?")) return;
+        resetTaskForm();
+    };
+
+    // Esc = Back
+    useEffect(() => {
+        if (!editingOriginalTask) return;
+        const onKey = (e) => { if (e.key === "Escape") handleModalBack(); };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    });
 
     /* ---------------- create / update / delete ---------------- */
 
@@ -141,8 +221,9 @@ function TTDWidget({ email, setLoading }) {
             description: desc.trim(),
             startDate,
             endDate,
+            color: taskColor,
             assign: {
-                [email]: { email, done: false, privateNotes: "" }
+                [email]: { email, done: false, privateNotes: newTaskNotes.trim() }
             },
             createdBy: email,
             createdAt: new Date().toISOString(),
@@ -173,7 +254,7 @@ function TTDWidget({ email, setLoading }) {
         }
     };
 
-    // Edits in place - status, completion and notes are untouched.
+    // Saves the edit modal in place - status and completion are untouched.
     const updateTaskDB = async () => {
         if (!editingOriginalTask) return;
 
@@ -184,12 +265,15 @@ function TTDWidget({ email, setLoading }) {
 
         setLoading(true);
         try {
-            await updateDoc(doc(db, email, "TTD", "List", editingOriginalTask.id), {
-                title: newTaskTitle.trim(),
-                description: desc.trim(),
-                startDate,
-                endDate
-            });
+            await updateDoc(
+                doc(db, email, "TTD", "List", editingOriginalTask.id),
+                "title", newTaskTitle.trim(),
+                "description", desc.trim(),
+                "startDate", startDate,
+                "endDate", endDate,
+                "color", taskColor,
+                new FieldPath("assign", email, "privateNotes"), newTaskNotes
+            );
 
             resetTaskForm();
             await readTasks();
@@ -205,14 +289,6 @@ function TTDWidget({ email, setLoading }) {
             showError("Something went wrong while updating the task. Please try again.");
         } finally {
             setLoading(false);
-        }
-    };
-
-    const saveTask = () => {
-        if (editingOriginalTask) {
-            updateTaskDB();
-        } else {
-            createTaskDB();
         }
     };
 
@@ -450,6 +526,7 @@ function TTDWidget({ email, setLoading }) {
         }
     };
 
+    // used by the inline notes box on the mobile cards
     const updatePrivateNotes = async (task, value) => {
         if (!task.assign || !task.assign[email]) return;
 
@@ -503,7 +580,107 @@ function TTDWidget({ email, setLoading }) {
 
     /* ---------------- render ---------------- */
 
-    const renderTaskCard = (task, { draggable = false } = {}) => {
+    // theme picker, used by both the create panel and the edit modal
+    const renderColorPicker = () => (
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", marginTop: "6px" }}>
+            {TASK_COLORS.map((c) => (
+                <button
+                    key={c}
+                    type="button"
+                    title={c}
+                    onClick={() => setTaskColor(c)}
+                    style={{
+                        width: "24px",
+                        height: "24px",
+                        padding: 0,
+                        borderRadius: "50%",
+                        cursor: "pointer",
+                        background: c,
+                        border: taskColor === c ? "2px solid #000" : "2px solid rgba(0,0,0,0.2)",
+                        boxShadow: taskColor === c ? "0 0 0 2px #fff inset" : "none"
+                    }}
+                ></button>
+            ))}
+            <input
+                type="color"
+                title="Custom colour"
+                value={taskColor}
+                onChange={(e) => setTaskColor(e.target.value)}
+                style={{ width: "28px", height: "28px", padding: 0, border: "none", background: "none", cursor: "pointer" }}
+            />
+        </div>
+    );
+
+    // Desktop: a 200 x 200 card showing only the title and description.
+    // Click opens the edit modal, drag moves it between columns.
+    const renderBoardCard = (task) => {
+        const bg = task.color || DEFAULT_TASK_COLOR;
+        const overdue = !task.isDone && getDateStatusClass(task).classes.includes("overdue");
+
+        return (
+            <li
+                key={task.id}
+                className="boardCard"
+                draggable
+                onDragStart={(e) => handleDragStart(e, task)}
+                onDragEnd={handleDragEnd}
+                onClick={() => openEditTask(task)}
+                style={{
+                    width: "200px",
+                    boxSizing: "border-box",
+                    padding: "14px",
+                    margin: 0,
+                    borderRadius: "14px",
+                    border: overdue ? "2px solid #d9534f" : "1px solid rgba(0,0,0,0.08)",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                    listStyle: "none",
+                    cursor: "grab",
+                    opacity: draggingId === task.id ? 0.4 : 1,
+                    background: bg,
+                    color: getTextColor(bg)
+                }}
+            >
+                <h3
+                    style={{
+                        margin: 0,
+                        fontSize: "15px",
+                        lineHeight: 1.3,
+                        wordBreak: "break-word",
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical"
+                    }}
+                >
+                    {task.title}
+                </h3>
+
+                {task.description?.trim().length > 0 && (
+                    <p
+                        style={{
+                            margin: 0,
+                            fontSize: "12.5px",
+                            lineHeight: 1.45,
+                            opacity: 0.75,
+                            wordBreak: "break-word",
+                            whiteSpace: "pre-wrap",
+                            maxHeight: "150px",
+                            overflow: "hidden"
+                        }}
+                    >
+                        {task.description}
+                    </p>
+                )}
+            </li>
+        );
+    };
+
+    // Mobile: the full card (unchanged layout) with the status select
+    const renderTaskCard = (task) => {
         const { classes: dateClasses, remainingDays } = getDateStatusClass(task);
         const displayCompletionDate = task.isDone ? getCompletionDate(task) : null;
 
@@ -524,19 +701,7 @@ function TTDWidget({ email, setLoading }) {
         }
 
         return (
-            <li
-                key={task.id}
-                className={classNames.join(" ")}
-                draggable={draggable}
-                onDragStart={draggable ? (e) => handleDragStart(e, task) : undefined}
-                onDragEnd={draggable ? handleDragEnd : undefined}
-                style={draggable ? {
-                    cursor: "grab",
-                    opacity: draggingId === task.id ? 0.4 : 1,
-                    listStyle: "none",
-                    marginBottom: "10px"
-                } : undefined}
-            >
+            <li key={task.id} className={classNames.join(" ")}>
                 <h3>
                     {task.title}
                     <i
@@ -577,12 +742,11 @@ function TTDWidget({ email, setLoading }) {
                     <div className="notesBlock">
                         <label style={{ fontSize: "13px", opacity: 0.7, display: "block" }}>Notes :</label>
                         <textarea
+                            // key changes when the saved notes change, so edits made in the modal show up here
+                            key={`${task.id}-${task.assign[email].privateNotes || ""}`}
                             defaultValue={task.assign[email].privateNotes || ""}
                             placeholder="Add a note..."
                             onBlur={(e) => updatePrivateNotes(task, e.target.value)}
-                            // don't let text selection inside the textarea start a card drag
-                            onMouseDown={(e) => e.stopPropagation()}
-                            draggable={false}
                             style={{ width: "100%", fontSize: "13px", minHeight: "40px" }}
                         ></textarea>
                     </div>
@@ -601,29 +765,25 @@ function TTDWidget({ email, setLoading }) {
 
                 <span className="overDueLabel">OverDue</span>
 
-                {/* Mobile: status select instead of the Done / Back buttons.
-                    Desktop: no control needed, you drag the card between columns. */}
-                {isMobile && (
-                    <div style={{ marginTop: "10px" }}>
-                        <select
-                            className="statusSelect"
-                            value={task.status}
-                            onChange={(e) => updateTaskStatus(task, e.target.value)}
-                            style={{ padding: "8px 10px", borderRadius: "8px", border: "1px solid rgba(0,0,0,0.2)", fontSize: "13px" }}
-                        >
-                            <option value="inprogress">In Progress</option>
-                            <option value="pending">Pending</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                    </div>
-                )}
+                <div style={{ marginTop: "10px" }}>
+                    <select
+                        className="statusSelect"
+                        value={task.status}
+                        onChange={(e) => updateTaskStatus(task, e.target.value)}
+                        style={{ padding: "8px 10px", borderRadius: "8px", border: "1px solid rgba(0,0,0,0.2)", fontSize: "13px" }}
+                    >
+                        <option value="inprogress">In Progress</option>
+                        <option value="pending">Pending</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
 
                 <span className="TaskDone">Completed {formatDate(displayCompletionDate)} </span>
             </li>
         );
     };
 
-    // Mobile (unchanged layout): one list, In Progress -> Pending -> Completed
+    // Mobile: one list, In Progress -> Pending -> Completed
     const renderMobileList = () => {
         if (allTasks.length === 0) return null;
 
@@ -636,38 +796,21 @@ function TTDWidget({ email, setLoading }) {
         );
     };
 
-    // Desktop: three equal columns that act as drop zones
-    const renderKanbanBoard = () => {
-        // tasks per column
-        const tasksByColumn = {};
-        COLUMNS.forEach((col) => {
-            tasksByColumn[col.id] = allTasks.filter((t) => t.status === col.id);
-        });
-
-        // Empty column -> fixed 150px. Non-empty columns split the remaining
-        // width by weight (In Progress 1fr, Pending 2fr, Completed 1fr).
-        const gridTemplateColumns = COLUMNS
-            .map((col) =>
-                tasksByColumn[col.id].length === 0
-                    ? EMPTY_COLUMN_WIDTH
-                    : `minmax(0, ${COLUMN_WEIGHTS[col.id]}fr)`
-            )
-            .join(" ");
-
-        return (
+    // Desktop: three equal-width columns that act as drop zones.
+    // Cards wrap inside each column, so they sit side by side.
+    const renderKanbanBoard = () => (
         <div
             className="kanbanBoard"
             style={{
                 display: "grid",
-                gridTemplateColumns,
+                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
                 gap: "14px",
                 alignItems: "stretch",
-                paddingRight: "15px",
-                transition: "grid-template-columns 0.2s ease"
+                paddingRight: "15px"
             }}
         >
             {COLUMNS.map((col) => {
-                const colTasks = tasksByColumn[col.id];
+                const colTasks = allTasks.filter((t) => t.status === col.id);
                 const isOver = dragOverCol === col.id;
 
                 return (
@@ -693,8 +836,18 @@ function TTDWidget({ email, setLoading }) {
                             <span style={{ fontSize: "13px", opacity: 0.6 }}>{colTasks.length}</span>
                         </div>
 
-                        <ul style={{ padding: 0, margin: 0 }}>
-                            {colTasks.map((task) => renderTaskCard(task, { draggable: true }))}
+                        <ul
+                            style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                alignItems: "flex-start",
+                                gap: "12px",
+                                padding: 0,
+                                margin: 0,
+                                listStyle: "none"
+                            }}
+                        >
+                            {colTasks.map((task) => renderBoardCard(task))}
                         </ul>
 
                         {colTasks.length === 0 && (
@@ -706,8 +859,99 @@ function TTDWidget({ email, setLoading }) {
                 );
             })}
         </div>
-        );
-    };
+    );
+
+    // Modal for viewing / editing a task
+    const renderEditModal = () => (
+        <div
+            onClick={handleModalBack}
+            style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 1000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "16px",
+                boxSizing: "border-box",
+                background: "rgba(0,0,0,0.45)"
+            }}
+        >
+            <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                    width: "min(560px, 100%)",
+                    maxHeight: "90vh",
+                    overflowY: "auto",
+                    boxSizing: "border-box",
+                    padding: "16px 18px 20px",
+                    borderRadius: "16px",
+                    boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+                    background: taskColor,
+                    color: getTextColor(taskColor)
+                }}
+            >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+                    <button type="button" style={modalBtnStyle} onClick={handleModalBack}>
+                        <i className="fa-solid fa-chevron-left"></i> Back
+                    </button>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                            type="button"
+                            style={{ ...modalBtnStyle, background: "var(--toast_error, #d9534f)", color: "#fff" }}
+                            onClick={deleteTaskDB}
+                        >
+                            <i className="fa-solid fa-trash"></i> Delete
+                        </button>
+                        <button
+                            type="button"
+                            style={{ ...modalBtnStyle, background: "var(--base_color, #333)", color: "#fff" }}
+                            onClick={updateTaskDB}
+                        >
+                            <i className="fa-solid fa-floppy-disk"></i> Save
+                        </button>
+                    </div>
+                </div>
+
+                <input
+                    style={{ ...fieldStyle, fontSize: "18px", fontWeight: "bold" }}
+                    placeholder="Title"
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                />
+
+                <span style={labelStyle}>Description :</span>
+                <textarea
+                    style={{ ...fieldStyle, minHeight: "110px", resize: "vertical" }}
+                    placeholder="What need to be done, etc .. "
+                    value={desc}
+                    onChange={(e) => setNewTaskDesc(e.target.value)}
+                ></textarea>
+
+                <span style={labelStyle}>Notes :</span>
+                <textarea
+                    style={{ ...fieldStyle, minHeight: "90px", resize: "vertical" }}
+                    placeholder="Add a note..."
+                    value={newTaskNotes}
+                    onChange={(e) => setNewTaskNotes(e.target.value)}
+                ></textarea>
+
+                <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+                    <div>
+                        <span style={labelStyle}>Start's From :</span>
+                        <input type="date" style={{ ...fieldStyle, width: "auto" }} value={startDate} max={endDate} onChange={(e) => setStartDate(e.target.value)} />
+                    </div>
+                    <div>
+                        <span style={labelStyle}>DeadLine :</span>
+                        <input type="date" style={{ ...fieldStyle, width: "auto" }} value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} />
+                    </div>
+                </div>
+
+                <span style={labelStyle}>Theme (background colour) :</span>
+                {renderColorPicker()}
+            </div>
+        </div>
+    );
 
     return (
         <div
@@ -759,15 +1003,16 @@ function TTDWidget({ email, setLoading }) {
 
             <button
                 style={{ position: "absolute", bottom: "30px", right: "20px", padding: "10px", cursor: "pointer", border: "none", outline: "none", background: "var(--base_color)", color: "white", borderRadius: "10px" }}
-                onClick={() => { setEditingOriginalTask(null); setAddTaskPage(true); }}
+                onClick={() => { resetTaskForm(); setAddTaskPage(true); }}
             >
                 New Task +
             </button>
 
+            {/* Create panel: title, description, notes, dates, theme */}
             <div className="addNewTask">
                 <div style={{ marginBottom: "30px" }}>
                     <i className="fa-solid fa-chevron-left" style={{ display: "inline-block" }} onClick={resetTaskForm}></i>
-                    <h3 style={{ display: "inline-block" }}>{editingOriginalTask ? "Edit Task" : "SetUp New Task"}</h3>
+                    <h3 style={{ display: "inline-block" }}>SetUp New Task</h3>
                 </div>
 
                 <span style={{ display: "block" }}>Title : </span>
@@ -775,6 +1020,9 @@ function TTDWidget({ email, setLoading }) {
 
                 <span style={{ display: "block" }}>Description : </span>
                 <textarea placeholder="What need to be done, etc .. " value={desc} onChange={(e) => setNewTaskDesc(e.target.value)} style={{ fontSize: "14px" }}></textarea>
+
+                <span style={{ display: "block" }}>Notes : </span>
+                <textarea placeholder="Add a note..." value={newTaskNotes} onChange={(e) => setNewTaskNotes(e.target.value)} style={{ fontSize: "14px" }}></textarea>
 
                 <div className="Dates" style={{ display: "flex" }}>
                     <div>
@@ -787,22 +1035,15 @@ function TTDWidget({ email, setLoading }) {
                     </div>
                 </div>
 
-                <button className="saveNewTaskBtn" onClick={saveTask}>{editingOriginalTask ? "Update" : "Save"}</button>
+                <span style={{ display: "block", marginTop: "14px" }}>Theme (background colour) : </span>
+                {renderColorPicker()}
 
-                {editingOriginalTask && (
-                    <button
-                        type="button"
-                        className="deleteTaskBtn"
-                        onClick={deleteTaskDB}
-                        style={{ padding: "10px", cursor: "pointer", background: "var(--toast_error)", color: "white", border: "none", borderRadius: "10px" }}
-                    >
-                        <i className="fa-solid fa-trash" style={{ marginRight: "8px" }}></i>
-                        Delete Task
-                    </button>
-                )}
+                <button className="saveNewTaskBtn" onClick={createTaskDB}>Save</button>
 
                 <div style={{ height: "20px" }}></div>
             </div>
+
+            {editingOriginalTask && renderEditModal()}
 
             <div
                 className="refreshWidget"

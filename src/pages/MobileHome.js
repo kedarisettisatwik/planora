@@ -9,15 +9,18 @@ import { db } from "../firebase";
 
 import DailyGoalsWidget from "../components/DailyGoalsWidget";
 import TTDWidget from "../components/TTDWidget";
+import NotesWidget from "../components/NotesWidget";
 
 const WIDGET_COMPONENTS = {
   DailyGoals: DailyGoalsWidget,
-  TTD: TTDWidget
+  TTD: TTDWidget,
+  Notes: NotesWidget
 };
 
 const WIDGET_DISPLAY_NAMES = {
   DailyGoals: "Daily Goals",
-  TTD: "Things to do"
+  TTD: "Things to do",
+  Notes: "Notes"
 };
 
 function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
