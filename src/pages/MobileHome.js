@@ -9,37 +9,15 @@ import { db } from "../firebase";
 
 import DailyGoalsWidget from "../components/DailyGoalsWidget";
 import TTDWidget from "../components/TTDWidget";
-import NotesWidget from "../components/NotesWidget";
-import EventsWidget from "../components/EventsWidget";
-import BookmarksWidget from "../components/BookmarksWidget";
-import TrackProjectWidget from "../components/TrackProjectWidget";
-import FormsWidget from '../components/FormsWidget';
-import Connections from "../components/Connections";
-import TeamsWidget from "../components/TeamsWidget";
-import Notifications from '../components/Notifications';
 
 const WIDGET_COMPONENTS = {
   DailyGoals: DailyGoalsWidget,
-  TTD: TTDWidget,
-  Notes: NotesWidget,
-  Events: EventsWidget,
-  Bookmarks: BookmarksWidget,
-  TrackProject: TrackProjectWidget,
-  Forms:FormsWidget,
-  Connections:Connections,
-  TeamsWidget:TeamsWidget
+  TTD: TTDWidget
 };
 
 const WIDGET_DISPLAY_NAMES = {
   DailyGoals: "Daily Goals",
-  TTD: "Things to do",
-  Notes: "Notes",
-  Events: "Reminders",
-  Bookmarks: "Bookmarks",
-  TrackProject: "Workflows",
-  Forms:"Forms",
-  TeamsWidget:"Team",
-  Connections:"Connections"
+  TTD: "Things to do"
 };
 
 function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
@@ -82,52 +60,6 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
 
         fetchData();
     }, [email]);
-
-    const handleAddWidget = async (type) => {
-        setLoading(true);
-
-        try {
-        await setDoc(
-            doc(db, email, type),
-            { empty: true },
-            { merge: true }
-        );
-
-        await updateDoc(
-            doc(db,email,"widgets"),
-            {
-            [type]: { x: 0, y: 0 }
-            }
-        )
-
-        toast('Added !! ', {
-            duration: 2000,
-            position: 'top-center',
-            icon: '✅',
-            style: {"backgroundColor":"var(--toast_success)","color":"white"}
-        });
-
-        setWidgets((prev) => ({
-            ...prev,
-            [type]: {
-            x: 0,
-            y: 0
-            }
-        }));
-
-        } catch (err) {
-        console.error("Error adding widget:", err);
-        toast('Error !! ', {
-            duration: 2000,
-            position: 'top-center',
-            icon: '❌',
-            style: {"backgroundColor":"var(--toast_error)","color":"white"}
-        });
-
-        }finally{
-        setLoading(false);
-        }
-    };
 
     const changeHomeWidget = async (e) => {
         const type = e.target.value;
@@ -192,19 +124,6 @@ function MobileHome({ setLoading, email, setPopup, setPopupContent, signOut }){
                 <div className="menuDetails">
                     <h3>Planora <span style={{fontSize:"10px",color:"black"}}>v 4.5</span></h3>
 
-                    <div style={{margin:"30px 0 0 0",letterSpacing:"1px",fontWeight:"bold",cursor:"pointer"}} onClick={() => {setPopup(true);setPopupContent(<Notifications setPopupContent={setPopupContent} setPopup={setPopup} email={email}/>)}}>
-                        <span style={{display:"inline-block"}}>Notifications</span> <i className="fa-regular fa-bell" style={{display:"inline-block",marginLeft:"10px"}}></i>
-                    </div>
-
-                    <span style={{ margin: "0px 0 10px 0",fontSize: "17px",width:"100%", paddingTop:"20px"}}>Add Widgets </span>
-
-                    <ul style={{marginBottom:"5px"}}>
-                        {Object.keys(WIDGET_COMPONENTS)
-                            .filter((type) => !(type in widgets))
-                            .map((type) => (
-                                <li key={type} onClick={() => handleAddWidget(type)}>{WIDGET_DISPLAY_NAMES[type]}</li>
-                            ))}
-                    </ul>
 
                     <span style={{ margin: "0px 0 10px 0",fontSize: "15px",width:"100%", paddingTop:"20px"}}>Home Page : </span>
 

@@ -1786,23 +1786,46 @@ function DailyGoalsWidget({
               Note of the Day :
             </h5>
 
-            <textarea
-              className="noteDay"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              onBlur={(e) => saveNote(e.target.value)}
-              placeholder="Memorize your day here .. "
-              style={{
-                width: "100%",
-                marginLeft: "5px",
-                marginTop: "10px",
-                minHeight: "60px",
-                resize: "vertical",
-                borderRadius: "8px",
-                padding: "8px",
-                outline: "none",
-              }}
-            />
+            {
+              isMobile ? 
+              (
+                <textarea
+                  className="noteDay"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  onBlur={(e) => saveNote(e.target.value)}
+                  placeholder="Memorize your day here .. "
+                  style={{
+                    width: "100%",
+                    marginLeft: "5px",
+                    marginTop: "10px",
+                    minHeight: "60px",
+                    resize: "vertical",
+                    borderRadius: "8px",
+                    padding: "8px",
+                    outline: "none",
+                  }}
+                />
+              ) : (
+                <textarea
+                  className="noteDay desk"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  onBlur={(e) => saveNote(e.target.value)}
+                  placeholder="Memorize your day here .. "
+                  style={{
+                    width: "100%",
+                    marginLeft: "5px",
+                    marginTop: "10px",
+                    minHeight: "100px",
+                    resize: "vertical",
+                    borderRadius: "8px",
+                    padding: "8px",
+                    outline: "none",
+                  }}
+                />
+              )
+            }
 
             <button
               onClick={() => setAddGoalPage(true)}
@@ -1915,23 +1938,47 @@ function DailyGoalsWidget({
               Note of the Day :
             </h5>
 
-            <textarea
-              className="noteDay"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              onBlur={(e) => saveNote(e.target.value)}
-              placeholder="Memorize your day here .. "
-              style={{
-                width: "100%",
-                marginLeft: "5px",
-                marginTop: "10px",
-                minHeight: "60px",
-                resize: "vertical",
-                borderRadius: "8px",
-                padding: "8px",
-                outline: "none",
-              }}
-            />
+            {
+              isMobile ? 
+              (
+                <textarea
+                  className="noteDay"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  onBlur={(e) => saveNote(e.target.value)}
+                  placeholder="Memorize your day here .. "
+                  style={{
+                    width: "100%",
+                    marginLeft: "5px",
+                    marginTop: "10px",
+                    minHeight: "60px",
+                    resize: "vertical",
+                    borderRadius: "8px",
+                    padding: "8px",
+                    outline: "none",
+                  }}
+                />
+              ) : (
+                <textarea
+                  className="noteDay desk"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  onBlur={(e) => saveNote(e.target.value)}
+                  placeholder="Memorize your day here .. "
+                  style={{
+                    width: "100%",
+                    marginLeft: "5px",
+                    marginTop: "10px",
+                    minHeight: "100px",
+                    resize: "vertical",
+                    borderRadius: "8px",
+                    padding: "8px",
+                    outline: "none",
+                  }}
+                />
+              )
+            }
+
 
             {/* =================================================
                 GOALS LIST
@@ -2106,8 +2153,8 @@ function DailyGoalsWidget({
             <button
               style={{
                 position: "absolute",
-                bottom: "10px",
-                right: "10px",
+                bottom: "30px",
+                right: "20px",
                 padding: "10px",
                 cursor: "pointer",
                 border: "none",

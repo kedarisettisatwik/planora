@@ -1,10 +1,4 @@
-.TTDMain.desk{
-    width: 370px;
-    height: calc(100vh - 120px);
-    max-height: 500px;
-    position: relative;
-}
-.TTDMain.mobile{
+.TTDMain{
     width: 100%;
     height:100%;
     position: relative;
@@ -46,8 +40,8 @@
 }
 .TTDMain .recordsCount{
     position: absolute;
-    bottom: 10px;
-    left: 10px;
+    bottom: 30px;
+    left: 20px;
     padding: 10px;
     font-size: 13px;
     opacity: 0.6;
@@ -109,6 +103,10 @@
     display: block;
 }
 
+.TTDMain.desk .addNewTask{
+    width: 450px;
+    box-shadow: -10px 0px 10px rgb(0,0,0,0.03);
+}
 .addNewTask .fa-chevron-left {
   font-size: 15px;
   cursor: pointer;
@@ -361,9 +359,12 @@
 .TTDMain .TasksList{
     position: relative;
     width: 100%;
-    height:calc(100% - 70px);
+    height:calc(100% - 80px);
     overflow-x: hidden;
     overflow-y: auto;
+}
+.TTDMain.desk .TasksList{
+    padding: 10px;
 }
 .TTDMain .TasksList::-webkit-scrollbar{
     width: 5px;
@@ -380,6 +381,11 @@
 .TTDMain ul{
     list-style: none;
 }
+.TTDMain.desk ul{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
 .TTDMain .taskblock{
     list-style: none;
     margin: 15px 0;
@@ -387,6 +393,10 @@
     border-radius: 10px;
     border: 1px solid rgb(0, 0, 0, 0.1);
     position: relative;
+}
+.TTDMain.desk .taskblock {
+    width: 350px;
+    box-shadow: 0 0 10px rgb(0, 0, 0, 0.02);
 }
 .TTDMain .taskblock h3{
     font-size: 19px;
